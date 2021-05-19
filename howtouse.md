@@ -9,6 +9,9 @@
 
 also works with bombs  
 
+## Tips
+- By enabling precision placement in the chromapper settings, you can hold down the designated key *(Q for me)* to place notes more precisely, and this will allow you to more precisly maniupulate how the curve looks.
+
 ## Vibro
 *Still WIP*
 
