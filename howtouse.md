@@ -1,8 +1,15 @@
 # Quick Guide
-1. Select x number of notes  
+1. Select x number of notes **Must not be on the same time**
 2. Press f9 to generate paul between selected notes  
 - if at least two notes are chroma colored it will make a gradient between them  
-- if all notes are dots it will make the curve with dots
-3. Press f7 to open a settings menu
+- if all notes are dots it will make the curve with dots  
+
+- press f7 to change stuff like precision
 
 also works with bombs  
+
+## Vibro
+*Still WIP*
+
+- but if set to true in f7 and rotation sat to false  
+- when generating using f9 it will make each note changing between up and down
