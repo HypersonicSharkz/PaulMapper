@@ -1,5 +1,6 @@
 # PaulMapper
-Chromapper plugin for making precision pauls
+Chromapper plugin for making precision pauls  
+Preferably known as Poodles
 
 ## Installation:
 Download the latest [release](https://github.com/DavidHulstroem/PaulMapper/releases)  
