@@ -3,6 +3,7 @@
 2. Press f9 to generate a paul between the selected notes  
 ![Cool Gif](https://github.com/DavidHulstroem/PaulMapper/blob/main/PaulArrow.gif)  
 - if at least two notes are chroma colored it will make a gradient between them  
+![Cool Gif](https://github.com/DavidHulstroem/PaulMapper/blob/main/PaulGradient.gif)  
 - if all notes are dots it will make the curve using dots  
 
 - press f7 to change stuff like precision
