@@ -94,7 +94,7 @@ namespace PaulMapper
                                               orderby it._time
                                               select it).ToList();
 
-                PaulFinder.pauls = PaulFinder.FindAllPauls(allNotes);
+                PaulFinder.pauls = PaulFinder.FindAllPauls(allNotes).OrderBy(p => p.Beat).ToList();
             }
 
             if (PaulFinder.pauls.Count > 0)
@@ -136,6 +136,11 @@ namespace PaulMapper
                         Paul paul = PaulFinder.pauls.First(p => p.notes[0]._time > ats.CurrentBeat);
 
                         PaulFinder.GoToPaul(paul);
+                    }
+
+                    if (GUI.Button(new Rect(5, 320, guiWidth - 10, 20), "Select Current"))
+                    {
+                        PaulFinder.SelectCurrentPaul();
                     }
                 }
                 catch

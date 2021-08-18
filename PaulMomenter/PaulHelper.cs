@@ -108,7 +108,12 @@ namespace PaulMapper.PaulHelper
 
             PaulMomenter.ats.MoveToTimeInBeats(paul.notes[0]._time);
 
-            foreach (BeatmapNote note in paul.notes)
+
+        }
+
+        public static void SelectCurrentPaul()
+        {
+            foreach (BeatmapNote note in pauls[currentPaul].notes)
                 SelectionController.Select(note, true, true, true);
         }
     }

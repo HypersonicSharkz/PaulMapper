@@ -103,6 +103,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="MEExporter.cs" />
     <Compile Include="Paul.cs" />
     <Compile Include="PaulHelper.cs" />
     <Compile Include="PaulMapper.cs" />
