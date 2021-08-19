@@ -108,6 +108,7 @@
     <Compile Include="PaulHelper.cs" />
     <Compile Include="PaulMapper.cs" />
     <Compile Include="Helpers.cs" />
+    <Compile Include="PaulSaveHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
