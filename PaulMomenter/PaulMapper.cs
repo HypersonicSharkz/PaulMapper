@@ -205,6 +205,8 @@ namespace PaulMapper
             }
         }
 
+        public bool advancedQuickMenu = false;
+
         private void OnGUI()
         {
             if (showGUI)
@@ -239,7 +241,7 @@ namespace PaulMapper
                 {
                     BeatmapNote beatmapObject1 = SelectionController.SelectedObjects.First() as BeatmapNote;
                     BeatmapNote beatmapObject2 = SelectionController.SelectedObjects.Last() as BeatmapNote;
-                    if (beatmapObject1._cutDirection == beatmapObject2._cutDirection)
+                    if (beatmapObject1._cutDirection == beatmapObject2._cutDirection && beatmapObject1._time != beatmapObject2._time)
                     {
                         windowTotalRect.width += guiWidth;
 
@@ -252,6 +254,75 @@ namespace PaulMapper
                         if (GUI.Button(new Rect(xPos, yPos, 120, 20), "Linear"))
                         {
                             GeneratePoodle(beatmapObjects[0], beatmapObjects[1], null, paulmapperData.precision);
+                        }
+
+                        yPos += 30;
+                        if (GUI.Button(new Rect(xPos, yPos, 120, 20), "easeInSine"))
+                        {
+                            GeneratePoodle(beatmapObjects[0], beatmapObjects[1], "easeInSine", paulmapperData.precision);
+                        }
+
+                        yPos += 30;
+                        if (GUI.Button(new Rect(xPos, yPos, 120, 20), "easeOutSine"))
+                        {
+                            GeneratePoodle(beatmapObjects[0], beatmapObjects[1], "easeOutSine", paulmapperData.precision);
+                        }
+
+                        if (advancedQuickMenu)
+                        {
+                            yPos += 30;
+                            if (GUI.Button(new Rect(xPos, yPos, 120, 20), "easeInOutSine"))
+                            {
+                                GeneratePoodle(beatmapObjects[0], beatmapObjects[1], "easeInOutSine", paulmapperData.precision);
+                            }
+                        }
+
+
+
+
+                        yPos += 30;
+                        if (GUI.Button(new Rect(xPos, yPos, 120, 20), "easeInQuad"))
+                        {
+                            GeneratePoodle(beatmapObjects[0], beatmapObjects[1], "easeInQuad", paulmapperData.precision);
+                        }
+
+                        yPos += 30;
+                        if (GUI.Button(new Rect(xPos, yPos, 120, 20), "easeOutQuad"))
+                        {
+                            GeneratePoodle(beatmapObjects[0], beatmapObjects[1], "easeOutQuad", paulmapperData.precision);
+                        }
+
+                        if (advancedQuickMenu)
+                        {
+                            yPos += 30;
+                            if (GUI.Button(new Rect(xPos, yPos, 120, 20), "easeInOutQuad"))
+                            {
+                                GeneratePoodle(beatmapObjects[0], beatmapObjects[1], "easeInOutQuad", paulmapperData.precision);
+                            }
+                        }
+
+
+
+
+                        yPos += 30;
+
+                        if (GUI.Button(new Rect(xPos, yPos, 120, 20), "CubicIn"))
+                        {
+                            GeneratePoodle(beatmapObjects[0], beatmapObjects[1], "CubicIn", paulmapperData.precision);
+                        }
+                        yPos += 30;
+                        if (GUI.Button(new Rect(xPos, yPos, 120, 20), "CubicOut"))
+                        {
+                            GeneratePoodle(beatmapObjects[0], beatmapObjects[1], "CubicOut", paulmapperData.precision);
+                        }
+
+                        if (advancedQuickMenu)
+                        {
+                            yPos += 30;
+                            if (GUI.Button(new Rect(xPos, yPos, 120, 20), "CubicInOut"))
+                            {
+                                GeneratePoodle(beatmapObjects[0], beatmapObjects[1], "CubicInOut", paulmapperData.precision);
+                            }
                         }
 
                         yPos += 30;
@@ -268,28 +339,13 @@ namespace PaulMapper
                             GeneratePoodle(beatmapObjects[0], beatmapObjects[1], "ExpOut", paulmapperData.precision);
                         }
 
-                        yPos += 30;
-
-                        if (GUI.Button(new Rect(xPos, yPos, 120, 20), "ExpInOut"))
+                        if (advancedQuickMenu)
                         {
-                            GeneratePoodle(beatmapObjects[0], beatmapObjects[1], "ExpInOut", paulmapperData.precision);
-                        }
-
-                        yPos += 30;
-
-                        if (GUI.Button(new Rect(xPos, yPos, 120, 20), "CubicIn"))
-                        {
-                            GeneratePoodle(beatmapObjects[0], beatmapObjects[1], "CubicIn", paulmapperData.precision);
-                        }
-                        yPos += 30;
-                        if (GUI.Button(new Rect(xPos, yPos, 120, 20), "CubicOut"))
-                        {
-                            GeneratePoodle(beatmapObjects[0], beatmapObjects[1], "CubicOut", paulmapperData.precision);
-                        }
-                        yPos += 30;
-                        if (GUI.Button(new Rect(xPos, yPos, 120, 20), "CubicInOut"))
-                        {
-                            GeneratePoodle(beatmapObjects[0], beatmapObjects[1], "CubicInOut", paulmapperData.precision);
+                            yPos += 30;
+                            if (GUI.Button(new Rect(xPos, yPos, 120, 20), "ExpInOut"))
+                            {
+                                GeneratePoodle(beatmapObjects[0], beatmapObjects[1], "ExpInOut", paulmapperData.precision);
+                            }
                         }
 
                         yPos += 30;
@@ -302,27 +358,39 @@ namespace PaulMapper
                         {
                             GeneratePoodle(beatmapObjects[0], beatmapObjects[1], "easeOutBack", paulmapperData.precision);
                         }
-                        yPos += 30;
-                        if (GUI.Button(new Rect(xPos, yPos, 120, 20), "easeInOutBack"))
+
+                        if (advancedQuickMenu)
                         {
-                            GeneratePoodle(beatmapObjects[0], beatmapObjects[1], "easeInOutBack", paulmapperData.precision);
+                            yPos += 30;
+                            if (GUI.Button(new Rect(xPos, yPos, 120, 20), "easeInOutBack"))
+                            {
+                                GeneratePoodle(beatmapObjects[0], beatmapObjects[1], "easeInOutBack", paulmapperData.precision);
+                            }
                         }
 
-                        yPos += 30;
-                        if (GUI.Button(new Rect(xPos, yPos, 120, 20), "easeInBounce"))
+                        if (advancedQuickMenu)
                         {
-                            GeneratePoodle(beatmapObjects[0], beatmapObjects[1], "easeInBounce", paulmapperData.precision);
+                            yPos += 30;
+                            if (GUI.Button(new Rect(xPos, yPos, 120, 20), "easeInBounce"))
+                            {
+                                GeneratePoodle(beatmapObjects[0], beatmapObjects[1], "easeInBounce", paulmapperData.precision);
+                            }
+                            yPos += 30;
+                            if (GUI.Button(new Rect(xPos, yPos, 120, 20), "easeOutBounce"))
+                            {
+                                GeneratePoodle(beatmapObjects[0], beatmapObjects[1], "easeOutBounce", paulmapperData.precision);
+                            }
+                            yPos += 30;
+                            if (GUI.Button(new Rect(xPos, yPos, 120, 20), "easeInOutBounce"))
+                            {
+                                GeneratePoodle(beatmapObjects[0], beatmapObjects[1], "easeInOutBounce", paulmapperData.precision);
+                            }
                         }
-                        yPos += 30;
-                        if (GUI.Button(new Rect(xPos, yPos, 120, 20), "easeOutBounce"))
-                        {
-                            GeneratePoodle(beatmapObjects[0], beatmapObjects[1], "easeOutBounce", paulmapperData.precision);
-                        }
-                        yPos += 30;
-                        if (GUI.Button(new Rect(xPos, yPos, 120, 20), "easeInOutBounce"))
-                        {
-                            GeneratePoodle(beatmapObjects[0], beatmapObjects[1], "easeInOutBounce", paulmapperData.precision);
-                        }
+
+                        yPos += 60;
+
+                        //advancedQuickMenu = GUI.Toggle(new Rect(xPos, yPos, 80, 20), advancedQuickMenu, "Advanced");
+
                     }
                 }
 
@@ -380,6 +448,8 @@ namespace PaulMapper
                 BeatmapObject[] beatmapObjects = SelectionController.SelectedObjects.OrderBy(o => o._time).ToArray();
                 BeatmapObjectContainerCollection beatmapObjectContainerCollection = UnityEngine.Object.FindObjectOfType<BeatmapObjectContainerCollection>();
                 List<BeatmapObject> spawnedNotes = new List<BeatmapObject>();
+                if (beatmapObjects.Count() != beatmapObjects.Select(p => p._time).Distinct().Count())
+                    return;
 
                 //Normal paul
                 if (beatmapObjects.All(o => !((o as BeatmapNote)._customData != null && (o as BeatmapNote)._customData.HasKey("_position")) &&
@@ -907,6 +977,7 @@ namespace PaulMapper
                                     line = Easing.Exponential.InOut(line);
                                     break;
 
+                                
                                 case "easeInBack":
                                     line = Easing.Back.In(line);
                                     break;
@@ -917,6 +988,7 @@ namespace PaulMapper
                                     line = Easing.Back.InOut(line);
                                     break;
 
+                               
                                 case "easeInBounce":
                                     line = Easing.Bounce.In(line);
                                     break;
@@ -925,6 +997,29 @@ namespace PaulMapper
                                     break;
                                 case "easeInOutBounce":
                                     line = Easing.Bounce.InOut(line);
+                                    break;
+                                
+
+                                case "easeInSine":
+                                    line = Easing.Sinusoidal.In(line);
+                                    break;
+                                case "easeOutSine":
+                                    line = Easing.Sinusoidal.Out(line);
+                                    break;
+                                case "easeInOutSine":
+                                    line = Easing.Sinusoidal.InOut(line);
+                                    break;
+
+
+
+                                case "easeInQuad":
+                                    line = Easing.Quadratic.In(line);
+                                    break;
+                                case "easeOutQuad":
+                                    line = Easing.Quadratic.Out(line);
+                                    break;
+                                case "easeInOutQuad":
+                                    line = Easing.Quadratic.InOut(line);
                                     break;
                             }
                         }
