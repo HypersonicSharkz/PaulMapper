@@ -86,7 +86,7 @@ namespace PaulMapper
 
         public static Rect windowRect = new Rect(guiX, 10, guiWidth, 440);
 
-        void DoMyWindow(int windowID)
+        void UpdatePaulMapperWindow(int windowID)
         {
             GUI.DragWindow(new Rect(0, 0, 10000, 20));
 
@@ -103,6 +103,15 @@ namespace PaulMapper
             {
                 MirrorSelected();
             }
+
+            GUI.Label(new Rect((guiWidth - 110) / 2, 170, 80, 20), "Transition time: ");
+
+            GUI.SetNextControlName("Precision");
+            string tt = GUI.TextField(new Rect(80 + (guiWidth - 110) / 2, 170, 30, 20), $"{paulmapperData.transitionTime.ToString("0.0")}");
+
+            paulmapperData.transitionRotation = GUI.Toggle(new Rect(20, 190, guiWidth - 10, 20), paulmapperData.transitionRotation, "Keep Rotation");
+
+
 
 
             if (GUI.Button(new Rect(5, 220, guiWidth - 10, 20), "Find All Pauls"))
@@ -182,6 +191,8 @@ namespace PaulMapper
             if (!int.TryParse(text, out paulmapperData.precision))
                 return;
 
+            if (!float.TryParse(tt, out paulmapperData.transitionTime))
+                return;
         }
 
         private bool isHovering;
@@ -211,7 +222,7 @@ namespace PaulMapper
         {
             if (showGUI)
             {
-                Rect newWindowRect = GUI.Window(0, windowRect, DoMyWindow, "Paul Menu");
+                Rect newWindowRect = GUI.Window(0, windowRect, UpdatePaulMapperWindow, "Paul Menu");
 
                 if (newWindowRect.x > 0 &&
                     newWindowRect.x < Screen.width - guiWidth)
@@ -426,20 +437,6 @@ namespace PaulMapper
                 showGUI = !showGUI;
             }
 
-            if (Input.GetKeyDown(KeyCode.F11))
-            {
-                BeatmapObject[] beatmapObjects = SelectionController.SelectedObjects.OrderBy(o => o._time).ToArray();
-
-                foreach (BeatmapObject beatmapObject in beatmapObjects)
-                {
-                    float rand = UnityEngine.Random.Range(min, max);
-                    if (beatmapObject._customData != null && beatmapObject._customData.HasKey("_color"))
-                    {
-                        beatmapObject._customData["_color"] = new Color(beatmapObject._customData["_color"][0] * rand, beatmapObject._customData["_color"][1] * rand, beatmapObject._customData["_color"][2] * rand, beatmapObject._customData["_color"][3]);
-                    }
-                }
-            }
-
             if (Input.GetKeyDown(KeyCode.F9))
             {
                 //TimeKeeper TP = new TimeKeeper();
@@ -448,6 +445,7 @@ namespace PaulMapper
                 BeatmapObject[] beatmapObjects = SelectionController.SelectedObjects.OrderBy(o => o._time).ToArray();
                 BeatmapObjectContainerCollection beatmapObjectContainerCollection = UnityEngine.Object.FindObjectOfType<BeatmapObjectContainerCollection>();
                 List<BeatmapObject> spawnedNotes = new List<BeatmapObject>();
+
                 if (beatmapObjects.Count() != beatmapObjects.Select(p => p._time).Distinct().Count())
                     return;
 
@@ -495,10 +493,16 @@ namespace PaulMapper
 
                     }
 
+                    List<float> dotTimes = null;
+                    if (paulmapperData.autoDot)
+                    {
+                        dotTimes = beatmapObjects.Where(p => (p as BeatmapNote)._cutDirection == 8).Select(p => p._time - paulmapperData.transitionTime).ToList();
+                    }
+
                     CubicSpline splinex = CubicSpline.CreateNatural(pointsx, pointsx_y);
                     CubicSpline spliney = CubicSpline.CreateNatural(pointsx, pointsy_y);
 
-                    spawnedNotes = GeneratePoodle(beatmapObjects[0], beatmapObjects.Last(), splinex, spliney, paulmapperData.precision, beatmapObjects.All(o => (o as BeatmapNote)._cutDirection == 8), DistColorDict);
+                    spawnedNotes = GeneratePoodle(beatmapObjects[0], beatmapObjects.Last(), splinex, spliney, paulmapperData.precision, beatmapObjects.All(o => (o as BeatmapNote)._cutDirection == 8), DistColorDict, dotTimes);
                 }
 
 
@@ -511,7 +515,7 @@ namespace PaulMapper
 
                 foreach (BeatmapObject note in spawnedNotes)
                 {
-                    SelectionController.Select(note, true);
+                    SelectionController.Select(note, true, true, false);
                 }
 
                 //TP.Complete("Paul");
@@ -724,6 +728,7 @@ namespace PaulMapper
 
         private Color LerpColorFromDict(Dictionary<float, Color> colorDict, float dist)
         {
+
             if (colorDict.ContainsKey(dist))
             {
                 Color lerpedColor;
@@ -781,7 +786,7 @@ namespace PaulMapper
             return spawnedBeatobjects;
         }
 
-        private List<BeatmapObject> GeneratePoodle(BeatmapObject note1, BeatmapObject note2, Curve splineInterpolatorx, Curve splineInterpolatory, int l_precision = 32, bool dots = false, Dictionary<float,Color> colorDict = null)
+        private List<BeatmapObject> GeneratePoodle(BeatmapObject note1, BeatmapObject note2, Curve splineInterpolatorx, Curve splineInterpolatory, int l_precision = 32, bool dots = false, Dictionary<float,Color> colorDict = null, List<float> dotTime = null)
         {
             //TimeKeeper TGP = new TimeKeeper();
             //TGP.Start();
@@ -857,45 +862,75 @@ namespace PaulMapper
                 } 
                 else
                 {*/
-                    copy._customData = new JSONObject();
-                    JSONNode customData = copy._customData;
+                copy._customData = new JSONObject();
+                JSONNode customData = copy._customData;
 
-                    customData["_position"] = new Vector2((float)x, (float)y);
+                customData["_position"] = new Vector2((float)x, (float)y);
 
 
-                    //Color handling 
-                    if (colorDict != null && colorDict.Count > 0)
+                //Color handling 
+                if (colorDict != null && colorDict.Count > 0)
+                {
+                    customData["_color"] = LerpColorFromDict(colorDict, line);
+                }
+
+                if (dots)
+                {
+                    copy._cutDirection = 8;
+                }
+
+                JSONNode customData_old = null;
+                if (paulmapperData.rotateNotes)
+                {
+                    //Fix rotation
+                    if (oldNote != null)
                     {
-                        customData["_color"] = LerpColorFromDict(colorDict, line);
+                        //Find angle for old object to face new one
+                        Vector2 op = oldNote.GetPosition();
+                        Vector2 cp = copy.GetPosition();
+
+                        float ang = Mathf.Atan2(cp.y - op.y, cp.x - op.x) * 180 / Mathf.PI;
+                        ang += 90;
+
+
+                        //Set rotation
+                        customData_old = oldNote._customData;
+                        customData_old["_cutDirection"] = ang;
+
                     }
+                }
+                else if (paulmapperData.vibro)
+                {
+                    copy._cutDirection = (noteIndex % 2);
+                }
 
-                    if (dots)
-                    {
-                        copy._cutDirection = 8;
-                    }
 
-                    if (paulmapperData.rotateNotes)
+
+                if (dotTime != null)
+                {
+                    try
                     {
-                        //Fix rotation
-                        if (oldNote != null)
+                        dotTime.Sort();
+                        float closeDotTime = dotTime.Last(d => oldNote._time > d);
+                        if (oldNote._time - closeDotTime < 2 * paulmapperData.transitionTime)
                         {
-                            //Find angle for old object to face new one
-                            Vector2 op = oldNote.GetPosition();
-                            Vector2 cp = copy.GetPosition();
-                            float ang = Mathf.Atan2(cp.y - op.y, cp.x - op.x) * 180 / Mathf.PI;
-                            ang += 90;
-
-
-                            //Set rotation
-                            JSONNode customData_old = oldNote._customData;
-                            customData_old["_cutDirection"] = ang;
-
+                            oldNote._cutDirection = 8;
+                            
+                            if (!paulmapperData.transitionRotation && customData_old != null)
+                            {
+                                customData_old["_cutDirection"] = 0;
+                            }
                         }
+
                     }
-                    else if (paulmapperData.vibro)
+                    catch
                     {
-                        copy._cutDirection = (noteIndex % 2);
+                       
                     }
+
+                }
+
+
                 //}
 
 
@@ -910,7 +945,6 @@ namespace PaulMapper
                 distanceInBeats -= 1 / (float)l_precision;
 
                 noteIndex++;
-
             }
 
             if (spawnedBeatobjects[spawnedBeatobjects.Count - 2]._customData.HasKey("_cutDirection"))
@@ -943,9 +977,12 @@ namespace PaulMapper
                 Vector2 note1pos = (note1 as BeatmapNote).GetRealPosition();
                 Vector2 note2pos = (note2 as BeatmapNote).GetRealPosition();
 
+                BeatmapNote oldNote = null;
+                int noteIndex = 1;
+
                 List<BeatmapObject> spawnedBeatobjects = new List<BeatmapObject>();
 
-                while (distanceInBeats > 0)
+                while (distanceInBeats > 0 - 1 / (float)precision)
                 {
                     BeatmapNote copy = new BeatmapNote(note1.ConvertToJSON());
                     copy._time = endTime - distanceInBeats;
@@ -1023,10 +1060,41 @@ namespace PaulMapper
                                     break;
                             }
                         }
-                        
-                        JSONNode customData = copy.GetOrCreateCustomData();
+
+                        copy._customData = new JSONObject();
+                        JSONNode customData = copy._customData;
+
                         customData["_position"] = Vector2.Lerp(note1pos, note2pos, line);
                     }
+
+
+                    JSONNode customData_old = null;
+                    if (paulmapperData.rotateNotes)
+                    {
+                        //Fix rotation
+                        if (oldNote != null)
+                        {
+                            //Find angle for old object to face new one
+                            Vector2 op = oldNote.GetPosition();
+                            Vector2 cp = copy.GetPosition();
+
+                            float ang = Mathf.Atan2(cp.y - op.y, cp.x - op.x) * 180 / Mathf.PI;
+                            ang += 90;
+
+
+                            //Set rotation
+                            customData_old = oldNote._customData;
+                            customData_old["_cutDirection"] = ang;
+
+                        }
+                    }
+                    else if (paulmapperData.vibro)
+                    {
+                        copy._cutDirection = (noteIndex % 2);
+                    }
+
+
+
 
                     beatmapObjectContainerCollection.SpawnObject(copy, false, false);
 
@@ -1034,11 +1102,14 @@ namespace PaulMapper
                     BeatmapObject beatmapObject = beatmapObjectContainerCollection.UnsortedObjects[beatmapObjectContainerCollection.UnsortedObjects.Count - 1];
                     spawnedBeatobjects.Add(beatmapObject);
 
-                    
-                    
+
+                    oldNote = copy;
                     distanceInBeats -= 1 / (float)precision;
+                    noteIndex += 1;
                 }
 
+                if (spawnedBeatobjects[spawnedBeatobjects.Count - 2]._customData.HasKey("_cutDirection"))
+                    spawnedBeatobjects[spawnedBeatobjects.Count - 1]._customData["_cutDirection"] = spawnedBeatobjects[spawnedBeatobjects.Count - 2]._customData["_cutDirection"];
 
                 foreach (BeatmapObject beatmapObject in new List<BeatmapObject>() { note1, note2} )
                 {
@@ -1049,7 +1120,7 @@ namespace PaulMapper
 
                 foreach (BeatmapObject note in spawnedBeatobjects)
                 {
-                    SelectionController.Select(note, true);
+                    SelectionController.Select(note, true, true, false);
                 }
                 //beatmapObjectContainerCollection.DeleteObject(note2);
 

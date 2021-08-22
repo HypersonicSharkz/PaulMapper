@@ -17,6 +17,9 @@ namespace PaulMapper
         public int precision = 32;
         public bool vibro = false;
         public bool rotateNotes = true;
+        public bool autoDot = true;
+        public float transitionTime = 0.3f;
+        public bool transitionRotation = false;
 
         public static PaulmapperData GetSaveData()
         {
