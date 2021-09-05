@@ -21,7 +21,7 @@ namespace PaulMapper.PaulHelper
             pauls.AddRange(FindPauls(notesLeft));
             pauls.AddRange(FindPauls(notesRight));
 
-            Debug.LogError("Found: " + pauls.Count + " Pauls");
+            //Debug.LogError("Found: " + pauls.Count + " Pauls");
 
             return pauls;
         }
@@ -97,7 +97,7 @@ namespace PaulMapper.PaulHelper
 
             }
 
-            return foundPauls;
+            return foundPauls.OrderBy(p => p.Beat).ToList();
         }
 
         public static void GoToPaul(Paul paul)
@@ -111,10 +111,31 @@ namespace PaulMapper.PaulHelper
 
         }
 
+        static Paul lastPaul;
+
         public static void SelectCurrentPaul()
         {
-            foreach (BeatmapNote note in pauls[currentPaul].notes)
+            Paul paul = null;
+
+            Paul closest = pauls.OrderBy(p => Math.Abs(p.Beat - PaulMomenter.ats.CurrentBeat) ).First();
+            if (lastPaul != null && closest == lastPaul && pauls.Any(p => p.Beat == lastPaul.Beat && p != lastPaul)) 
+            {
+                paul = pauls.First(p => p.Beat == lastPaul.Beat && p != lastPaul);
+            } else
+            {
+                paul = closest;
+            }
+
+
+            SelectionController.DeselectAll();
+
+
+            foreach (BeatmapNote note in paul.notes)
                 SelectionController.Select(note, true, true, true);
+
+            currentPaul = pauls.IndexOf(paul);
+
+            lastPaul = paul;
         }
     }
 }

@@ -22,7 +22,7 @@ namespace PaulMapper
         [Init]
         private void Init()
         {
-            Debug.LogError("PaulMapper V0.3 - Loaded");
+            //Debug.LogError("PaulMapper V0.3 - Loaded");
             SceneManager.sceneLoaded += SceneManager_sceneLoaded;
             
         }
@@ -151,7 +151,8 @@ namespace PaulMapper
 
                         try
                         {
-                            Paul paul = PaulFinder.pauls.Last(p => p.notes[0]._time < ats.CurrentBeat);
+                            Paul paul = PaulFinder.pauls.Last(p => p.Beat < ats.CurrentBeat);
+
                             PaulFinder.GoToPaul(paul);
                         }
                         catch
@@ -167,7 +168,7 @@ namespace PaulMapper
                         //Go to next paul
                         try
                         {
-                            Paul paul = PaulFinder.pauls.First(p => p.notes[0]._time > ats.CurrentBeat);
+                            Paul paul = PaulFinder.pauls.First(p => p.Beat > ats.CurrentBeat);
                             PaulFinder.GoToPaul(paul);
                         }
                         catch
@@ -252,7 +253,7 @@ namespace PaulMapper
                 {
                     BeatmapNote beatmapObject1 = SelectionController.SelectedObjects.First() as BeatmapNote;
                     BeatmapNote beatmapObject2 = SelectionController.SelectedObjects.Last() as BeatmapNote;
-                    if (beatmapObject1._cutDirection == beatmapObject2._cutDirection && beatmapObject1._time != beatmapObject2._time)
+                    if ( (beatmapObject1._cutDirection == beatmapObject2._cutDirection || paulmapperData.rotateNotes) && beatmapObject1._time != beatmapObject2._time)
                     {
                         windowTotalRect.width += guiWidth;
 
@@ -268,13 +269,13 @@ namespace PaulMapper
                         }
 
                         yPos += 30;
-                        if (GUI.Button(new Rect(xPos, yPos, 120, 20), "easeInSine"))
+                        if (GUI.Button(new Rect(xPos, yPos, 120, 20), "SineIn"))
                         {
                             GeneratePoodle(beatmapObjects[0], beatmapObjects[1], "easeInSine", paulmapperData.precision);
                         }
 
                         yPos += 30;
-                        if (GUI.Button(new Rect(xPos, yPos, 120, 20), "easeOutSine"))
+                        if (GUI.Button(new Rect(xPos, yPos, 120, 20), "SineOut"))
                         {
                             GeneratePoodle(beatmapObjects[0], beatmapObjects[1], "easeOutSine", paulmapperData.precision);
                         }
@@ -282,7 +283,7 @@ namespace PaulMapper
                         if (advancedQuickMenu)
                         {
                             yPos += 30;
-                            if (GUI.Button(new Rect(xPos, yPos, 120, 20), "easeInOutSine"))
+                            if (GUI.Button(new Rect(xPos, yPos, 120, 20), "SineInOut"))
                             {
                                 GeneratePoodle(beatmapObjects[0], beatmapObjects[1], "easeInOutSine", paulmapperData.precision);
                             }
@@ -292,13 +293,13 @@ namespace PaulMapper
 
 
                         yPos += 30;
-                        if (GUI.Button(new Rect(xPos, yPos, 120, 20), "easeInQuad"))
+                        if (GUI.Button(new Rect(xPos, yPos, 120, 20), "QuadIn"))
                         {
                             GeneratePoodle(beatmapObjects[0], beatmapObjects[1], "easeInQuad", paulmapperData.precision);
                         }
 
                         yPos += 30;
-                        if (GUI.Button(new Rect(xPos, yPos, 120, 20), "easeOutQuad"))
+                        if (GUI.Button(new Rect(xPos, yPos, 120, 20), "QuadOut"))
                         {
                             GeneratePoodle(beatmapObjects[0], beatmapObjects[1], "easeOutQuad", paulmapperData.precision);
                         }
@@ -306,7 +307,7 @@ namespace PaulMapper
                         if (advancedQuickMenu)
                         {
                             yPos += 30;
-                            if (GUI.Button(new Rect(xPos, yPos, 120, 20), "easeInOutQuad"))
+                            if (GUI.Button(new Rect(xPos, yPos, 120, 20), "QuadInOut"))
                             {
                                 GeneratePoodle(beatmapObjects[0], beatmapObjects[1], "easeInOutQuad", paulmapperData.precision);
                             }
@@ -360,12 +361,12 @@ namespace PaulMapper
                         }
 
                         yPos += 30;
-                        if (GUI.Button(new Rect(xPos, yPos, 120, 20), "easeInBack"))
+                        if (GUI.Button(new Rect(xPos, yPos, 120, 20), "BackIn"))
                         {
                             GeneratePoodle(beatmapObjects[0], beatmapObjects[1], "easeInBack", paulmapperData.precision);
                         }
                         yPos += 30;
-                        if (GUI.Button(new Rect(xPos, yPos, 120, 20), "easeOutBack"))
+                        if (GUI.Button(new Rect(xPos, yPos, 120, 20), "BackOut"))
                         {
                             GeneratePoodle(beatmapObjects[0], beatmapObjects[1], "easeOutBack", paulmapperData.precision);
                         }
@@ -373,7 +374,7 @@ namespace PaulMapper
                         if (advancedQuickMenu)
                         {
                             yPos += 30;
-                            if (GUI.Button(new Rect(xPos, yPos, 120, 20), "easeInOutBack"))
+                            if (GUI.Button(new Rect(xPos, yPos, 120, 20), "BackInOut"))
                             {
                                 GeneratePoodle(beatmapObjects[0], beatmapObjects[1], "easeInOutBack", paulmapperData.precision);
                             }
@@ -382,17 +383,17 @@ namespace PaulMapper
                         if (advancedQuickMenu)
                         {
                             yPos += 30;
-                            if (GUI.Button(new Rect(xPos, yPos, 120, 20), "easeInBounce"))
+                            if (GUI.Button(new Rect(xPos, yPos, 120, 20), "BounceIn"))
                             {
                                 GeneratePoodle(beatmapObjects[0], beatmapObjects[1], "easeInBounce", paulmapperData.precision);
                             }
                             yPos += 30;
-                            if (GUI.Button(new Rect(xPos, yPos, 120, 20), "easeOutBounce"))
+                            if (GUI.Button(new Rect(xPos, yPos, 120, 20), "BounceOut"))
                             {
                                 GeneratePoodle(beatmapObjects[0], beatmapObjects[1], "easeOutBounce", paulmapperData.precision);
                             }
                             yPos += 30;
-                            if (GUI.Button(new Rect(xPos, yPos, 120, 20), "easeInOutBounce"))
+                            if (GUI.Button(new Rect(xPos, yPos, 120, 20), "BounceInOut"))
                             {
                                 GeneratePoodle(beatmapObjects[0], beatmapObjects[1], "easeInOutBounce", paulmapperData.precision);
                             }
@@ -814,54 +815,6 @@ namespace PaulMapper
                 var x = splineInterpolatorx.ValueAt(line);
                 var y = splineInterpolatory.ValueAt(line);
 
-                /*
-                if (paulmapperData.useMappingExtensions)
-                {
-                    if (x + 3 < 1)
-                        copy._lineIndex = (int)Math.Floor(1000 + 1000 * x);
-                    else
-                        copy._lineIndex = (int)Math.Floor((x + 3) * 1000);
-
-
-
-
-                    if (y + 1 < 1)
-                        copy._lineLayer = (int)Math.Floor(-3000 + 1000 * y);
-                    else
-                        copy._lineLayer = (int)Math.Floor((y + 1) * 1000);
-
-
-
-                    if (rotateNotes)
-                    {
-                        //Fix rotation
-                        if (oldNote != null)
-                        {
-                            float line_old = (originalDistance - (distanceInBeats + 1 / (float)l_precision));
-
-                            var x_old = splineInterpolatorx.ValueAt(line_old);
-                            var y_old = splineInterpolatory.ValueAt(line_old);
-
-                            //Find angle for old object to face new one
-                            Vector2 op = new Vector2((float)x_old, (float)y_old);
-                            Vector2 cp = new Vector2((float)x, (float)y);
-                            float ang = Mathf.Atan2(cp.y - op.y, cp.x - op.x) * -180 / Mathf.PI;
-                            ang += 270;
-
-
-                            //Set rotation
-                            oldNote._cutDirection = (int)(1000 + ang);
-
-                        }
-                    }
-                    else if (vibro)
-                    {
-                        oldNote._cutDirection = (noteIndex % 2);
-                    }
-
-                } 
-                else
-                {*/
                 copy._customData = new JSONObject();
                 JSONNode customData = copy._customData;
 
@@ -953,6 +906,12 @@ namespace PaulMapper
             else if ((spawnedBeatobjects[spawnedBeatobjects.Count - 2] as BeatmapNote)._cutDirection > 1000)
                 (spawnedBeatobjects[spawnedBeatobjects.Count - 1] as BeatmapNote)._cutDirection = (spawnedBeatobjects[spawnedBeatobjects.Count - 2] as BeatmapNote)._cutDirection;
 
+            if (dotTime != null && dotTime.Count > 0 && endTime.ToString() == (dotTime.Last() + paulmapperData.transitionTime).ToString())
+            {
+                (spawnedBeatobjects.Last() as BeatmapNote)._cutDirection = 8;
+            }
+                
+
             //TGP.Complete("GeneratePoodle");
 
             return spawnedBeatobjects;
@@ -964,8 +923,13 @@ namespace PaulMapper
             if ((note1 as BeatmapNote)._cutDirection == (note2 as BeatmapNote)._cutDirection)
             { 
                 BeatmapObjectContainerCollection beatmapObjectContainerCollection = UnityEngine.Object.FindObjectOfType<BeatmapObjectContainerCollection>();
-                
 
+                Vector2 n1 = (note1 as BeatmapNote).GetPosition();
+                Vector2 n2 = (note2 as BeatmapNote).GetPosition();
+
+                float ang = Mathf.Atan2(n2.y - n1.y, n2.x - n1.x) * 180 / Mathf.PI;
+                ang += 90;
+                float noteRotation = ang;
 
                 float startTime = note1._time;
                 float endTime = note2._time;
@@ -1065,33 +1029,19 @@ namespace PaulMapper
                         JSONNode customData = copy._customData;
 
                         customData["_position"] = Vector2.Lerp(note1pos, note2pos, line);
-                    }
 
-
-                    JSONNode customData_old = null;
-                    if (paulmapperData.rotateNotes)
-                    {
-                        //Fix rotation
-                        if (oldNote != null)
+                        if (paulmapperData.rotateNotes)
                         {
-                            //Find angle for old object to face new one
-                            Vector2 op = oldNote.GetPosition();
-                            Vector2 cp = copy.GetPosition();
-
-                            float ang = Mathf.Atan2(cp.y - op.y, cp.x - op.x) * 180 / Mathf.PI;
-                            ang += 90;
-
-
-                            //Set rotation
-                            customData_old = oldNote._customData;
-                            customData_old["_cutDirection"] = ang;
-
+                            customData["_cutDirection"] = noteRotation;
+                        }
+                        else if (paulmapperData.vibro)
+                        {
+                            copy._cutDirection = (noteIndex % 2);
                         }
                     }
-                    else if (paulmapperData.vibro)
-                    {
-                        copy._cutDirection = (noteIndex % 2);
-                    }
+
+
+
 
 
 
