@@ -13,6 +13,7 @@ namespace PaulMapper
 
     public class PaulmapperData
     {
+        public static PaulmapperData Instance;
         public SerializableRect windowRect = new SerializableRect(new Rect(200, 10, 140, 440));
         public int precision = 32;
         public bool vibro = false;
@@ -40,6 +41,7 @@ namespace PaulMapper
             }
 
             File.WriteAllText(Path.Combine(Application.persistentDataPath, "paulMapper.json"), JsonConvert.SerializeObject(data, Formatting.Indented));
+            Instance = data;
             return data;
 
         }
