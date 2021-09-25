@@ -45,6 +45,15 @@ If rotate is set to false, both notes must have same cut direction.
 To get an idea of how these curves behave take look at:
 https://easings.net/
 
+## RealtimeCurves
+Press **F12** to create a realtime curve with moveable anchorpoints   
+Press **C** to add another anchor point  
+Middle mouse click point to remove them   
+Finish the curve by deselecting everything with **crtl+A**  
+![Imgur](https://imgur.com/bYEHOcy.gif)
+
+
+
 ## Tips
 - By enabling precision placement in the chromapper settings, you can hold down the designated key *(Q by default)*  
 to place notes freely, and this will allow you to more precisly maniupulate how the curve looks.
