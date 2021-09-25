@@ -38,6 +38,9 @@
     <Reference Include="Main">
       <HintPath>C:\Users\davi3\Desktop\ChroMapper 0.7.0\chromapper\ChroMapper_Data\Managed\Main.dll</HintPath>
     </Reference>
+    <Reference Include="Input">
+      <HintPath>C:\Users\davi3\Desktop\ChroMapper 0.7.0\chromapper\ChroMapper_Data\Managed\Input.dll</HintPath>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>C:\Users\davi3\Desktop\ChroMapper 0.7.0\chromapper\Plugins\PaulMapper\Newtonsoft.Json.dll</HintPath>
