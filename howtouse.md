@@ -50,7 +50,7 @@ Press **F12** to create a realtime curve with moveable anchorpoints
 Press **C** to add another anchor point  
 Middle mouse click point to remove them   
 Finish the curve by deselecting everything with **crtl+A**  
-![Imgur](https://imgur.com/bYEHOcy.gif)
+![Imgur](https://i.imgur.com/bYEHOcy.gif)
 
 
 
