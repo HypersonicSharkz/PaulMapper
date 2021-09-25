@@ -122,14 +122,14 @@ namespace PaulErrorChecker
             TK.Start();
             NotesContainer notesContainer = UnityEngine.Object.FindObjectOfType<NotesContainer>();
             List<BeatmapNote> allNotes = (from BeatmapNote it in notesContainer.LoadedObjects
-                                          orderby it._time
+                                          orderby it.Time
                                           select it).ToList();
 
             AudioTimeSyncController ats = Plugin.PCM.ats;
 
 
-            List<BeatmapNote> notesLeft = allNotes.Where(n => n._type == 0).ToList();
-            List<BeatmapNote> notesRight = allNotes.Where(n => n._type == 1).ToList();
+            List<BeatmapNote> notesLeft = allNotes.Where(n => n.Type == 0).ToList();
+            List<BeatmapNote> notesRight = allNotes.Where(n => n.Type == 1).ToList();
 
             paulErrorResult = new PaulErrorResults();
             List<PaulError> paulErrorsList = new List<PaulError>();
@@ -142,7 +142,7 @@ namespace PaulErrorChecker
             foreach (Paul paul in PaulFinder.pauls)
             {
                 //Poodle stuff
-                if (paul.notes.All(p => p._customData != null && p._customData.HasKey("_cutDirection")))
+                if (paul.notes.All(p => p.CustomData != null && p.CustomData.HasKey("_cutDirection")))
                 {
                     float angChange = 0;
                     float[] timePoints = new float[paul.notes.Count - 1];
@@ -150,8 +150,8 @@ namespace PaulErrorChecker
 
                     for (int i = 1; i < paul.notes.Count; i++)
                     {
-                        float angOne = paul.notes[i]._customData["_cutDirection"].AsFloat;
-                        float angTwo = paul.notes[i - 1]._customData["_cutDirection"].AsFloat;
+                        float angOne = paul.notes[i].CustomData["_cutDirection"].AsFloat;
+                        float angTwo = paul.notes[i - 1].CustomData["_cutDirection"].AsFloat;
 
                         float ang = angOne - angTwo;
                         ang = Mathf.Abs(ang);
@@ -159,8 +159,8 @@ namespace PaulErrorChecker
                         if (ang > 180)
                             ang = 360 - ang;
 
-                        timePoints[i-1] = ats.GetSecondsFromBeat(paul.notes[i]._time);
-                        angleChangeOverTime[i-1] = ang / (ats.GetSecondsFromBeat(paul.notes[i]._time) - ats.GetSecondsFromBeat(paul.notes[i - 1]._time));
+                        timePoints[i-1] = ats.GetSecondsFromBeat(paul.notes[i].Time);
+                        angleChangeOverTime[i-1] = ang / (ats.GetSecondsFromBeat(paul.notes[i].Time) - ats.GetSecondsFromBeat(paul.notes[i - 1].Time));
 
                         angChange += ang;
 
@@ -207,17 +207,17 @@ namespace PaulErrorChecker
                 {
                     //Normal paul stuff
                     //If paul is toprow up
-                    if (paul.notes.All(p => p._lineLayer == 2 && (p._cutDirection == 4 || p._cutDirection == 0 || p._cutDirection == 5)))
+                    if (paul.notes.All(p => p.LineLayer == 2 && (p.CutDirection == 4 || p.CutDirection == 0 || p.CutDirection == 5)))
                     {
                         paulErrorsList.Add(new PaulErrorTopRowUp() { Paul = paul });
                     }
 
                     //If one note has weird rotation
-                    if (!paul.notes.All(p => p._cutDirection == paul.notes[0]._cutDirection || p._cutDirection == 8))
+                    if (!paul.notes.All(p => p.CutDirection == paul.notes[0].CutDirection || p.CutDirection == 8))
                         paulErrorsList.Add(new PaulErrorBadRotation() { Paul = paul });
 
                     //If paul too long
-                    float paulLenght = ats.GetSecondsFromBeat(paul.notes.Last()._time - paul.notes[0]._time);
+                    float paulLenght = ats.GetSecondsFromBeat(paul.notes.Last().Time - paul.notes[0].Time);
                     if (paulLenght > 0.700f) //Way too long
                         paulErrorsList.Add(new PaulErrorTooLong() { Paul = paul });
                     else if (paulLenght > 0.620f) //A bit too long
@@ -226,12 +226,12 @@ namespace PaulErrorChecker
                     //Inline paul
                     Paul lastPaul = PaulFinder.pauls.IndexOf(paul) > 0 ? PaulFinder.pauls[PaulFinder.pauls.IndexOf(paul) - 1] : null;
                     if (lastPaul != null &&
-                        paul.notes[0]._lineIndex == lastPaul.notes.Last()._lineIndex && // on same line
-                        ats.GetSecondsFromBeat(paul.notes[0]._time - lastPaul.notes.Last()._time) < 0.350f // Is too close for inline
+                        paul.notes[0].LineIndex == lastPaul.notes.Last().LineIndex && // on same line
+                        ats.GetSecondsFromBeat(paul.notes[0].Time - lastPaul.notes.Last().Time) < 0.350f // Is too close for inline
                         )
                     {
                         //Also check if it might be a missing note in paul
-                        if (ats.GetSecondsFromBeat(paul.notes[0]._time - lastPaul.notes.Last()._time) < paul.PaulPrecision * 3 + 0.01)
+                        if (ats.GetSecondsFromBeat(paul.notes[0].Time - lastPaul.notes.Last().Time) < paul.PaulPrecision * 3 + 0.01)
                         {
                             paulErrorsList.Add(new PaulErrorMissingBlock() { Paul = paul });
                         }
@@ -253,11 +253,11 @@ namespace PaulErrorChecker
                 if (notesLeft.Last() != lastInPaul && notesRight.Last() != lastInPaul)
                 {
                     //if next is within 350ms it might play bad
-                    BeatmapNote nextNote = allNotes.Where(n => n._type == lastInPaul._type && n._time > lastInPaul._time).First();
-                    if (ats.GetSecondsFromBeat(nextNote._time - lastInPaul._time) < 0.350f)
+                    BeatmapNote nextNote = allNotes.Where(n => n.Type == lastInPaul.Type && n.Time > lastInPaul.Time).First();
+                    if (ats.GetSecondsFromBeat(nextNote.Time - lastInPaul.Time) < 0.350f)
                     {
                         //Check if dots have already been placed
-                        if (!paul.notes.Skip(paul.notes.Count - 5).All(p => p._cutDirection == 8))
+                        if (!paul.notes.Skip(paul.notes.Count - 5).All(p => p.CutDirection == 8))
                         {
                             paulErrorsList.Add(new PaulErrorFlick() { Paul = paul });
                         }

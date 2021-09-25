@@ -117,7 +117,7 @@ namespace PaulMapper
             if (GUI.Button(new Rect(5, 220, guiWidth - 10, 20), "Find All Pauls"))
             {
                 List<BeatmapNote> allNotes = (from BeatmapNote it in notesContainer.LoadedObjects
-                                              orderby it._time
+                                              orderby it.Time
                                               select it).ToList();
 
                 PaulFinder.pauls = PaulFinder.FindAllPauls(allNotes).OrderBy(p => p.Beat).ToList();
@@ -249,15 +249,15 @@ namespace PaulMapper
                 //useMappingExtensions = GUI.Toggle(new Rect(guiX, 120, 80, 20), useMappingExtensions, "Mapping Ext.");
 
                 
-                if (SelectionController.SelectedObjects.Count == 2 && SelectionController.SelectedObjects.All(s => s.beatmapType == BeatmapObject.Type.NOTE))
+                if (SelectionController.SelectedObjects.Count == 2 && SelectionController.SelectedObjects.All(s => s.BeatmapType == BeatmapObject.ObjectType.Note))
                 {
                     BeatmapNote beatmapObject1 = SelectionController.SelectedObjects.First() as BeatmapNote;
                     BeatmapNote beatmapObject2 = SelectionController.SelectedObjects.Last() as BeatmapNote;
-                    if ( (beatmapObject1._cutDirection == beatmapObject2._cutDirection || paulmapperData.rotateNotes) && beatmapObject1._time != beatmapObject2._time)
+                    if ( (beatmapObject1.CutDirection == beatmapObject2.CutDirection || paulmapperData.rotateNotes) && beatmapObject1.Time != beatmapObject2.Time)
                     {
                         windowTotalRect.width += guiWidth;
 
-                        BeatmapObject[] beatmapObjects = SelectionController.SelectedObjects.OrderBy(o => o._time).ToArray();
+                        BeatmapObject[] beatmapObjects = SelectionController.SelectedObjects.OrderBy(o => o.Time).ToArray();
 
                         GUI.Box(new Rect(windowRect.x + guiWidth, windowRect.y, guiWidth, windowRect.height), "Quick Menu");
                         float xPos = windowRect.x + guiWidth + 10;
@@ -443,18 +443,18 @@ namespace PaulMapper
                 //TimeKeeper TP = new TimeKeeper();
                 //TP.Start();
 
-                BeatmapObject[] beatmapObjects = SelectionController.SelectedObjects.OrderBy(o => o._time).ToArray();
+                BeatmapObject[] beatmapObjects = SelectionController.SelectedObjects.OrderBy(o => o.Time).ToArray();
                 BeatmapObjectContainerCollection beatmapObjectContainerCollection = UnityEngine.Object.FindObjectOfType<BeatmapObjectContainerCollection>();
                 List<BeatmapObject> spawnedNotes = new List<BeatmapObject>();
 
-                if (beatmapObjects.Count() != beatmapObjects.Select(p => p._time).Distinct().Count())
+                if (beatmapObjects.Count() != beatmapObjects.Select(p => p.Time).Distinct().Count())
                     return;
 
                 //Normal paul
-                if (beatmapObjects.All(o => !((o as BeatmapNote)._customData != null && (o as BeatmapNote)._customData.HasKey("_position")) &&
-                                            (o as BeatmapNote)._cutDirection == (beatmapObjects[0] as BeatmapNote)._cutDirection &&
-                                            (o as BeatmapNote)._lineLayer == (beatmapObjects[0] as BeatmapNote)._lineLayer &&
-                                            (o as BeatmapNote)._lineIndex == (beatmapObjects[0] as BeatmapNote)._lineIndex
+                if (beatmapObjects.All(o => !((o as BeatmapNote).CustomData != null && (o as BeatmapNote).CustomData.HasKey("_position")) &&
+                                            (o as BeatmapNote).CutDirection == (beatmapObjects[0] as BeatmapNote).CutDirection &&
+                                            (o as BeatmapNote).LineLayer == (beatmapObjects[0] as BeatmapNote).LineLayer &&
+                                            (o as BeatmapNote).LineIndex == (beatmapObjects[0] as BeatmapNote).LineIndex
                 ))
                 {
                     spawnedNotes = GeneratePaul(beatmapObjects[0], beatmapObjects.Last(), paulmapperData.precision);
@@ -468,14 +468,14 @@ namespace PaulMapper
                     List<double> pointsx_y = new List<double>();
                     List<double> pointsy_y = new List<double>();
 
-                    float endTime = beatmapObjects.Last()._time;
-                    float totalTime = beatmapObjects.Last()._time - beatmapObjects[0]._time;
+                    float endTime = beatmapObjects.Last().Time;
+                    float totalTime = beatmapObjects.Last().Time - beatmapObjects[0].Time;
 
                     Dictionary<float, Color> DistColorDict = new Dictionary<float, Color>();
 
                     foreach (BeatmapObject beatmapObject in beatmapObjects)
                     {
-                        float startTime = beatmapObject._time;
+                        float startTime = beatmapObject.Time;
 
                         float distanceInBeats = totalTime - (endTime - startTime);
 
@@ -497,13 +497,13 @@ namespace PaulMapper
                     List<float> dotTimes = null;
                     if (paulmapperData.autoDot)
                     {
-                        dotTimes = beatmapObjects.Where(p => (p as BeatmapNote)._cutDirection == 8).Select(p => p._time - paulmapperData.transitionTime).ToList();
+                        dotTimes = beatmapObjects.Where(p => (p as BeatmapNote).CutDirection == 8).Select(p => p.Time - paulmapperData.transitionTime).ToList();
                     }
 
                     CubicSpline splinex = CubicSpline.CreateNatural(pointsx, pointsx_y);
                     CubicSpline spliney = CubicSpline.CreateNatural(pointsx, pointsy_y);
 
-                    spawnedNotes = GeneratePoodle(beatmapObjects[0], beatmapObjects.Last(), splinex, spliney, paulmapperData.precision, beatmapObjects.All(o => (o as BeatmapNote)._cutDirection == 8), DistColorDict, dotTimes);
+                    spawnedNotes = GeneratePoodle(beatmapObjects[0], beatmapObjects.Last(), splinex, spliney, paulmapperData.precision, beatmapObjects.All(o => (o as BeatmapNote).CutDirection == 8), DistColorDict, dotTimes);
                 }
 
 
@@ -560,26 +560,26 @@ namespace PaulMapper
                 BeatmapObstacle obstacle;
                 if ((obstacle = (con as BeatmapObstacle)) != null)
                 {
-                    bool precisionWidth = obstacle._width >= 1000;
-                    int __state = obstacle._lineIndex;
+                    bool precisionWidth = obstacle.Width >= 1000;
+                    int __state = obstacle.LineIndex;
 
-                    if (obstacle._customData != null)
+                    if (obstacle.CustomData != null)
                     {
-                        if (obstacle._customData.HasKey("_position"))
+                        if (obstacle.CustomData.HasKey("_position"))
                         {
-                            Vector2 oldPosition = obstacle._customData["_position"];
+                            Vector2 oldPosition = obstacle.CustomData["_position"];
                             Vector2 flipped = new Vector2(oldPosition.x * -1f, oldPosition.y);
                             
-                            if (obstacle._customData.HasKey("_scale"))
+                            if (obstacle.CustomData.HasKey("_scale"))
                             {
-                                Vector2 scale = obstacle._customData["_scale"];
+                                Vector2 scale = obstacle.CustomData["_scale"];
                                 flipped.x -= scale.x;
                             }
                             else
                             {
-                                flipped.x -= (float)obstacle._width;
+                                flipped.x -= (float)obstacle.Width;
                             }
-                            obstacle._customData["_position"] = flipped;
+                            obstacle.CustomData["_position"] = flipped;
                         }
                     }
                     else
@@ -606,7 +606,7 @@ namespace PaulMapper
                                 }
                             }
                             newIndex = (newIndex - 2000) * -1 + 2000;
-                            int newWidth = obstacle._width;
+                            int newWidth = obstacle.Width;
                             bool flag9 = newWidth < 1000;
                             if (flag9)
                             {
@@ -626,12 +626,12 @@ namespace PaulMapper
                             {
                                 newIndex += 1000;
                             }
-                            obstacle._lineIndex = newIndex;
+                            obstacle.LineIndex = newIndex;
                         }
                         else
                         {
                             int mirrorLane = (__state - 2) * -1 + 2;
-                            obstacle._lineIndex = mirrorLane - obstacle._width;
+                            obstacle.LineIndex = mirrorLane - obstacle.Width;
                         }
                     }
                 }
@@ -641,20 +641,20 @@ namespace PaulMapper
                     bool flag11 = (note = (con as BeatmapNote)) != null;
                     if (flag11)
                     {
-                        bool flag12 = note._customData != null;
+                        bool flag12 = note.CustomData != null;
                         if (flag12)
                         {
-                            bool flag13 = note._customData.HasKey("_position");
+                            bool flag13 = note.CustomData.HasKey("_position");
                             if (flag13)
                             {
-                                Vector2 oldPosition2 = note._customData["_position"];
+                                Vector2 oldPosition2 = note.CustomData["_position"];
                                 Vector2 flipped2 = new Vector2((oldPosition2.x + 0.5f) * -1f - 0.5f, oldPosition2.y);
-                                note._customData["_position"] = flipped2;
+                                note.CustomData["_position"] = flipped2;
                             }
                         }
                         else
                         {
-                            int __state2 = note._lineIndex;
+                            int __state2 = note.LineIndex;
                             bool flag14 = __state2 > 3 || __state2 < 0;
                             if (flag14)
                             {
@@ -682,27 +682,27 @@ namespace PaulMapper
                                 {
                                     newIndex2 += 1000;
                                 }
-                                note._lineIndex = newIndex2;
+                                note.LineIndex = newIndex2;
                             }
                             else
                             {
                                 int mirrorLane2 = (int)(((float)__state2 - 1.5f) * -1f + 1.5f);
-                                note._lineIndex = mirrorLane2;
+                                note.LineIndex = mirrorLane2;
                             }
                         }
-                        if (note._type != 3)
+                        if (note.Type != 3)
                         {
-                            note._type = ((note._type == 0) ? 1 : 0);
-                            if (note._customData != null && note._customData.HasKey("_cutDirection"))
+                            note.Type = ((note.Type == 0) ? 1 : 0);
+                            if (note.CustomData != null && note.CustomData.HasKey("_cutDirection"))
                             {
 
-                                note._customData["_cutDirection"] = -note._customData["_cutDirection"].AsFloat;
+                                note.CustomData["_cutDirection"] = -note.CustomData["_cutDirection"].AsFloat;
 
                             } else
                             {
-                                if (this.CutDirectionToMirrored.ContainsKey(note._cutDirection))
+                                if (this.CutDirectionToMirrored.ContainsKey(note.CutDirection))
                                 {
-                                    note._cutDirection = this.CutDirectionToMirrored[note._cutDirection];
+                                    note.CutDirection = this.CutDirectionToMirrored[note.CutDirection];
                                 }
                             }
 
@@ -712,9 +712,9 @@ namespace PaulMapper
 
                 allActions.Add(new BeatmapObjectModifiedAction(con, con, original, "e", true));
             }
-            foreach (BeatmapObject unique in SelectionController.SelectedObjects.DistinctBy(x => x.beatmapType))
+            foreach (BeatmapObject unique in SelectionController.SelectedObjects.DistinctBy(x => x.BeatmapType))
             {
-                BeatmapObjectContainerCollection.GetCollectionForType(unique.beatmapType).RefreshPool(true);
+                BeatmapObjectContainerCollection.GetCollectionForType(unique.BeatmapType).RefreshPool(true);
             }
             BeatmapActionContainer.AddAction(new ActionCollectionAction(allActions, true, true, "Mirrored a selection of objects."));
 
@@ -762,8 +762,8 @@ namespace PaulMapper
         {
             BeatmapObjectContainerCollection beatmapObjectContainerCollection = UnityEngine.Object.FindObjectOfType<BeatmapObjectContainerCollection>();
 
-            float startTime = note1._time;
-            float endTime = note2._time;
+            float startTime = note1.Time;
+            float endTime = note2.Time;
 
             float distanceInBeats = endTime - startTime;
             float originalDistance = distanceInBeats;
@@ -772,8 +772,8 @@ namespace PaulMapper
 
             while (distanceInBeats > 0 - 1 / (float)l_precision)
             {
-                BeatmapNote copy = new BeatmapNote(note1.ConvertToJSON());
-                copy._time = (endTime - distanceInBeats);
+                BeatmapNote copy = new BeatmapNote(note1.ConvertToJson());
+                copy.Time = (endTime - distanceInBeats);
 
 
                 beatmapObjectContainerCollection.SpawnObject(copy, false, false);
@@ -794,8 +794,8 @@ namespace PaulMapper
             BeatmapObjectContainerCollection beatmapObjectContainerCollection = UnityEngine.Object.FindObjectOfType<BeatmapObjectContainerCollection>();
 
 
-            float startTime = note1._time;
-            float endTime = note2._time;
+            float startTime = note1.Time;
+            float endTime = note2.Time;
 
             float distanceInBeats = endTime - startTime;
             float originalDistance = distanceInBeats;
@@ -807,16 +807,16 @@ namespace PaulMapper
 
             while (distanceInBeats > 0 - 1 / (float)l_precision)
             {
-                BeatmapNote copy = new BeatmapNote(note1.ConvertToJSON());
-                copy._time = (endTime - distanceInBeats);
+                BeatmapNote copy = new BeatmapNote(note1.ConvertToJson());
+                copy.Time = (endTime - distanceInBeats);
 
                 float line = (originalDistance - distanceInBeats);
 
                 var x = splineInterpolatorx.ValueAt(line);
                 var y = splineInterpolatory.ValueAt(line);
 
-                copy._customData = new JSONObject();
-                JSONNode customData = copy._customData;
+                copy.CustomData = new JSONObject();
+                JSONNode customData = copy.CustomData;
 
                 customData["_position"] = new Vector2((float)x, (float)y);
 
@@ -829,7 +829,7 @@ namespace PaulMapper
 
                 if (dots)
                 {
-                    copy._cutDirection = 8;
+                    copy.CutDirection = 8;
                 }
 
                 JSONNode customData_old = null;
@@ -847,14 +847,14 @@ namespace PaulMapper
 
 
                         //Set rotation
-                        customData_old = oldNote._customData;
+                        customData_old = oldNote.CustomData;
                         customData_old["_cutDirection"] = ang;
 
                     }
                 }
                 else if (paulmapperData.vibro)
                 {
-                    copy._cutDirection = (noteIndex % 2);
+                    copy.CutDirection = (noteIndex % 2);
                 }
 
 
@@ -864,10 +864,10 @@ namespace PaulMapper
                     try
                     {
                         dotTime.Sort();
-                        float closeDotTime = dotTime.Last(d => oldNote._time > d);
-                        if (oldNote._time - closeDotTime < 2 * paulmapperData.transitionTime)
+                        float closeDotTime = dotTime.Last(d => oldNote.Time > d);
+                        if (oldNote.Time - closeDotTime < 2 * paulmapperData.transitionTime)
                         {
-                            oldNote._cutDirection = 8;
+                            oldNote.CutDirection = 8;
                             
                             if (!paulmapperData.transitionRotation && customData_old != null)
                             {
@@ -900,15 +900,15 @@ namespace PaulMapper
                 noteIndex++;
             }
 
-            if (spawnedBeatobjects[spawnedBeatobjects.Count - 2]._customData.HasKey("_cutDirection"))
-                spawnedBeatobjects[spawnedBeatobjects.Count - 1]._customData["_cutDirection"] = spawnedBeatobjects[spawnedBeatobjects.Count - 2]._customData["_cutDirection"];
+            if (spawnedBeatobjects[spawnedBeatobjects.Count - 2].CustomData.HasKey("_cutDirection"))
+                spawnedBeatobjects[spawnedBeatobjects.Count - 1].CustomData["_cutDirection"] = spawnedBeatobjects[spawnedBeatobjects.Count - 2].CustomData["_cutDirection"];
 
-            else if ((spawnedBeatobjects[spawnedBeatobjects.Count - 2] as BeatmapNote)._cutDirection > 1000)
-                (spawnedBeatobjects[spawnedBeatobjects.Count - 1] as BeatmapNote)._cutDirection = (spawnedBeatobjects[spawnedBeatobjects.Count - 2] as BeatmapNote)._cutDirection;
+            else if ((spawnedBeatobjects[spawnedBeatobjects.Count - 2] as BeatmapNote).CutDirection > 1000)
+                (spawnedBeatobjects[spawnedBeatobjects.Count - 1] as BeatmapNote).CutDirection = (spawnedBeatobjects[spawnedBeatobjects.Count - 2] as BeatmapNote).CutDirection;
 
             if (dotTime != null && dotTime.Count > 0 && endTime.ToString() == (dotTime.Last() + paulmapperData.transitionTime).ToString())
             {
-                (spawnedBeatobjects.Last() as BeatmapNote)._cutDirection = 8;
+                (spawnedBeatobjects.Last() as BeatmapNote).CutDirection = 8;
             }
                 
 
@@ -920,7 +920,7 @@ namespace PaulMapper
         private void GeneratePoodle(BeatmapObject note1, BeatmapObject note2, string easing = null, int precision = 32)
         {
 
-            if ((note1 as BeatmapNote)._cutDirection == (note2 as BeatmapNote)._cutDirection)
+            if ((note1 as BeatmapNote).CutDirection == (note2 as BeatmapNote).CutDirection)
             { 
                 BeatmapObjectContainerCollection beatmapObjectContainerCollection = UnityEngine.Object.FindObjectOfType<BeatmapObjectContainerCollection>();
 
@@ -931,8 +931,8 @@ namespace PaulMapper
                 ang += 90;
                 float noteRotation = ang;
 
-                float startTime = note1._time;
-                float endTime = note2._time;
+                float startTime = note1.Time;
+                float endTime = note2.Time;
 
 
                 float distanceInBeats = endTime - startTime;
@@ -948,8 +948,8 @@ namespace PaulMapper
 
                 while (distanceInBeats > 0 - 1 / (float)precision)
                 {
-                    BeatmapNote copy = new BeatmapNote(note1.ConvertToJSON());
-                    copy._time = endTime - distanceInBeats;
+                    BeatmapNote copy = new BeatmapNote(note1.ConvertToJson());
+                    copy.Time = endTime - distanceInBeats;
 
                     if (note1pos != note2pos)
                     {
@@ -1025,8 +1025,8 @@ namespace PaulMapper
                             }
                         }
 
-                        copy._customData = new JSONObject();
-                        JSONNode customData = copy._customData;
+                        copy.CustomData = new JSONObject();
+                        JSONNode customData = copy.CustomData;
 
                         customData["_position"] = Vector2.Lerp(note1pos, note2pos, line);
 
@@ -1036,7 +1036,7 @@ namespace PaulMapper
                         }
                         else if (paulmapperData.vibro)
                         {
-                            copy._cutDirection = (noteIndex % 2);
+                            copy.CutDirection = (noteIndex % 2);
                         }
                     }
 
@@ -1058,8 +1058,8 @@ namespace PaulMapper
                     noteIndex += 1;
                 }
 
-                if (spawnedBeatobjects[spawnedBeatobjects.Count - 2]._customData.HasKey("_cutDirection"))
-                    spawnedBeatobjects[spawnedBeatobjects.Count - 1]._customData["_cutDirection"] = spawnedBeatobjects[spawnedBeatobjects.Count - 2]._customData["_cutDirection"];
+                if (spawnedBeatobjects[spawnedBeatobjects.Count - 2].CustomData.HasKey("_cutDirection"))
+                    spawnedBeatobjects[spawnedBeatobjects.Count - 1].CustomData["_cutDirection"] = spawnedBeatobjects[spawnedBeatobjects.Count - 2].CustomData["_cutDirection"];
 
                 foreach (BeatmapObject beatmapObject in new List<BeatmapObject>() { note1, note2} )
                 {

@@ -14,8 +14,8 @@ namespace PaulMapper.PaulHelper
 
         public static List<Paul> FindAllPauls(List<BeatmapNote> allNotes)
         {
-            List<BeatmapNote> notesLeft = allNotes.Where(n => n._type == 0).ToList();
-            List<BeatmapNote> notesRight = allNotes.Where(n => n._type == 1).ToList();
+            List<BeatmapNote> notesLeft = allNotes.Where(n => n.Type == 0).ToList();
+            List<BeatmapNote> notesRight = allNotes.Where(n => n.Type == 1).ToList();
 
             List<Paul> pauls = new List<Paul>();
             pauls.AddRange(FindPauls(notesLeft));
@@ -41,9 +41,9 @@ namespace PaulMapper.PaulHelper
 
             foreach (BeatmapNote note in notesOneSide)
             {
-                if (note._time != oldNote._time)
+                if (note.Time != oldNote.Time)
                 {
-                    float dist = note._time - oldNote._time;
+                    float dist = note.Time - oldNote.Time;
 
                     if (lastPrecision != 0)
                     {
@@ -106,7 +106,7 @@ namespace PaulMapper.PaulHelper
 
             currentPaul = pauls.IndexOf(paul);
 
-            PaulMomenter.ats.MoveToTimeInBeats(paul.notes[0]._time);
+            PaulMomenter.ats.MoveToTimeInBeats(paul.notes[0].Time);
 
 
         }

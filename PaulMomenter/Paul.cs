@@ -16,13 +16,13 @@ namespace PaulMapper
         public int PaulNumber { get => PaulHelper.PaulFinder.pauls.IndexOf(this) + 1; }
 
         [JsonProperty(Order = 2)]
-        public float Beat { get => notes[0]._time; }
+        public float Beat { get => notes[0].Time; }
 
         [JsonProperty(Order = 3)]
         public int PaulPrecision;
 
         [JsonProperty(Order = 4)]
-        public float PaulLength { get => PaulMomenter.ats.GetSecondsFromBeat(notes[notes.Count - 1]._time - notes[0]._time); }
+        public float PaulLength { get => PaulMomenter.ats.GetSecondsFromBeat(notes[notes.Count - 1].Time - notes[0].Time); }
 
         [JsonIgnore]
         public Dictionary<float, float> AngleChangeOverTimeDict = new Dictionary<float, float>();

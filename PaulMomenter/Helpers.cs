@@ -14,27 +14,27 @@ namespace PaulMapper
         {
             Vector2 result = new Vector2();
 
-            JSONNode customData = note._customData;
+            JSONNode customData = note.CustomData;
             if (customData != null && customData.HasKey("_position"))
             {
-                result = note._customData["_position"].ReadVector2();
+                result = note.CustomData["_position"].ReadVector2();
             }
             else
             {
-                if (note._lineIndex >= 1000)
-                    result.x = (note._lineIndex / 1000) - 3;
-                else if (note._lineIndex <= -1000)
-                    result.x = 1997 + note._lineIndex;
+                if (note.LineIndex >= 1000)
+                    result.x = (note.LineIndex / 1000) - 3;
+                else if (note.LineIndex <= -1000)
+                    result.x = 1997 + note.LineIndex;
                 else
-                    result.x = note._lineIndex - 2;
+                    result.x = note.LineIndex - 2;
 
 
-                if (note._lineLayer >= 1000)
-                    result.y = (note._lineLayer / 1000) - 1;
-                else if (note._lineLayer <= -1000)
-                    result.y = 1999 + note._lineLayer;
+                if (note.LineLayer >= 1000)
+                    result.y = (note.LineLayer / 1000) - 1;
+                else if (note.LineLayer <= -1000)
+                    result.y = 1999 + note.LineLayer;
                 else
-                    result.y = note._lineLayer;
+                    result.y = note.LineLayer;
             }
 
             return result;
@@ -43,10 +43,10 @@ namespace PaulMapper
         public static bool TryGetColorFromObject(BeatmapObject beatmapObject, out Color color)
         {
             color = Color.clear;
-            if (beatmapObject.beatmapType != BeatmapObject.Type.NOTE)
+            if (beatmapObject.BeatmapType != BeatmapObject.ObjectType.Note)
                 return false;
 
-            JSONNode customData = beatmapObject._customData;
+            JSONNode customData = beatmapObject.CustomData;
             if (customData != null && customData.HasKey("_color"))
             {
                 color = customData["_color"];
