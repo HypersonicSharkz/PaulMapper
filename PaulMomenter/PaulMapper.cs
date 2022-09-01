@@ -102,8 +102,7 @@ namespace PaulMapper
 
             try
             {
-                BeatmapBPMChange beatmapBPMChange = bpmChangesContainer.FindLastBpm(ats.CurrentBeat, true);
-                float bpm = (beatmapBPMChange != null) ? beatmapBPMChange.Bpm : BeatSaberSongContainer.Instance.Song.BeatsPerMinute;
+                float bpm = BeatSaberSongContainer.Instance.Song.BeatsPerMinute;
 
                 float nps = (bpm / 60) / (1 / (float)paulmapperData.precision);
                 if (nps > 60)

@@ -32,7 +32,7 @@ namespace PaulMapper
                 BeatmapObstacle copy = null;
                 if (BeatSaberSongContainer.Instance.Map.Version == "3.0.0")
                 {
-                    copy = new BeatmapObstacleV3(object1.ConvertToJson());
+                    copy = PaulHelper.PaulMaker.CopyV3Wall(object1.ConvertToJson());
                 }
                 else
                 {

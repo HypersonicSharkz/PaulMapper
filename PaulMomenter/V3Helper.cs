@@ -33,15 +33,19 @@ namespace PaulMapper
         {
             if (BeatSaberSongContainer.Instance.Map.Version == "3.0.0")
             {
-                if (obj is BeatmapColorNote)
-                {
-                    (obj as BeatmapColorNote).AngleOffset = (int)angle + 180;
-                    //(obj as BeatmapColorNote).CutDirection = 0;
-                }
-                    
+                SetRotationV3(ref obj, angle);
             }
 
             obj.CustomData["_cutDirection"] = angle;
+        }
+
+        private static void SetRotationV3(ref BeatmapObject obj, float angle)
+        {
+            if (obj is BeatmapColorNote)
+            {
+                (obj as BeatmapColorNote).AngleOffset = (int)angle + 180;
+                //(obj as BeatmapColorNote).CutDirection = 0;
+            }
         }
 
         public static void SetScale(this BeatmapObject obj, Vector3 scale)

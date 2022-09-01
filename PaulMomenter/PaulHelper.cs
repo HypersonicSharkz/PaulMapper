@@ -228,10 +228,10 @@ namespace PaulMapper.PaulHelper
                 {
                     if (note1Note.Type == BeatmapNote.NoteTypeBomb)
                     {
-                        copy = new BeatmapBombNote(note1.ConvertToJson());
+                        copy = CopyV3Bomb(note1.ConvertToJson());
                     } else
                     {
-                        copy = new BeatmapColorNote(note1.ConvertToJson());
+                        copy = CopyV3Note(note1.ConvertToJson());
                     }
                 }
                 else
@@ -254,6 +254,21 @@ namespace PaulMapper.PaulHelper
             }
 
             return spawnedBeatobjects;
+        }
+
+        internal static BeatmapNote CopyV3Note(JSONNode data)
+        {
+            return new BeatmapColorNote(data);
+        }
+
+        internal static BeatmapNote CopyV3Bomb(JSONNode data)
+        {
+            return new BeatmapBombNote(data);
+        }
+
+        internal static BeatmapObstacle CopyV3Wall(JSONNode data)
+        {
+            return new BeatmapObstacleV3(data);
         }
 
         /// <summary>
@@ -492,11 +507,11 @@ namespace PaulMapper.PaulHelper
                     {
                         if ((note1 as BeatmapNote).Type == BeatmapNote.NoteTypeBomb)
                         {
-                            copy = new BeatmapBombNote(note1.ConvertToJson());
+                            copy = CopyV3Bomb(note1.ConvertToJson());
                         }
                         else
                         {
-                            copy = new BeatmapColorNote(note1.ConvertToJson());
+                            copy = CopyV3Note(note1.ConvertToJson());
                         }
                     }
                     else
@@ -507,7 +522,7 @@ namespace PaulMapper.PaulHelper
                 {
                     if (BeatSaberSongContainer.Instance.Map.Version == "3.0.0")
                     {
-                         copy = new BeatmapObstacleV3(note1.ConvertToJson());
+                         copy = CopyV3Wall(note1.ConvertToJson());
                     }
                     else
                     {
