@@ -15,7 +15,7 @@
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
+    <DebugType>portable</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
@@ -35,18 +35,20 @@
       <HintPath>..\packages\Extreme.Numerics.7.0.19\lib\net46\Extreme.Numerics.dll</HintPath>
       <EmbedInteropTypes>False</EmbedInteropTypes>
     </Reference>
-    <Reference Include="Main">
-      <HintPath>C:\Users\davi3\Desktop\ChroMapper 0.7.0\chromapper\ChroMapper_Data\Managed\Main.dll</HintPath>
-    </Reference>
     <Reference Include="Input">
       <HintPath>C:\Users\davi3\Desktop\ChroMapper 0.7.0\chromapper\ChroMapper_Data\Managed\Input.dll</HintPath>
+    </Reference>
+    <Reference Include="Main, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>C:\Users\davi3\Desktop\ChroMapper 0.7.0\Chromapper V3 thingy\ChroMapper_Data\Managed\Main.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>C:\Users\davi3\Desktop\ChroMapper 0.7.0\chromapper\Plugins\PaulMapper\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="Plugins">
-      <HintPath>C:\Users\davi3\Desktop\ChroMapper 0.7.0\chromapper\ChroMapper_Data\Managed\Plugins.dll</HintPath>
+    <Reference Include="Plugins, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>C:\Users\davi3\Desktop\ChroMapper 0.7.0\Chromapper V3 thingy\ChroMapper_Data\Managed\Plugins.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -72,6 +74,14 @@
     <Reference Include="Unity.InputSystem, Version=1.0.2.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>C:\Users\davi3\Desktop\ChroMapper 0.7.0\chromapper\ChroMapper_Data\Managed\Unity.InputSystem.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.Localization, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>C:\Users\davi3\Desktop\ChroMapper 0.7.0\chromapper\ChroMapper_Data\Managed\Unity.Localization.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.TextMeshPro, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>C:\Users\davi3\Desktop\ChroMapper 0.7.0\chromapper\ChroMapper_Data\Managed\Unity.TextMeshPro.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine">
       <HintPath>C:\Users\davi3\Desktop\ChroMapper 0.7.0\chromapper\ChroMapper_Data\Managed\UnityEngine.dll</HintPath>
@@ -111,7 +121,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="MEExporter.cs" />
     <Compile Include="Paul.cs" />
     <Compile Include="PaulHelper.cs" />
     <Compile Include="PaulMapper.cs" />
@@ -119,12 +128,16 @@
     <Compile Include="PaulSaveHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RealtimeCurveEditor.cs" />
+    <Compile Include="RealtimeWallCurve.cs" />
+    <Compile Include="RealtimeNoteCurve.cs" />
+    <Compile Include="V3Helper.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>copy /Y "$(TargetDir)*$(TargetFileName)" "C:\Users\davi3\Desktop\ChroMapper 0.7.0\chromapper\Plugins"</PostBuildEvent>
+    <PostBuildEvent>copy /Y "$(TargetDir)*$(TargetName).pdb" "C:\Users\davi3\Desktop\ChroMapper 0.7.0\chromapper\Plugins\PaulMapper"
+copy /Y "$(TargetDir)*$(TargetFileName)" "C:\Users\davi3\Desktop\ChroMapper 0.7.0\chromapper\Plugins\PaulMapper"</PostBuildEvent>
   </PropertyGroup>
 </Project>

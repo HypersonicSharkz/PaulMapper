@@ -11,6 +11,8 @@ using System.Data;
 using Discord;
 using PaulMapper.PaulHelper;
 using System.IO;
+using UnityEngine.Localization;
+using UnityEngine.Localization.Settings;
 
 namespace PaulMapper
 {
@@ -24,7 +26,6 @@ namespace PaulMapper
         {
             //Debug.LogError("PaulMapper V0.3 - Loaded");
             SceneManager.sceneLoaded += SceneManager_sceneLoaded;
-            
         }
 
         [Exit]
@@ -75,19 +76,20 @@ namespace PaulMapper
             try
             {
                 windowRect = paulmapperData.windowRect.getRect();
-            } catch
+            }
+            catch
             {
                 paulmapperData.windowRect = new SerializableRect(windowRect);
                 paulmapperData.SaveData();
             }
-            
+
         }
 
         public static float guiX = 200;
         public static float guiWidth = 140;
         char warnIcon = '\u26A0';
 
-        public static Rect windowRect = new Rect(guiX, 10, guiWidth, 440);
+        public static Rect windowRect = new Rect(guiX, 10, guiWidth, 450);
 
         void UpdatePaulMapperWindow(int windowID)
         {
@@ -104,25 +106,39 @@ namespace PaulMapper
                 float bpm = (beatmapBPMChange != null) ? beatmapBPMChange.Bpm : BeatSaberSongContainer.Instance.Song.BeatsPerMinute;
 
                 float nps = (bpm / 60) / (1 / (float)paulmapperData.precision);
-                if (nps > 250)
-                    GUI.Label(new Rect(5, 60, guiWidth-10, 25), $"NPS: {nps.ToString("0.00")} !! lag");
+                if (nps > 60)
+                    GUI.Label(new Rect(5, 60, guiWidth - 10, 25), $"NPS: {nps.ToString("0.00")} !! lag");
                 else
-                    GUI.Label(new Rect(5, 60, guiWidth-10, 25), $"NPS: {nps.ToString("0.00")}");
-            } catch
-            {
-                GUI.Label(new Rect(5, 60, guiWidth-10, 20), $"NPS: Infinity");
+                    GUI.Label(new Rect(5, 60, guiWidth - 10, 25), $"NPS: {nps.ToString("0.00")}");
             }
-
-
-
+            catch
+            {
+                GUI.Label(new Rect(5, 60, guiWidth - 10, 20), $"NPS: Infinity");
+            }
 
             paulmapperData.vibro = GUI.Toggle(new Rect(5, 80, guiWidth / 2 - 10, 20), paulmapperData.vibro, "Vibro");
             paulmapperData.rotateNotes = GUI.Toggle(new Rect(guiWidth / 2 + 5, 80, guiWidth / 2 - 10, 20), paulmapperData.rotateNotes, "Rotate");
+            paulmapperData.usePointRotations = GUI.Toggle(new Rect(guiWidth / 2 + 5, 100, guiWidth / 2 - 10, 20), paulmapperData.usePointRotations, "Force");
 
+            paulmapperData.fakeWalls = GUI.Toggle(new Rect(5, 130, guiWidth - 10, 20), paulmapperData.fakeWalls, "Fake Walls");
 
-            if (GUI.Button(new Rect(5, 130, guiWidth - 10, 30), "Mirror"))
+            if (advancedMenu)
             {
-                MirrorSelected();
+                if (GUI.Button(new Rect(5, 150, guiWidth - 10, 20), "Fix"))
+                {
+                    notesContainer = UnityEngine.Object.FindObjectOfType<NotesContainer>();
+                    List<BeatmapNote> allNotes = (from BeatmapNote it in notesContainer.LoadedObjects
+                                                  orderby it.Time
+                                                  select it).ToList();
+
+                    foreach (BeatmapNote note in allNotes)
+                    {
+                        if (note.CustomData.HasKey("_paul"))
+                        {
+                            note.LineIndex = 69420 * (int)(note.Type * 2 - 1);
+                        }
+                    }
+                }
             }
 
             GUI.Label(new Rect((guiWidth - 110) / 2, 170, 80, 20), "Transition time: ");
@@ -149,6 +165,44 @@ namespace PaulMapper
 
             if (PaulFinder.pauls.Count > 0)
             {
+                if (advancedMenu)
+                {
+                    if (GUI.Button(new Rect(5, 10, guiWidth - 10, 20), "Change Prec. Of every poodle"))
+                    {
+                        PersistentUI.Instance.ShowDialogBox("Are you sure you wanna change the precision of every selected poodle?", (int result) =>
+                        {
+                            if (result != 0)
+                                return;
+
+                            BeatmapObjectContainerCollection collection = BeatmapObjectContainerCollection.GetCollectionForType(BeatmapObject.ObjectType.Note);
+                            List<BeatmapObject> spawnedNotes = new List<BeatmapObject>();
+                            List<BeatmapObject> beatmapObjects = new List<BeatmapObject>();
+
+                            foreach (Paul paul in PaulFinder.pauls.Where(p => p.notes.Any(n => SelectionController.SelectedObjects.Contains(n))))
+                            {
+                                paulmapperData.transitionTime = 1f / (1.5f * (float)paulmapperData.precision);
+
+                                spawnedNotes.AddRange(CreatePoodle(paul.notes.ToArray(), true, paulmapperData.precision, float.Epsilon).ToArray());
+                                beatmapObjects.AddRange(paul.notes.ToArray());
+                            }
+
+                            foreach (BeatmapObject beatmapObject in beatmapObjects)
+                            {
+                                collection.DeleteObject(beatmapObject, false);
+                            }
+
+                            BeatmapActionContainer.AddAction(new SelectionPastedAction(spawnedNotes, beatmapObjects));
+
+                            foreach (BeatmapObject note in spawnedNotes)
+                            {
+                                SelectionController.Select(note, true, true, false);
+                            }
+
+                        }, PersistentUI.DialogBoxPresetType.YesNo);
+                    }
+                }
+
+
                 if (GUI.Button(new Rect(5, 250, guiWidth - 10, 20), "GoTo Paul"))
                 {
                     PersistentUI.Instance.ShowInputBox("Go to paul", (Action<string>)delegate (string result)
@@ -198,7 +252,7 @@ namespace PaulMapper
                         {
                             PaulFinder.GoToPaul(PaulFinder.pauls.First());
                         }
-                            
+
                     }
 
                     if (GUI.Button(new Rect(5, 320, guiWidth - 10, 20), "Select Current"))
@@ -206,6 +260,24 @@ namespace PaulMapper
                         PaulFinder.SelectCurrentPaul();
                     }
 
+                    if (GUI.Button(new Rect(5, 350, guiWidth - 10, 20), "Select All Pauls"))
+                    {
+                        PaulFinder.SelectAllPauls();
+                    }
+
+                    if (advancedMenu)
+                    {
+                        if (GUI.Button(new Rect(5, 380, guiWidth - 10, 20), "Keep First Notes"))
+                        {
+                            PersistentUI.Instance.ShowDialogBox("Are you sure you want to remove all but first note of selected poodles?", (int result) =>
+                            {
+                                if (result != 0)
+                                    return;
+
+                                PaulFinder.KeepFirstNotes();
+                            }, PersistentUI.DialogBoxPresetType.YesNo);
+                        }
+                    }
                 }
                 catch
                 {
@@ -216,7 +288,7 @@ namespace PaulMapper
             if (SelectionController.SelectedObjects.Count > 0)
             {
                 float selectionDir = selectionDur() * 1000;
-                GUI.Label(new Rect(0, 340, guiWidth, 20), $"Length: {(selectionDir).ToString("0.0")}ms", style);
+                GUI.Label(new Rect(0, 370, guiWidth, 20), $"Length: {(selectionDir).ToString("0.0")}ms", style);
 
 
                 //Average swing speed
@@ -234,13 +306,20 @@ namespace PaulMapper
                     }
 
                     float spd = summedChange / (selectionDir / 1000);
-                    GUI.Label(new Rect(0, 370, guiWidth, 20), $"AVG. SPD: {spd.ToString("0.0")}", style);
+                    GUI.Label(new Rect(0, 390, guiWidth, 20), $"AVG. SPD: {spd.ToString("0.0")}", style);
                 }
             }
-                
+
+
+
+            if (!string.IsNullOrEmpty(notice))
+                GUI.TextArea(new Rect(0, 400, guiWidth, 50), $"{notice}", style);
+
 
             if (!int.TryParse(text, out paulmapperData.precision))
                 return;
+            paulmapperData.precision = Math.Max(1, paulmapperData.precision);
+
 
             if (!float.TryParse(tt, out paulmapperData.transitionTime))
                 return;
@@ -248,7 +327,7 @@ namespace PaulMapper
 
         private float selectionDur()
         {
-            if (SelectionController.SelectedObjects.Any(o => o.BeatmapType == BeatmapObject.ObjectType.Note))
+            if (SelectionController.SelectedObjects.All(o => o.BeatmapType == BeatmapObject.ObjectType.Note))
             {
                 List<BeatmapNote> notes = SelectionController.SelectedObjects.OrderBy(n => n.Time).Cast<BeatmapNote>().ToList();
                 return ats.GetSecondsFromBeat(notes.Last().Time - notes.First().Time);
@@ -256,15 +335,17 @@ namespace PaulMapper
             return 0;
         }
 
+        string notice;
+
         private bool isHovering;
 
-        public bool advancedQuickMenu = false;
+        public static bool advancedMenu = false;
 
         private void OnGUI()
         {
             if (showGUI)
             {
-                Rect newWindowRect = GUI.Window(0, windowRect, UpdatePaulMapperWindow, "Paul Menu");
+                Rect newWindowRect = GUI.Window(0, windowRect, UpdatePaulMapperWindow, advancedMenu ? "Advanced Paul Menu" : "Paul Menu");
 
                 if (newWindowRect.x > 0 &&
                     newWindowRect.x < Screen.width - guiWidth)
@@ -278,7 +359,7 @@ namespace PaulMapper
                 {
                     windowRect.y = newWindowRect.y;
                 }
-                
+
 
                 paulmapperData.windowRect.setRect(windowRect);
 
@@ -289,12 +370,12 @@ namespace PaulMapper
 
                 //useMappingExtensions = GUI.Toggle(new Rect(guiX, 120, 80, 20), useMappingExtensions, "Mapping Ext.");
 
-                
+
                 if (SelectionController.SelectedObjects.Count == 2 && SelectionController.SelectedObjects.All(s => s.BeatmapType == BeatmapObject.ObjectType.Note))
                 {
                     BeatmapNote beatmapObject1 = SelectionController.SelectedObjects.First() as BeatmapNote;
                     BeatmapNote beatmapObject2 = SelectionController.SelectedObjects.Last() as BeatmapNote;
-                    if ( (beatmapObject1.CutDirection == beatmapObject2.CutDirection || paulmapperData.rotateNotes) && beatmapObject1.Time != beatmapObject2.Time)
+                    if ((beatmapObject1.CutDirection == beatmapObject2.CutDirection || paulmapperData.rotateNotes) && beatmapObject1.Time != beatmapObject2.Time)
                     {
                         windowTotalRect.width += guiWidth;
 
@@ -321,7 +402,7 @@ namespace PaulMapper
                             PaulMaker.GeneratePoodle(beatmapObjects[0], beatmapObjects[1], "easeOutSine", paulmapperData.precision);
                         }
 
-                        if (advancedQuickMenu)
+                        if (advancedMenu)
                         {
                             yPos += 30;
                             if (GUI.Button(new Rect(xPos, yPos, 120, 20), "SineInOut"))
@@ -329,9 +410,6 @@ namespace PaulMapper
                                 PaulMaker.GeneratePoodle(beatmapObjects[0], beatmapObjects[1], "easeInOutSine", paulmapperData.precision);
                             }
                         }
-
-
-
 
                         yPos += 30;
                         if (GUI.Button(new Rect(xPos, yPos, 120, 20), "QuadIn"))
@@ -345,7 +423,7 @@ namespace PaulMapper
                             PaulMaker.GeneratePoodle(beatmapObjects[0], beatmapObjects[1], "easeOutQuad", paulmapperData.precision);
                         }
 
-                        if (advancedQuickMenu)
+                        if (advancedMenu)
                         {
                             yPos += 30;
                             if (GUI.Button(new Rect(xPos, yPos, 120, 20), "QuadInOut"))
@@ -369,7 +447,7 @@ namespace PaulMapper
                             PaulMaker.GeneratePoodle(beatmapObjects[0], beatmapObjects[1], "CubicOut", paulmapperData.precision);
                         }
 
-                        if (advancedQuickMenu)
+                        if (advancedMenu)
                         {
                             yPos += 30;
                             if (GUI.Button(new Rect(xPos, yPos, 120, 20), "CubicInOut"))
@@ -392,7 +470,7 @@ namespace PaulMapper
                             PaulMaker.GeneratePoodle(beatmapObjects[0], beatmapObjects[1], "ExpOut", paulmapperData.precision);
                         }
 
-                        if (advancedQuickMenu)
+                        if (advancedMenu)
                         {
                             yPos += 30;
                             if (GUI.Button(new Rect(xPos, yPos, 120, 20), "ExpInOut"))
@@ -412,7 +490,7 @@ namespace PaulMapper
                             PaulMaker.GeneratePoodle(beatmapObjects[0], beatmapObjects[1], "easeOutBack", paulmapperData.precision);
                         }
 
-                        if (advancedQuickMenu)
+                        if (advancedMenu)
                         {
                             yPos += 30;
                             if (GUI.Button(new Rect(xPos, yPos, 120, 20), "BackInOut"))
@@ -421,7 +499,7 @@ namespace PaulMapper
                             }
                         }
 
-                        if (advancedQuickMenu)
+                        if (advancedMenu)
                         {
                             yPos += 30;
                             if (GUI.Button(new Rect(xPos, yPos, 120, 20), "BounceIn"))
@@ -441,9 +519,6 @@ namespace PaulMapper
                         }
 
                         yPos += 60;
-
-                        //advancedQuickMenu = GUI.Toggle(new Rect(xPos, yPos, 80, 20), advancedQuickMenu, "Advanced");
-
                     }
                 }
 
@@ -472,35 +547,27 @@ namespace PaulMapper
             paulmapperData.SaveData();
         }
 
-        private void Update()
+        public List<BeatmapObject> CreatePoodle(BeatmapObject[] beatmapObjects, bool autoDot, int precision, float transitionTime)
         {
-            if (Input.GetKeyDown(KeyCode.F10))
+            if (beatmapObjects.Count() != beatmapObjects.Select(p => p.Time).Distinct().Count())
+                return null;
+
+            BeatmapObjectContainerCollection collection = BeatmapObjectContainerCollection.GetCollectionForType(beatmapObjects[0].BeatmapType);
+
+            List<BeatmapObject> spawnedNotes = new List<BeatmapObject>();
+
+            if (beatmapObjects.All(b => b.BeatmapType == BeatmapObject.ObjectType.Note))
             {
-                showGUI = !showGUI;
-            }
-
-            if (Input.GetKeyDown(KeyCode.F9))
-            {
-                //TimeKeeper TP = new TimeKeeper();
-                //TP.Start();
-
-                BeatmapObject[] beatmapObjects = SelectionController.SelectedObjects.OrderBy(o => o.Time).ToArray();
-                BeatmapObjectContainerCollection beatmapObjectContainerCollection = UnityEngine.Object.FindObjectOfType<BeatmapObjectContainerCollection>();
-                List<BeatmapObject> spawnedNotes = new List<BeatmapObject>();
-
-                if (beatmapObjects.Count() != beatmapObjects.Select(p => p.Time).Distinct().Count())
-                    return;
-
                 //Normal paul
                 if (beatmapObjects.All(o => !((o as BeatmapNote).CustomData != null && (o as BeatmapNote).CustomData.HasKey("_position")) &&
                                             (o as BeatmapNote).CutDirection == (beatmapObjects[0] as BeatmapNote).CutDirection &&
                                             (o as BeatmapNote).LineLayer == (beatmapObjects[0] as BeatmapNote).LineLayer &&
                                             (o as BeatmapNote).LineIndex == (beatmapObjects[0] as BeatmapNote).LineIndex
-                ))
+                ) && !paulmapperData.vibro)
                 {
-                    spawnedNotes = PaulMaker.GeneratePaul(beatmapObjects[0], beatmapObjects.Last(), paulmapperData.precision);
+                    spawnedNotes = PaulMaker.GeneratePaul(beatmapObjects[0], beatmapObjects.Last(), precision);
 
-                } 
+                }
                 else
                 {
                     //A poodle
@@ -508,6 +575,8 @@ namespace PaulMapper
 
                     List<double> pointsx_y = new List<double>();
                     List<double> pointsy_y = new List<double>();
+
+                    Dictionary<float, float> points_dir = new Dictionary<float, float>();
 
                     float endTime = beatmapObjects.Last().Time;
                     float totalTime = beatmapObjects.Last().Time - beatmapObjects[0].Time;
@@ -526,9 +595,10 @@ namespace PaulMapper
 
                         pointsy_y.Add((beatmapObject as BeatmapNote).GetRealPosition().y);
 
+                        if ((beatmapObject as BeatmapNote).CutDirection != 8)
+                            points_dir.Add(distanceInBeats, (beatmapObject as BeatmapNote).GetNoteDirection());
 
-                        Color color = Color.clear;
-                        if (Helper.TryGetColorFromObject(beatmapObject, out color))
+                        if (Helper.TryGetColorFromObject(beatmapObject, out Color color))
                         {
                             DistColorDict.Add(distanceInBeats, color);
                         }
@@ -536,21 +606,154 @@ namespace PaulMapper
                     }
 
                     List<float> dotTimes = null;
-                    if (paulmapperData.autoDot)
+                    if (autoDot)
                     {
-                        dotTimes = beatmapObjects.Where(p => (p as BeatmapNote).CutDirection == 8).Select(p => p.Time - paulmapperData.transitionTime).ToList();
+                        dotTimes = beatmapObjects.Where(p => (p as BeatmapNote).CutDirection == 8).Select(p => p.Time - transitionTime).ToList();
                     }
 
                     CubicSpline splinex = CubicSpline.CreateNatural(pointsx, pointsx_y);
                     CubicSpline spliney = CubicSpline.CreateNatural(pointsx, pointsy_y);
 
-                    spawnedNotes = PaulMaker.GeneratePoodle(beatmapObjects[0], beatmapObjects.Last(), splinex, spliney, paulmapperData.precision, beatmapObjects.All(o => (o as BeatmapNote).CutDirection == 8), DistColorDict, dotTimes);
+                    spawnedNotes = PaulMaker.GeneratePoodle(beatmapObjects[0], beatmapObjects.Last(), splinex, spliney, precision, beatmapObjects.All(o => (o as BeatmapNote).CutDirection == 8), DistColorDict, dotTimes, paulmapperData.usePointRotations ? points_dir : null);
+                }
+
+                //TP.Complete("Paul");
+            }
+            else if (beatmapObjects.All(b => b.BeatmapType == BeatmapObject.ObjectType.Obstacle) && beatmapObjects.Length == 2)
+            {
+                List<BeatmapObstacle> walls = beatmapObjects.Cast<BeatmapObstacle>().ToList();
+
+                if (walls.All(w => w.Type == walls[0].Type && w.Width == walls[0].Width && w.LineIndex == walls[0].LineIndex))
+                {
+
+                    float startTime = walls[0].Time;
+                    float endTime = walls[1].Time;
+
+                    float distanceInBeats = endTime - startTime;
+                    float originalDistance = distanceInBeats;
+
+                    while (distanceInBeats > 0 - 1 / (float)precision)
+                    {
+                        BeatmapObstacle copy = new BeatmapObstacle(walls[0].ConvertToJson());
+                        copy.Time = (endTime - distanceInBeats);
+
+
+                        collection.SpawnObject(copy, false, false);
+                        BeatmapObject beatmapObject = collection.UnsortedObjects.Last();
+                        spawnedNotes.Add(beatmapObject);
+
+
+                        distanceInBeats -= 1 / (float)precision;
+                    }
+                }
+            }
+            else
+            {
+                return null;
+            }
+
+            return spawnedNotes;
+        }
+
+
+        public enum noticeType
+        {
+            None,
+            Warning,
+            Error
+        }
+
+        string[] symbols = new string[] { "", "⚠", "‼️" };
+        float lastNoticeTime;
+        public void SetNotice(string p_notice, noticeType noticeType)
+        {
+            string initalText = symbols[(int)noticeType] + ": " + p_notice;
+            int lastWhiteSpace = 0;
+
+            int lines = 0;
+            List<char> copied = initalText.ToList();
+            for (int i = 0; i < copied.Count; i++)
+            {
+
+                if (char.IsWhiteSpace(copied[i]))
+                {
+                    lastWhiteSpace = i;
+                }
+
+                if (i % 20 == 0)
+                {
+                    initalText.Insert(lastWhiteSpace + lines, "\n");
+                    lines++;
+                }
+            }
+
+            lastNoticeTime = Time.time;
+            notice = initalText;
+        }
+
+        private void Update()
+        {
+            //Notice update
+            if (Time.time - lastNoticeTime > 10)
+                notice = string.Empty;
+
+            if (Input.GetKeyDown(KeyCode.F10))
+            {
+                advancedMenu = false;
+                if (Input.GetKey(KeyCode.LeftShift) && !showGUI)
+                {
+                    advancedMenu = true;
+                }
+                showGUI = !showGUI;
+            }
+
+            if (Input.GetKeyDown(KeyCode.F9))
+            {
+                //TimeKeeper TP = new TimeKeeper();
+                //TP.Start();
+
+                BeatmapObject[] beatmapObjects = SelectionController.SelectedObjects.OrderBy(o => o.Time).ToArray();
+
+                if (beatmapObjects.Length != 2)
+                {
+                    SetNotice("Select only two notes", noticeType.Error);
+                    return;
+                }
+
+                if (beatmapObjects[1].Time - beatmapObjects[0].Time < 1 / paulmapperData.precision)
+                {
+                    SetNotice("Notes are closer than precision", noticeType.Error);
+                    return;
+                }
+
+                if (beatmapObjects.All(b => b.BeatmapType == BeatmapObject.ObjectType.Note))
+                {
+                    if (!beatmapObjects.All(o => (o as BeatmapNote).CutDirection == (beatmapObjects[0] as BeatmapNote).CutDirection &&
+                                                (o as BeatmapNote).LineLayer == (beatmapObjects[0] as BeatmapNote).LineLayer &&
+                                                (o as BeatmapNote).LineIndex == (beatmapObjects[0] as BeatmapNote).LineIndex))
+                    {
+                        SetNotice("Notes can not be made into a paul", noticeType.Error);
+                        return;
+                    }
+                } else if (beatmapObjects.All(b => b.BeatmapType == BeatmapObject.ObjectType.Obstacle)) 
+                {
+                    if (!beatmapObjects.All(o =>
+                            (o as BeatmapObstacle).Width == (beatmapObjects[0] as BeatmapObstacle).Width &&
+                            (o as BeatmapObstacle).LineIndex == (beatmapObjects[0] as BeatmapObstacle).LineIndex))
+                    {
+                        SetNotice("Walls can not be made into a paul", noticeType.Error);
+                        return;
+                    }
                 }
 
 
+                List<BeatmapObject> spawnedNotes = PaulMaker.GeneratePaul(beatmapObjects[0], beatmapObjects[1], paulmapperData.precision);
+
+                BeatmapObjectContainerCollection collection = BeatmapObjectContainerCollection.GetCollectionForType(beatmapObjects[0].BeatmapType);
+
                 foreach (BeatmapObject beatmapObject in beatmapObjects)
                 {
-                    beatmapObjectContainerCollection.DeleteObject(beatmapObject, false);
+                    collection.DeleteObject(beatmapObject, false);
                 }
 
                 BeatmapActionContainer.AddAction(new SelectionPastedAction(spawnedNotes, beatmapObjects));
@@ -559,18 +762,42 @@ namespace PaulMapper
                 {
                     SelectionController.Select(note, true, true, false);
                 }
-
-                //TP.Complete("Paul");
-
             }
 
             if (Input.GetKeyDown(KeyCode.F12))
             {
                 BeatmapObject[] beatmapObjects = SelectionController.SelectedObjects.OrderBy(o => o.Time).ToArray();
 
-                GameObject gameObject = new GameObject("Curve");
-                RealtimeCurve curve = gameObject.AddComponent<RealtimeCurve>();
-                curve.InstantiateCurve(beatmapObjects.Cast<BeatmapNote>().ToList());
+                if (beatmapObjects.Length < 2)
+                {
+                    SetNotice("Select at least 2 points", noticeType.Error);
+                    return;
+                }
+                if (beatmapObjects.Length == 2)
+                {
+                    if (beatmapObjects[1].Time - beatmapObjects[0].Time < 1 / paulmapperData.precision)
+                    {
+                        SetNotice("Points are closer than precision", noticeType.Error);
+                        return;
+                    }
+                }   
+
+                if (beatmapObjects.All(b => b.BeatmapType == BeatmapObject.ObjectType.Note))
+                {
+                    GameObject gameObject = new GameObject("Curve");
+                    RealtimeCurve curve = gameObject.AddComponent<RealtimeNoteCurve>();
+                    curve.InstantiateCurve(beatmapObjects.ToList());
+                }
+                else if (beatmapObjects.All(b => b.BeatmapType == BeatmapObject.ObjectType.Obstacle))
+                {
+                    GameObject gameObject = new GameObject("Curve");
+                    RealtimeCurve curve = gameObject.AddComponent<RealtimeWallCurve>();
+                    curve.InstantiateCurve(beatmapObjects.ToList());
+                } else
+                {
+                    SetNotice("Only select objects of same type", noticeType.Error);
+                }
+
             }
         }
 
@@ -619,7 +846,7 @@ namespace PaulMapper
                         {
                             Vector2 oldPosition = obstacle.CustomData["_position"];
                             Vector2 flipped = new Vector2(oldPosition.x * -1f, oldPosition.y);
-                            
+
                             if (obstacle.CustomData.HasKey("_scale"))
                             {
                                 Vector2 scale = obstacle.CustomData["_scale"];
@@ -748,7 +975,8 @@ namespace PaulMapper
 
                                 note.CustomData["_cutDirection"] = -note.CustomData["_cutDirection"].AsFloat;
 
-                            } else
+                            }
+                            else
                             {
                                 if (this.CutDirectionToMirrored.ContainsKey(note.CutDirection))
                                 {

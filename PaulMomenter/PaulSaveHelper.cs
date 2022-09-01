@@ -21,6 +21,8 @@ namespace PaulMapper
         public bool autoDot = true;
         public float transitionTime = 0.3f;
         public bool transitionRotation = false;
+        public bool usePointRotations = false;
+        internal bool fakeWalls;
 
         public static PaulmapperData GetSaveData()
         {
@@ -57,28 +59,22 @@ namespace PaulMapper
     {
         public float x;
         public float y;
-        public float width;
-        public float height;
 
         public SerializableRect(Rect rect)
         {
             x = rect.x;
             y = rect.y;
-            width = rect.width;
-            height = rect.height;
         }
 
         public Rect getRect()
         {
-            return new Rect(x, y, width, height);
+            return new Rect(x, y, 140, 450);
         }
 
         public void setRect(Rect rect)
         {
             x = rect.x;
             y = rect.y;
-            width = rect.width;
-            height = rect.height;
         }
     }
 }
