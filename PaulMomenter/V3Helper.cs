@@ -44,7 +44,7 @@ namespace PaulMapper
             if (obj is BeatmapColorNote)
             {
                 (obj as BeatmapColorNote).AngleOffset = (int)angle + 180;
-                //(obj as BeatmapColorNote).CutDirection = 0;
+                (obj as BeatmapColorNote).CutDirection = 0;
             }
         }
 
@@ -52,7 +52,7 @@ namespace PaulMapper
         {
             if (BeatSaberSongContainer.Instance.Map.Version == "3.0.0")
             {
-                obj.CustomData["scale"] = scale;
+                obj.CustomData["size"] = scale;
             }
 
             obj.CustomData["_scale"] = scale;
@@ -62,7 +62,7 @@ namespace PaulMapper
         {
             if (BeatSaberSongContainer.Instance.Map.Version == "3.0.0")
             {
-                obj.CustomData["scale"] = scale;
+                obj.CustomData["size"] = scale;
             }
 
             obj.CustomData["_scale"] = scale;
