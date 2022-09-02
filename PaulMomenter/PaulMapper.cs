@@ -119,7 +119,12 @@ namespace PaulMapper
             paulmapperData.rotateNotes = GUI.Toggle(new Rect(guiWidth / 2 + 5, 80, guiWidth / 2 - 10, 20), paulmapperData.rotateNotes, "Rotate");
             paulmapperData.usePointRotations = GUI.Toggle(new Rect(guiWidth / 2 + 5, 100, guiWidth / 2 - 10, 20), paulmapperData.usePointRotations, "Force");
 
-            paulmapperData.fakeWalls = GUI.Toggle(new Rect(5, 130, guiWidth - 10, 20), paulmapperData.fakeWalls, "Fake Walls");
+            paulmapperData.fakeWalls = GUI.Toggle(new Rect(5, 111, guiWidth - 10, 20), paulmapperData.fakeWalls, "Fake Walls");
+
+            if (GUI.Button(new Rect(5, 130, guiWidth - 10, 20), "Mirror"))
+            {
+                MirrorSelected();
+            }
 
             if (advancedMenu)
             {
@@ -857,6 +862,22 @@ namespace PaulMapper
                             }
                             obstacle.CustomData["_position"] = flipped;
                         }
+                        if (obstacle.CustomData.HasKey("coordinates"))
+                        {
+                            Vector2 oldPosition = obstacle.CustomData["coordinates"];
+                            Vector2 flipped = new Vector2(oldPosition.x * -1f, oldPosition.y);
+
+                            if (obstacle.CustomData.HasKey("size"))
+                            {
+                                Vector2 scale = obstacle.CustomData["size"];
+                                flipped.x -= scale.x;
+                            }
+                            else
+                            {
+                                flipped.x -= (float)obstacle.Width;
+                            }
+                            obstacle.CustomData["coordinates"] = flipped;
+                        }
                     }
                     else
                     {
@@ -914,18 +935,21 @@ namespace PaulMapper
                 else
                 {
                     BeatmapNote note;
-                    bool flag11 = (note = (con as BeatmapNote)) != null;
-                    if (flag11)
+                    if ((note = (con as BeatmapNote)) != null)
                     {
-                        bool flag12 = note.CustomData != null;
-                        if (flag12)
+                        if (note.CustomData != null)
                         {
-                            bool flag13 = note.CustomData.HasKey("_position");
-                            if (flag13)
+                            if (note.CustomData.HasKey("_position"))
                             {
                                 Vector2 oldPosition2 = note.CustomData["_position"];
                                 Vector2 flipped2 = new Vector2((oldPosition2.x + 0.5f) * -1f - 0.5f, oldPosition2.y);
                                 note.CustomData["_position"] = flipped2;
+                            }
+                            if (note.CustomData.HasKey("coordinates"))
+                            {
+                                Vector2 oldPosition2 = note.CustomData["coordinates"];
+                                Vector2 flipped2 = new Vector2((oldPosition2.x + 0.5f) * -1f - 0.5f, oldPosition2.y);
+                                note.CustomData["coordinates"] = flipped2;
                             }
                         }
                         else
@@ -969,10 +993,20 @@ namespace PaulMapper
                         if (note.Type != 3)
                         {
                             note.Type = ((note.Type == 0) ? 1 : 0);
-                            if (note.CustomData != null && note.CustomData.HasKey("_cutDirection"))
+                            if (note.CustomData != null)
                             {
+                                if (note.CustomData.HasKey("_cutDirection"))
+                                {
+                                    note.CustomData["_cutDirection"] = -note.CustomData["_cutDirection"].AsFloat;
+                                }
 
-                                note.CustomData["_cutDirection"] = -note.CustomData["_cutDirection"].AsFloat;
+                                if (note.GetType().Name == "BeatmapColorNote")
+                                {
+                                    //Is a v3 note, so funny
+                                    var prop = note.GetType().GetProperty("AngleOffset");
+
+                                    prop.SetValue(note, -(int)prop.GetValue(note), null);
+                                }
 
                             }
                             else
