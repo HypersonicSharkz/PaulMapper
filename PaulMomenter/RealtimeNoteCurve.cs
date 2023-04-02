@@ -11,7 +11,6 @@ namespace PaulMapper
 {
     class RealtimeNoteCurve : RealtimeCurve
     {
-
         protected override void SpawnObjects()
         {
             /*curveObjects = PaulMaker.GeneratePoodle(
@@ -112,8 +111,15 @@ namespace PaulMapper
 
                 JSONNode customData = note.CustomData;
                 note.SetPosition(new Vector2((float)x, (float)y));
-                note.SetScale(new Vector3((float)widthCurve.ValueAt(time), (float)heightCurve.ValueAt(time), (float)depthCurve.ValueAt(time)));
-                
+                if (PaulmapperData.Instance.useScale)
+                {
+                    note.SetScale(new Vector3((float)widthCurve.ValueAt(time), (float)heightCurve.ValueAt(time), (float)depthCurve.ValueAt(time)));
+                }
+
+                float rotAtTime = GetRotationValueAtTime(note.Time, curveObjects);
+                if (rotAtTime != -1)
+                    customData["_rotation"] = new Vector3(0, rotAtTime, 0);
+
                 Color color = Color.white;
                 //Color handling 
                 if (colorDist != null && colorDist.Count > 0)
@@ -196,12 +202,13 @@ namespace PaulMapper
                         else
                             note.SetRotation(customData_old["_cutDirection"]);
                     }
-                        
                 }
                 else if (PaulmapperData.Instance.vibro)
                 {
                     note.SetRotation(180 * (noteIndex % 2));
                 }
+
+
 
                 oldNote = note;
 

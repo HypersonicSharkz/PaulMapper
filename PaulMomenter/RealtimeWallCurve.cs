@@ -120,6 +120,10 @@ namespace PaulMapper
                 wall.SetPosition(new Vector2((float)x, (float)y));
                 wall.SetScale(new Vector2((float)widthCurve.ValueAt(time), (float)heightCurve.ValueAt(time)));
 
+                float rotAtTime = GetRotationValueAtTime(wall.Time, curveObjects);
+                if (rotAtTime != -1)
+                    customData["_rotation"] = new Vector3(0, rotAtTime, 0);
+
                 Color color = Color.white;
                 //Color handling 
                 if (colorDist != null && colorDist.Count > 0)

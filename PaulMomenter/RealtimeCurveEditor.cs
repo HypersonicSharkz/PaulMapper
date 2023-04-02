@@ -33,6 +33,7 @@ namespace PaulMapper
         public List<BeatmapObject> curveObjects = new List<BeatmapObject>();
 
         protected BeatmapObjectContainerCollection beatmapObjectContainerCollection;
+        protected EventsContainer eventsContainer;
         protected TracksManager TracksManager;
 
         Track curveTrack;
@@ -42,9 +43,13 @@ namespace PaulMapper
         public Material mainMat;
         public Material selectionMat;
 
+        List<BeatmapObject> originalCurveObjects = new List<BeatmapObject>();
+
         public virtual void InstantiateCurve(List<BeatmapObject> parameters)
         {
             beatmapObjectContainerCollection = BeatmapObjectContainerCollection.GetCollectionForType(parameters[0].BeatmapType);
+            eventsContainer = BeatmapObjectContainerCollection.GetCollectionForType(BeatmapObject.ObjectType.Event) as EventsContainer;
+
             TracksManager = FindObjectOfType<TracksManager>();
             BeatmapObject[] beatmapObjects = parameters.OrderBy(o => o.Time).ToArray();
 
@@ -73,6 +78,7 @@ namespace PaulMapper
 
             GetCurves(curveParameters, out xCurve, out yCurve);
             SpawnObjects();
+            originalCurveObjects = curveObjects.Select(c => BeatmapObject.GenerateCopy(c)).ToList();
             SpawnAnchorPoints();
         }
 
@@ -115,6 +121,44 @@ namespace PaulMapper
                     FinishCurve();
                 }
             }
+        }
+
+        public float GetRotationValueAtTime(float time, List<BeatmapObject> beatmapObjects)
+        {
+            //Get all relevant rotations
+            IEnumerable<MapEvent> rotations = eventsContainer.AllRotationEvents.Where(x => PaulMaker.CompareRound(x.Time, beatmapObjects.First().Time, 0.0001f) != -1 && PaulMaker.CompareRound(x.Time, beatmapObjects.Last().Time, 0.0001f) != 1).OrderBy(x => x.Time);
+
+            MapEvent rotEvent = rotations.LastOrDefault(x => x.Time <= time);
+            if (rotEvent == null)
+            {
+                if (rotations.Count() == 1)
+                {
+                    rotEvent = rotations.First();
+                }
+                else
+                    return -1;
+            }
+
+            float t1 = rotEvent.Time;
+
+            //Rotation at first note
+            float rot1 = eventsContainer.AllRotationEvents.Where(x => x.Time < t1).Sum(x => x.GetRotationDegreeFromValue().GetValueOrDefault());
+            float rot2 = rot1 + rotEvent.GetRotationDegreeFromValue().GetValueOrDefault();
+
+
+            //Get time of last rotation, or last note if it is further away
+            float t2 = 0;
+            MapEvent rotEventEnd = rotations.FirstOrDefault(x => x.Time >= time);
+
+            if (rotEventEnd == null || rotEventEnd.Time > beatmapObjects.Last().Time)
+                t2 = beatmapObjects.Last().Time;
+            else
+                t2 = rotEventEnd.Time;
+
+            if (t1 == t2)
+                return rot1;
+
+            return Mathf.Lerp(rot1, rot2, (time - t1) / (t2 - t1));
         }
 
         protected virtual void UpdateObjects()
@@ -364,9 +408,13 @@ namespace PaulMapper
 
         public void FinishCurve()
         {
+            List<BeatmapObjectModifiedAction> actions = new List<BeatmapObjectModifiedAction>();
+
             foreach (BeatmapObject obj in curveObjects)
             {
                 if (obj.CustomData != null && obj.CustomData["_isAnchor"]) obj.CustomData.Remove("_isAnchor");
+
+                actions.Add(new BeatmapObjectModifiedAction(obj, obj, originalCurveObjects[curveObjects.IndexOf(obj)]));
             }
              
 
@@ -391,7 +439,11 @@ namespace PaulMapper
 
                 Destroy(param.anchorPoint.gameObject);
             }
+            BeatmapActionContainer.AddAction(new ActionCollectionAction(actions, true, true));
+
             Destroy(gameObject);
+
+            
         }
     }
 

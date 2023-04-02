@@ -171,8 +171,52 @@ namespace PaulMapper
                 {
                     scale = new Vector3(customData["_scale"][0], customData["_scale"][1], customData["_scale"][2]);
                 }
+
+                if (customData.HasKey("_animation") && customData["_animation"].HasKey("_scale"))
+                { 
+                    scale = new Vector3(customData["_animation"]["_scale"][0], customData["_animation"]["_scale"][1], customData["_animation"]["_scale"][2]);
+                }
             } 
         }
+
+        public static BeatmapNote GetClosestGridSnap(BeatmapNote note)
+        {
+            BeatmapNote newNote = new BeatmapNote();
+            Vector2 notePos = note.GetRealPosition();
+
+            newNote.Time = note.Time;
+
+            newNote.LineIndex = (int)Math.Round(notePos.x + 2);
+            newNote.LineLayer = (int)Math.Round(notePos.y);
+
+            float angle = GetNoteDirection(note);
+
+            if (angle > 360) angle -= 360;
+            else if (angle < 0) angle += 360;
+
+            //angle += (note is BeatmapColorNote cnote) ? cnote.AngleOffset : 0;
+
+            if (note.CutDirection != 8)
+            {
+                newNote.CutDirection = noteNECutToCutdirection[noteNECutToCutdirection.Keys.OrderBy(k => Math.Abs(k - angle)).First()];
+            }
+            else
+                newNote.CutDirection = 8;
+
+            return newNote;
+        }
+
+        static Dictionary<float, int> noteNECutToCutdirection = new Dictionary<float, int>()
+        {
+            {0, 1},
+            {180, 0},
+            {270, 2},
+            {90, 3},
+            {225, 4},
+            {135, 5},
+            {315, 6},
+            {45, 7}
+        };
     }
 
 

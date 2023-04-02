@@ -23,6 +23,7 @@ namespace PaulMapper
         public bool transitionRotation = false;
         public bool usePointRotations = false;
         internal bool fakeWalls;
+        public bool useScale = false;
 
         public static PaulmapperData GetSaveData()
         {

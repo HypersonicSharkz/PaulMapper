@@ -13,19 +13,29 @@ using PaulMapper.PaulHelper;
 using System.IO;
 using UnityEngine.Localization;
 using UnityEngine.Localization.Settings;
+using UnityEngine.Events;
+using PaulMapper.UI;
 
 namespace PaulMapper
 {
     [Plugin("PaulMapper")]
     public class Plugin
     {
+        private bool useNewUI = false;
+
         public static PaulMomenter momenter;
+        public static PaulWindow main;
 
         [Init]
         private void Init()
         {
             //Debug.LogError("PaulMapper V0.3 - Loaded");
             SceneManager.sceneLoaded += SceneManager_sceneLoaded;
+            if (useNewUI)
+            {
+                main = new PaulWindow();
+                ExtensionButtons.AddButton(UIHelpers.LoadSprite("PaulMapper.Resources.Icon.png"), "Prop Edit", new UnityAction(() => main.ToggleWindow()));
+            }
         }
 
         [Exit]
@@ -38,6 +48,14 @@ namespace PaulMapper
         {
             if (arg0.buildIndex == 3) //Mapper scene 
             {
+                if (useNewUI)
+                {
+                    MapEditorUI mapEditorUI = UnityEngine.Object.FindObjectOfType<MapEditorUI>();
+                    main.Init(mapEditorUI);
+                    main.AddField("");
+                    main.AddParsed<int>("Precision", 16);
+                }
+
                 PaulFinder.pauls = new List<Paul>();
 
                 if (momenter != null && momenter.isActiveAndEnabled)
@@ -117,7 +135,8 @@ namespace PaulMapper
 
             paulmapperData.vibro = GUI.Toggle(new Rect(5, 80, guiWidth / 2 - 10, 20), paulmapperData.vibro, "Vibro");
             paulmapperData.rotateNotes = GUI.Toggle(new Rect(guiWidth / 2 + 5, 80, guiWidth / 2 - 10, 20), paulmapperData.rotateNotes, "Rotate");
-            paulmapperData.usePointRotations = GUI.Toggle(new Rect(guiWidth / 2 + 5, 100, guiWidth / 2 - 10, 20), paulmapperData.usePointRotations, "Force");
+            paulmapperData.usePointRotations = GUI.Toggle(new Rect(guiWidth / 2 + 5, 95, guiWidth / 2 - 10, 20), paulmapperData.usePointRotations, "Force");
+            paulmapperData.useScale = GUI.Toggle(new Rect(5, 95, guiWidth / 2 - 10, 20), paulmapperData.useScale, "Scale");
 
             paulmapperData.fakeWalls = GUI.Toggle(new Rect(5, 111, guiWidth - 10, 20), paulmapperData.fakeWalls, "Fake Walls");
 
@@ -143,6 +162,12 @@ namespace PaulMapper
                         }
                     }
                 }
+            } else if (BeatSaberSongContainer.Instance.Map.Version == "3.0.0")
+            {
+                if (GUI.Button(new Rect(5, 150, guiWidth - 10, 20), "Arc"))
+                {
+                    SpawnPrecisionArc();
+                }
             }
 
             GUI.Label(new Rect((guiWidth - 110) / 2, 170, 80, 20), "Transition time: ");
@@ -151,9 +176,6 @@ namespace PaulMapper
             string tt = GUI.TextField(new Rect(80 + (guiWidth - 110) / 2, 170, 30, 20), $"{paulmapperData.transitionTime.ToString("0.0")}");
 
             paulmapperData.transitionRotation = GUI.Toggle(new Rect(20, 190, guiWidth - 10, 20), paulmapperData.transitionRotation, "Keep Rotation");
-
-
-
 
             if (GUI.Button(new Rect(5, 220, guiWidth - 10, 20), "Find All Pauls"))
             {
@@ -327,6 +349,46 @@ namespace PaulMapper
 
             if (!float.TryParse(tt, out paulmapperData.transitionTime))
                 return;
+        }
+
+        private void SpawnPrecisionArc()
+        {
+            if (SelectionController.SelectedObjects.Count != 2) { SetNotice("Select two notes", noticeType.Error); return; }
+
+            if (!SelectionController.SelectedObjects.All(n => n.BeatmapType == BeatmapObject.ObjectType.Note)) { SetNotice("Select only notes", noticeType.Error); return; }
+
+            var ordered = SelectionController.SelectedObjects.OrderBy(s => s.Time).ToList();
+
+
+            BeatmapNote from = (BeatmapNote)ordered[0];
+            BeatmapNote to = (BeatmapNote)ordered[1];
+
+            BeatmapNote snappedFrom = Helper.GetClosestGridSnap(from);
+            BeatmapNote snappedTo = Helper.GetClosestGridSnap(to);
+
+            JSONNode customData = new JSONObject();
+            customData["coordinates"] = from.GetRealPosition();
+            customData["tailCoordinates"] = to.GetRealPosition();
+
+            BeatmapArc arcData = new BeatmapArc()
+            {
+                Time = from.Time,
+                Color = from.Type,
+                X = snappedFrom.LineIndex,
+                Y = snappedFrom.LineLayer,
+                Direction = snappedFrom.CutDirection,
+                TailTime = to.Time,
+                TailX = snappedTo.LineIndex,
+                TailY = snappedTo.LineLayer,
+                HeadControlPointLengthMultiplier = 1f,
+                TailControlPointLengthMultiplier = 1f,
+                TailCutDirection = snappedTo.CutDirection,
+                ArcMidAnchorMode = 0,
+                CustomData = customData
+            };
+
+            ArcPlacement arcPlacement = UnityEngine.Object.FindObjectOfType<ArcPlacement>();
+            arcPlacement.SpawnArc(arcData);
         }
 
         private float selectionDur()
@@ -709,6 +771,8 @@ namespace PaulMapper
                     advancedMenu = true;
                 }
                 showGUI = !showGUI;
+                isHovering = false;
+                CMInputCallbackInstaller.ClearDisabledActionMaps(typeof(PaulMomenter), PaulActions.actionMapsDisabled);
             }
 
             if (Input.GetKeyDown(KeyCode.F9))

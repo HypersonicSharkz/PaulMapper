@@ -55,6 +55,7 @@ namespace PaulMapper
                 obj.CustomData["size"] = scale;
             }
 
+            obj.CustomData["_animation"]["_scale"] = scale;
             obj.CustomData["_scale"] = scale;
         }
 
