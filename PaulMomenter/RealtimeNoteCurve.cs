@@ -1,4 +1,6 @@
-﻿using PaulMapper.PaulHelper;
+﻿using Beatmap.Base;
+using Beatmap.Containers;
+using PaulMapper.PaulHelper;
 using SimpleJSON;
 using System;
 using System.Collections.Generic;
@@ -24,7 +26,7 @@ namespace PaulMapper
             curveObjects = PaulMaker.GeneratePoodle(object1,
                                                     object2,
                                                     PaulmapperData.Instance.precision,
-                                                    initialObjects.All(p => (p as BeatmapNote).CutDirection == 8));
+                                                    initialObjects.All(p => (p as BaseNote).CutDirection == 8));
         }
 
         protected override void SpawnAnchorPoint(CurveParameter curveParameter)
@@ -98,9 +100,9 @@ namespace PaulMapper
 
         protected override void UpdateObjects()
         {
-            BeatmapNote oldNote = null;
+            BaseNote oldNote = null;
             int noteIndex = 0;
-            foreach (BeatmapNote note in curveObjects)
+            foreach (BaseNote note in curveObjects)
             {
                 noteIndex++;
 
@@ -118,7 +120,7 @@ namespace PaulMapper
 
                 float rotAtTime = GetRotationValueAtTime(note.Time, curveObjects);
                 if (rotAtTime != -1)
-                    customData["_rotation"] = new Vector3(0, rotAtTime, 0);
+                    note.CustomWorldRotation = new Vector3(0, rotAtTime, 0);
 
                 Color color = Color.white;
                 //Color handling 
@@ -197,10 +199,11 @@ namespace PaulMapper
                     
                     if (note == curveObjects.Last())
                     {
+                        note.CutDirection = 0;
                         if (PaulmapperData.Instance.vibro)
-                            note.SetRotation(customData_old["_cutDirection"] + 180);
+                            note.SetRotation(oldNote.GetNoteDirection() + 180f);
                         else
-                            note.SetRotation(customData_old["_cutDirection"]);
+                            note.SetRotation(oldNote.GetNoteDirection());
                     }
                 }
                 else if (PaulmapperData.Instance.vibro)
@@ -208,36 +211,52 @@ namespace PaulMapper
                     note.SetRotation(180 * (noteIndex % 2));
                 }
 
+                if (PaulmapperData.IsV3())
+                {
+                    if (PaulmapperData.Instance.disableBadCutDirection)
+                    {
+                        customData["disableBadCutDirection"] = true;
+                    }
+                    if (PaulmapperData.Instance.disableBadCutSpeed)
+                    {
+                        customData["disableBadCutSpeed"] = true;
+                    }
+                    if (PaulmapperData.Instance.disableBadCutSaberType)
+                    {
+                        customData["disableBadCutSaber"] = true;
+                    }
+                }
+
+
 
 
                 oldNote = note;
 
 
-                BeatmapObjectContainer con;
+                ObjectContainer con;
                 if (beatmapObjectContainerCollection.LoadedContainers.TryGetValue(oldNote, out con))
                 {
                     con.UpdateGridPosition();
-
-                    SetNoteCut(con as BeatmapNoteContainer);
+                    SetNoteCut(con as NoteContainer);
 
                     float xE = 0f;
                     float yE = 0f;
-                    JSONNode jsonnode = oldNote.CustomData["_cutDirection"];
-                    Vector3 directionEuler = new Vector3(xE, yE, (jsonnode != null) ? jsonnode.AsFloat : 0f);
+                    
+                    Vector3 directionEuler = new Vector3(xE, yE, oldNote.GetNoteDirection());
 
                     if (colorDist != null && colorDist.Count > 0)
-                        (con as BeatmapNoteContainer).SetColor(color);
+                        (con as NoteContainer).SetColor(color);
 
                     con.transform.localEulerAngles = directionEuler;
                 }
             }
         }
-        public void SetNoteCut(BeatmapNoteContainer note)
+        public void SetNoteCut(NoteContainer note)
         {
-            bool flag = note.MapNoteData.Type != 3;
+            bool flag = note.NoteData.Type != 3;
             if (flag)
             {
-                bool flag2 = note.MapNoteData.CutDirection != 8;
+                bool flag2 = note.NoteData.CutDirection != 8;
                 if (flag2)
                 {
                     note.SetArrowVisible(true);

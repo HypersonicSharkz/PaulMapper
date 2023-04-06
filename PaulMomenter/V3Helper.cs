@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Beatmap.Base;
+using Beatmap.V3;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,64 +11,36 @@ namespace PaulMapper
 {
     public static class V3Helper
     {
-        public static void SetColor(this BeatmapObject obj, Color color)
+        public static void SetColor(this BaseObject obj, Color color)
         {
-            if (BeatSaberSongContainer.Instance.Map.Version == "3.0.0")
-            {
-                obj.CustomData["color"] = color;
-            } 
-
-            obj.CustomData["_color"] = color;
+            obj.CustomColor = color;
         }
 
-        public static void SetPosition(this BeatmapObject obj, Vector2 position)
+        public static void SetPosition(this BaseGrid obj, Vector2 position)
         {
-            if (BeatSaberSongContainer.Instance.Map.Version == "3.0.0")
+            obj.CustomCoordinate = position;
+        }
+
+        public static void SetRotation(this BaseNote obj, float angle)
+        {
+            if (obj is V3ColorNote)
             {
-                obj.CustomData["coordinates"] = position;
+                obj.AngleOffset = (int)angle - 180;
             }
-
-            obj.CustomData["_position"] = position;
-        }
-
-        public static void SetRotation(this BeatmapObject obj, float angle)
-        {
-            if (BeatSaberSongContainer.Instance.Map.Version == "3.0.0")
+            else
             {
-                SetRotationV3(ref obj, angle);
-            }
-
-            obj.CustomData["_cutDirection"] = angle;
-        }
-
-        private static void SetRotationV3(ref BeatmapObject obj, float angle)
-        {
-            if (obj is BeatmapColorNote)
-            {
-                (obj as BeatmapColorNote).AngleOffset = (int)angle + 180;
-                (obj as BeatmapColorNote).CutDirection = 0;
+                obj.CustomDirection = (int)angle;
             }
         }
 
-        public static void SetScale(this BeatmapObject obj, Vector3 scale)
+        public static void SetScale(this BaseObject obj, Vector3 scale)
         {
-            if (BeatSaberSongContainer.Instance.Map.Version == "3.0.0")
-            {
-                obj.CustomData["size"] = scale;
-            }
-
-            obj.CustomData["_animation"]["_scale"] = scale;
-            obj.CustomData["_scale"] = scale;
+            obj.CustomData["animation"]["scale"] = scale;
         }
 
-        public static void SetScale(this BeatmapObject obj, Vector2 scale)
+        public static void SetScale(this BaseObstacle obj, Vector3 scale)
         {
-            if (BeatSaberSongContainer.Instance.Map.Version == "3.0.0")
-            {
-                obj.CustomData["size"] = scale;
-            }
-
-            obj.CustomData["_scale"] = scale;
+             obj.CustomSize = scale;
         }
     }
 }

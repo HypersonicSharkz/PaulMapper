@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Beatmap.Base;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,7 +11,7 @@ namespace PaulMapper
     public class Paul
     {
         [JsonIgnore]
-        public List<BeatmapNote> notes;
+        public List<BaseNote> notes;
 
         [JsonProperty(Order = 1)]
         public int PaulNumber { get => PaulHelper.PaulFinder.pauls.IndexOf(this) + 1; }

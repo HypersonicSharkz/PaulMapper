@@ -1,4 +1,6 @@
-﻿using SimpleJSON;
+﻿using Beatmap.Base;
+using Beatmap.V2;
+using SimpleJSON;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,48 +12,46 @@ namespace PaulMapper
 {
     public static class Helper
     {
-        public static Vector2 GetRealPosition(this BeatmapObject p_obj)
+        public static Vector2 GetRealPosition(this BaseGrid p_obj)
         {
             Vector2 result = new Vector2();
 
-            JSONNode customData = p_obj.CustomData;
-
-            if (p_obj.BeatmapType == BeatmapObject.ObjectType.Note)
+            if (p_obj.ObjectType == Beatmap.Enums.ObjectType.Note)
             {
-                BeatmapNote note = p_obj as BeatmapNote;
+                BaseNote note = p_obj as BaseNote;
 
-                if (customData != null && customData.HasKey("_position"))
+                if (p_obj.CustomCoordinate.HasValue)
                 {
-                    result = p_obj.CustomData["_position"].ReadVector2();
+                    result = p_obj.CustomCoordinate.Value;
                 }
                 else
                 {
-                    if (note.LineIndex >= 1000)
-                        result.x = (note.LineIndex / 1000) - 3;
-                    else if (note.LineIndex <= -1000)
-                        result.x = 1997 + note.LineIndex;
+                    if (note.PosX >= 1000)
+                        result.x = (note.PosX / 1000) - 3;
+                    else if (note.PosX <= -1000)
+                        result.x = 1997 + note.PosX;
                     else
-                        result.x = note.LineIndex - 2;
+                        result.x = note.PosX - 2;
 
 
-                    if (note.LineLayer >= 1000)
-                        result.y = (note.LineLayer / 1000) - 1;
-                    else if (note.LineLayer <= -1000)
-                        result.y = 1999 + note.LineLayer;
+                    if (note.PosY >= 1000)
+                        result.y = (note.PosY / 1000) - 1;
+                    else if (note.PosY <= -1000)
+                        result.y = 1999 + note.PosY;
                     else
-                        result.y = note.LineLayer;
+                        result.y = note.PosY;
                 }
-            } else if (p_obj.BeatmapType == BeatmapObject.ObjectType.Obstacle)
+            } else if (p_obj.ObjectType == Beatmap.Enums.ObjectType.Obstacle)
             {
-                BeatmapObstacle obstacle = p_obj as BeatmapObstacle;
+                BaseObstacle obstacle = p_obj as BaseObstacle;
 
-                if (customData != null && customData.HasKey("_position"))
+                if (p_obj.CustomCoordinate.HasValue)
                 {
-                    result = p_obj.CustomData["_position"].ReadVector2();
+                    result = p_obj.CustomCoordinate.Value;
                 } else
                 {
-                    result.x = obstacle.LineIndex - 2;
-                    result.y = obstacle.Type * 1.5f;
+                    result.x = obstacle.PosX - 2;
+                    result.y = (float)obstacle.PosY - 0.5f;
                 }
             }
 
@@ -59,15 +59,13 @@ namespace PaulMapper
              return result;
         }
 
-        public static float GetNoteDirection(this BeatmapNote note) 
+        public static float GetNoteDirection(this BaseNote note) 
         {
             float result = 0;
 
-            JSONNode customData = note.CustomData;
-
-            if (customData != null && customData.HasKey("_cutDirection"))
+            if (note.CustomDirection.HasValue)
             {
-                return note.CustomData["_cutDirection"];
+                return note.CustomDirection.Value;
             }
 
             switch (note.CutDirection)
@@ -97,7 +95,8 @@ namespace PaulMapper
                     result = 45;
                     break;
             }
-            return result;
+
+            return result + note.AngleOffset;
         }
 
         public static double AngleDifference(double angle1, double angle2)
@@ -136,58 +135,70 @@ namespace PaulMapper
             return 0;
         }
 
-        public static bool TryGetColorFromObject(BeatmapObject beatmapObject, out Color color)
+        public static bool TryGetColorFromObject(BaseObject beatmapObject, out Color color)
         {
             color = Color.clear;
 
-            JSONNode customData = beatmapObject.CustomData;
-            if (customData != null && customData.HasKey("_color"))
+            if (beatmapObject.CustomColor.HasValue)
             {
-                color = customData["_color"];
+                color = beatmapObject.CustomColor.Value;
                 return true;
             }
 
             return false;
         }
 
-        public static void GetObjectScale(BeatmapObject beatmapObject, out Vector3 scale)
+        public static void GetObjectScale(BaseGrid beatmapObject, out Vector3 scale)
         {
             scale = new Vector3(1, 1, 1);
 
-            if (beatmapObject.BeatmapType == BeatmapObject.ObjectType.Obstacle)
+            if (beatmapObject.ObjectType == Beatmap.Enums.ObjectType.Obstacle)
             {
-                float xScale = (beatmapObject as BeatmapObstacle).Width;
-                float yScale = (beatmapObject as BeatmapObstacle).Type == 0 ? 3.5f : 2f;
-                float duration = (beatmapObject as BeatmapObstacle).Duration; //Do some magic
+                Vector3? size = (beatmapObject as BaseObstacle).CustomSize;
+                float zScale = 0;
+                float xScale = 0;
+                float yScale = 0;
 
-                scale = new Vector3(xScale, yScale, duration);
+                if (size.HasValue)
+                {
+                    xScale = size.Value.x;
+                    yScale = size.Value.y;
+                    zScale = size.Value.z != 0 ? size.Value.z : (beatmapObject as BaseObstacle).Duration * EditorScaleController.EditorScale;
+                }
+                else
+                {
+                    Beatmap.Shared.ObstacleBounds bounds = (beatmapObject as BaseObstacle).GetShape();
+                    xScale = bounds.Width;
+                    yScale = bounds.Height;
+                    zScale = (beatmapObject as BaseObstacle).Duration * EditorScaleController.EditorScale; //Do some magic
+                }
 
+
+                scale = new Vector3(xScale, yScale, zScale);
+            }
+            else
+            {
+                JSONNode customData = beatmapObject.CustomData;
+                if (customData != null)
+                {
+                    if (customData.HasKey("animation") && customData["animation"].HasKey("scale"))
+                    { 
+                        scale = new Vector3(customData["animation"]["scale"][0], customData["animation"]["scale"][1], customData["animation"]["scale"][2]);
+                    }
+                } 
             }
 
-            JSONNode customData = beatmapObject.CustomData;
-            if (customData != null)
-            {
-                if (customData.HasKey("_scale"))
-                {
-                    scale = new Vector3(customData["_scale"][0], customData["_scale"][1], customData["_scale"][2]);
-                }
-
-                if (customData.HasKey("_animation") && customData["_animation"].HasKey("_scale"))
-                { 
-                    scale = new Vector3(customData["_animation"]["_scale"][0], customData["_animation"]["_scale"][1], customData["_animation"]["_scale"][2]);
-                }
-            } 
         }
 
-        public static BeatmapNote GetClosestGridSnap(BeatmapNote note)
+        public static BaseNote GetClosestGridSnap(BaseNote note)
         {
-            BeatmapNote newNote = new BeatmapNote();
+            V2Note newNote = new V2Note();
             Vector2 notePos = note.GetRealPosition();
 
             newNote.Time = note.Time;
 
-            newNote.LineIndex = (int)Math.Round(notePos.x + 2);
-            newNote.LineLayer = (int)Math.Round(notePos.y);
+            newNote.PosX = (int)Math.Round(notePos.x + 2);
+            newNote.PosY = (int)Math.Round(notePos.y);
 
             float angle = GetNoteDirection(note);
 

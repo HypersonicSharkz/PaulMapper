@@ -12,6 +12,9 @@
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
+	<ChromapperPath>C:\Users\davi3\Desktop\ChroMapper 0.7.0\chromapper\</ChromapperPath>
+	<ManagedPath>$(ChromapperPath)\ChroMapper_Data\Managed\</ManagedPath>
+	<PluginsPath>$(ChromapperPath)\Plugins\</PluginsPath>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -39,10 +42,15 @@
       <EmbedInteropTypes>False</EmbedInteropTypes>
     </Reference>
     <Reference Include="Input">
-      <HintPath>C:\Users\davi3\Desktop\ChroMapper 0.7.0\chromapper\ChroMapper_Data\Managed\Input.dll</HintPath>
+      <HintPath>$(ManagedPath)\Input.dll</HintPath>
     </Reference>
-    <Reference Include="Main">
-      <HintPath>..\..\..\Games\ChroMapper-feature-beatmap-v3\Build\ChroMapper_Data\Managed\Main.dll</HintPath>
+    <Reference Include="LiteNetLib, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>$(ManagedPath)\LiteNetLib.dll</HintPath>
+    </Reference>
+    <Reference Include="Main, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>$(ManagedPath)\Main.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -50,7 +58,7 @@
     </Reference>
     <Reference Include="Plugins, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>C:\Users\davi3\Desktop\ChroMapper 0.7.0\Chromapper V3 thingy\ChroMapper_Data\Managed\Plugins.dll</HintPath>
+      <HintPath>$(ManagedPath)\Plugins.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -75,55 +83,59 @@
     <Reference Include="System.Xml" />
     <Reference Include="Unity.InputSystem, Version=1.0.2.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>C:\Users\davi3\Desktop\ChroMapper 0.7.0\chromapper\ChroMapper_Data\Managed\Unity.InputSystem.dll</HintPath>
+      <HintPath>$(ManagedPath)\Unity.InputSystem.dll</HintPath>
     </Reference>
     <Reference Include="Unity.Localization, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>C:\Users\davi3\Desktop\ChroMapper 0.7.0\chromapper\ChroMapper_Data\Managed\Unity.Localization.dll</HintPath>
+      <HintPath>$(ManagedPath)\Unity.Localization.dll</HintPath>
     </Reference>
     <Reference Include="Unity.TextMeshPro, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>C:\Users\davi3\Desktop\ChroMapper 0.7.0\chromapper\ChroMapper_Data\Managed\Unity.TextMeshPro.dll</HintPath>
+      <HintPath>$(ManagedPath)\Unity.TextMeshPro.dll</HintPath>
     </Reference>
-    <Reference Include="UnityEngine">
-      <HintPath>C:\Users\davi3\Desktop\ChroMapper 0.7.0\chromapper\ChroMapper_Data\Managed\UnityEngine.dll</HintPath>
+    <Reference Include="UnityEngine, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>$(ManagedPath)\UnityEngine.dll</HintPath>
     </Reference>
-    <Reference Include="UnityEngine.CoreModule">
-      <HintPath>C:\Users\davi3\Desktop\ChroMapper 0.7.0\chromapper\ChroMapper_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
+    <Reference Include="UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>$(ManagedPath)\UnityEngine.CoreModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.ImageConversionModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>C:\Users\davi3\Desktop\ChroMapper 0.7.0\chromapper\ChroMapper_Data\Managed\UnityEngine.ImageConversionModule.dll</HintPath>
+      <HintPath>$(ManagedPath)\UnityEngine.ImageConversionModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>C:\Users\davi3\Desktop\ChroMapper 0.7.0\chromapper\ChroMapper_Data\Managed\UnityEngine.IMGUIModule.dll</HintPath>
+      <HintPath>$(ManagedPath)\UnityEngine.IMGUIModule.dll</HintPath>
     </Reference>
-    <Reference Include="UnityEngine.InputLegacyModule">
-      <HintPath>C:\Users\davi3\Desktop\ChroMapper 0.7.0\chromapper\ChroMapper_Data\Managed\UnityEngine.InputLegacyModule.dll</HintPath>
+    <Reference Include="UnityEngine.InputLegacyModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>$(ManagedPath)\UnityEngine.InputLegacyModule.dll</HintPath>
     </Reference>
-    <Reference Include="UnityEngine.JSONSerializeModule">
-      <HintPath>C:\Users\davi3\Desktop\ChroMapper 0.7.0\chromapper\ChroMapper_Data\Managed\UnityEngine.JSONSerializeModule.dll</HintPath>
+    <Reference Include="UnityEngine.JSONSerializeModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>$(ManagedPath)\UnityEngine.JSONSerializeModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.TextCoreModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>C:\Users\davi3\Desktop\ChroMapper 0.7.0\chromapper\ChroMapper_Data\Managed\UnityEngine.TextCoreModule.dll</HintPath>
+      <HintPath>$(ManagedPath)\UnityEngine.TextCoreModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.TextRenderingModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>C:\Users\davi3\Desktop\ChroMapper 0.7.0\chromapper\ChroMapper_Data\Managed\UnityEngine.TextRenderingModule.dll</HintPath>
+      <HintPath>$(ManagedPath)\UnityEngine.TextRenderingModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.UI, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>C:\Users\davi3\Desktop\ChroMapper 0.7.0\chromapper\ChroMapper_Data\Managed\UnityEngine.UI.dll</HintPath>
+      <HintPath>$(ManagedPath)\UnityEngine.UI.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>C:\Users\davi3\Desktop\ChroMapper 0.7.0\chromapper\ChroMapper_Data\Managed\UnityEngine.UIElementsModule.dll</HintPath>
+      <HintPath>$(ManagedPath)\UnityEngine.UIElementsModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.UIModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>C:\Users\davi3\Desktop\ChroMapper 0.7.0\chromapper\ChroMapper_Data\Managed\UnityEngine.UIModule.dll</HintPath>
+      <HintPath>$(ManagedPath)\UnityEngine.UIModule.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -161,8 +173,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>copy /Y "$(TargetDir)*$(TargetName).pdb" "C:\Users\davi3\Desktop\ChroMapper 0.7.0\chromapper\Plugins\PaulMapper"
-copy /Y "$(TargetDir)*$(TargetFileName)" "C:\Users\davi3\Desktop\ChroMapper 0.7.0\chromapper\Plugins\PaulMapper"
-call "C:\Users\davi3\Desktop\ChroMapper 0.7.0\CML.exe"</PostBuildEvent>
+    <PostBuildEvent>copy /Y "$(TargetDir)*$(TargetName).pdb" "$(PluginsPath)\PaulMapper"
+copy /Y "$(TargetDir)*$(TargetFileName)" "$(PluginsPath)\PaulMapper"</PostBuildEvent>
   </PropertyGroup>
 </Project>

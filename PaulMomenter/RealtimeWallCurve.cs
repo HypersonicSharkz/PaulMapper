@@ -1,4 +1,6 @@
-﻿using Extreme.Mathematics.Curves;
+﻿using Beatmap.Base;
+using Beatmap.Containers;
+using Extreme.Mathematics.Curves;
 using PaulMapper.PaulHelper;
 using SimpleJSON;
 using System;
@@ -17,7 +19,7 @@ namespace PaulMapper
 
         protected override void SpawnObjects()
         {
-            BeatmapObjectContainerCollection collection = BeatmapObjectContainerCollection.GetCollectionForType(BeatmapObject.ObjectType.Obstacle);
+            BeatmapObjectContainerCollection collection = BeatmapObjectContainerCollection.GetCollectionForType(Beatmap.Enums.ObjectType.Obstacle);
 
             float startTime = object1.Time;
             float endTime = object2.Time;
@@ -25,19 +27,12 @@ namespace PaulMapper
             float distanceInBeats = endTime - startTime;
             float originalDistance = distanceInBeats;
 
-            List<BeatmapObject> spawnedBeatobjects = new List<BeatmapObject>();
+            List<BaseObject> spawnedBeatobjects = new List<BaseObject>();
 
             while (distanceInBeats > 0 - 1 / (float)PaulmapperData.Instance.precision)
             {
-                BeatmapObstacle copy = null;
-                if (BeatSaberSongContainer.Instance.Map.Version == "3.0.0")
-                {
-                    copy = PaulHelper.PaulMaker.CopyV3Wall(object1.ConvertToJson());
-                }
-                else
-                {
-                    copy = new BeatmapObstacle(object1.ConvertToJson());
-                }
+                BaseObstacle copy = null;
+                copy = (BaseObstacle)object1.Clone();
 
                 copy.Time = (endTime - distanceInBeats);
                 if (copy.Time > endTime)
@@ -63,7 +58,7 @@ namespace PaulMapper
 
                 collection.SpawnObject(copy, false, false);
 
-                BeatmapObject beatmapObject = collection.UnsortedObjects.Last();
+                BaseObject beatmapObject = collection.UnsortedObjects.Last() as BaseObject;
                 spawnedBeatobjects.Add(beatmapObject);
 
                 distanceInBeats -= 1 / (float)PaulmapperData.Instance.precision;
@@ -109,7 +104,7 @@ namespace PaulMapper
 
         protected override void UpdateObjects()
         {
-            foreach (BeatmapObstacle wall in curveObjects)
+            foreach (BaseObstacle wall in curveObjects)
             { 
                 float time = wall.Time - curveObjects[0].Time;
 
@@ -118,11 +113,11 @@ namespace PaulMapper
 
                 JSONNode customData = wall.CustomData;
                 wall.SetPosition(new Vector2((float)x, (float)y));
-                wall.SetScale(new Vector2((float)widthCurve.ValueAt(time), (float)heightCurve.ValueAt(time)));
+                wall.SetScale(new Vector3((float)widthCurve.ValueAt(time), (float)heightCurve.ValueAt(time), (float)depthCurve.ValueAt(time)));
 
                 float rotAtTime = GetRotationValueAtTime(wall.Time, curveObjects);
                 if (rotAtTime != -1)
-                    customData["_rotation"] = new Vector3(0, rotAtTime, 0);
+                    wall.CustomWorldRotation = new Vector3(0, rotAtTime, 0);
 
                 Color color = Color.white;
                 //Color handling 
@@ -132,14 +127,14 @@ namespace PaulMapper
                     wall.SetColor(color);
                 }
 
-                BeatmapObjectContainer con;
+                ObjectContainer con;
                 bool flag = beatmapObjectContainerCollection.LoadedContainers.TryGetValue(wall, out con);
                 if (flag)
                 {
                     con.UpdateGridPosition();
 
                     if (colorDist != null && colorDist.Count > 0)
-                        (con as BeatmapObstacleContainer).SetColor(color);
+                        (con as ObstacleContainer).SetColor(color);
                 }
             }
         }

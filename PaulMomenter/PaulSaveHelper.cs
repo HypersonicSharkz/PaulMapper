@@ -9,8 +9,6 @@ using UnityEngine;
 
 namespace PaulMapper
 {
-
-
     public class PaulmapperData
     {
         public static PaulmapperData Instance;
@@ -18,30 +16,33 @@ namespace PaulMapper
         public int precision = 32;
         public bool vibro = false;
         public bool rotateNotes = true;
+        public bool arcs = true;
         public bool autoDot = true;
         public float transitionTime = 0.3f;
         public bool transitionRotation = false;
         public bool usePointRotations = false;
         internal bool fakeWalls;
         public bool useScale = false;
+        public bool disableBadCutDirection = false;
+        public bool disableBadCutSpeed = false;
+        public bool disableBadCutSaberType = false;
+
 
         public static PaulmapperData GetSaveData()
         {
 
-            PaulmapperData data = new PaulmapperData();
+            PaulmapperData data = null;
 
             try
             {
-                if (File.Exists(Path.Combine(Application.persistentDataPath, "paulMapper.json")))
-                    data = JsonConvert.DeserializeObject<PaulmapperData>(File.ReadAllText(Path.Combine(Application.persistentDataPath, "paulMapper.json")));
-                else
-                    data = new PaulmapperData();
-
+                data = JsonConvert.DeserializeObject<PaulmapperData>(File.ReadAllText(Path.Combine(Application.persistentDataPath, "paulMapper.json")));
             } catch
             {
                 data = new PaulmapperData();
-                
             }
+
+            if (data == null)
+                data = new PaulmapperData();
 
             File.WriteAllText(Path.Combine(Application.persistentDataPath, "paulMapper.json"), JsonConvert.SerializeObject(data, Formatting.Indented));
             Instance = data;
@@ -52,6 +53,11 @@ namespace PaulMapper
         public void SaveData()
         {
             File.WriteAllText(Path.Combine(Application.persistentDataPath, "paulMapper.json"), JsonConvert.SerializeObject(this, Formatting.Indented));
+        }
+
+        public static bool IsV3()
+        {
+            return BeatSaberSongContainer.Instance.Map.Version == "3.2.0";
         }
     }
 
