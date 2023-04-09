@@ -1,4 +1,5 @@
 ﻿using Beatmap.Base;
+using Beatmap.Shared;
 using Beatmap.V3;
 using System;
 using System.Collections.Generic;
@@ -38,7 +39,7 @@ namespace PaulMapper
             obj.CustomData["animation"]["scale"] = scale;
         }
 
-        public static void SetScale(this BaseObstacle obj, Vector3 scale)
+        public static void SetScale(this BaseObstacle obj, Vector2Or3 scale)
         {
              obj.CustomSize = scale;
         }

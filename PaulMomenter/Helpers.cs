@@ -1,4 +1,5 @@
 ﻿using Beatmap.Base;
+using Beatmap.Shared;
 using Beatmap.V2;
 using SimpleJSON;
 using System;
@@ -154,7 +155,7 @@ namespace PaulMapper
 
             if (beatmapObject.ObjectType == Beatmap.Enums.ObjectType.Obstacle)
             {
-                Vector3? size = (beatmapObject as BaseObstacle).CustomSize;
+                Vector2Or3? size = (beatmapObject as BaseObstacle).CustomSize;
                 float zScale = 0;
                 float xScale = 0;
                 float yScale = 0;
@@ -163,7 +164,7 @@ namespace PaulMapper
                 {
                     xScale = size.Value.x;
                     yScale = size.Value.y;
-                    zScale = size.Value.z != 0 ? size.Value.z : (beatmapObject as BaseObstacle).Duration * EditorScaleController.EditorScale;
+                    zScale = size.Value.z.HasValue ? size.Value.z.Value : (beatmapObject as BaseObstacle).Duration * EditorScaleController.EditorScale;
                 }
                 else
                 {
