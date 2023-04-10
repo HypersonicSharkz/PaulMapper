@@ -12,5 +12,5 @@ if installed correctly you should see PaulMapper in your Loaded Plugins:
 
 ## Discord!  
 Feel free to join the discord if you are interrested in  
-pauls/poodles. Pre-Releases will also be uploaded there!
+pauls/poodles. Pre-Releases will also be uploaded there!  
 https://discord.gg/URqgvQbmtX
