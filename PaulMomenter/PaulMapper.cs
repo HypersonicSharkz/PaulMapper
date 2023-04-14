@@ -178,7 +178,7 @@ namespace PaulMapper
 
                 if (BeatSaberSongContainer.Instance.Map.Version == "3.2.0")
                 {
-                    if (GUI.Button(new Rect(5, 150, guiWidth - 10, 20), "Arc"))
+                    if (GUI.Button(new Rect(5, 140, guiWidth - 10, 25), "Arc"))
                     {
                         SpawnPrecisionArc();
                     }
@@ -787,13 +787,16 @@ namespace PaulMapper
                 advancedMenu = false;
                 if (Input.GetKey(KeyCode.LeftShift) && !showGUI)
                 {
-                isHovering = false;
-                CMInputCallbackInstaller.ClearDisabledActionMaps(typeof(PaulMomenter), PaulActions.actionMapsDisabled);
+                    advancedMenu = true;
+                    isHovering = false;
+                    CMInputCallbackInstaller.ClearDisabledActionMaps(typeof(PaulMomenter), PaulActions.actionMapsDisabled);
+                }
+
+                showGUI = !showGUI;
             }
 
             if (Input.GetKeyDown(KeyCode.LeftArrow))
             {
-               
                 if (Input.GetKey(KeyCode.LeftAlt))
                 {
                     foreach (BaseGrid obj in SelectionController.SelectedObjects)
@@ -823,10 +826,7 @@ namespace PaulMapper
                             con.UpdateGridPosition();
                         }
                     }
-                }
-                    advancedMenu = true;
-                }
-                showGUI = !showGUI;
+                }                
             }
 
 

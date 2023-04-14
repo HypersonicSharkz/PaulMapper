@@ -13,6 +13,8 @@ namespace PaulMapper
 {
     class RealtimeNoteCurve : RealtimeCurve
     {
+        float scalingMul = 0.1f;
+
         protected override void SpawnObjects()
         {
             /*curveObjects = PaulMaker.GeneratePoodle(
@@ -35,7 +37,7 @@ namespace PaulMapper
 
             curveParameter.anchorPoint.OnScroll += delegate (int dir, ScrollType scrollType) { AnchorPoint_OnScroll(curveParameter, dir, scrollType); };
         }
-        float scalingMul = 0.1f;
+        
         private void AnchorPoint_OnScroll(CurveParameter curveParameter, int dir, ScrollType scrollType)
         {
             switch (scrollType)
@@ -199,11 +201,13 @@ namespace PaulMapper
                     
                     if (note == curveObjects.Last())
                     {
-                        note.CutDirection = 0;
+                        note.CutDirection = oldNote.CutDirection;
                         if (PaulmapperData.Instance.vibro)
                             note.SetRotation(oldNote.GetNoteDirection() + 180f);
                         else
+                        {
                             note.SetRotation(oldNote.GetNoteDirection());
+                        }
                     }
                 }
                 else if (PaulmapperData.Instance.vibro)

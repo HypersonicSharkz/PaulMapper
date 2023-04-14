@@ -91,7 +91,7 @@ namespace PaulMapper
                     curveWallParameter.scale.y += scalingMul * dir;
                     break;
 
-                case ScrollType.Duration:
+                case ScrollType.Rotation:
                     curveWallParameter.scale.z += scalingMul * dir;
                     break;
             }
