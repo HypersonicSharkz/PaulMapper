@@ -21,9 +21,9 @@ namespace PaulMapper
             {
                 BaseNote note = p_obj as BaseNote;
 
-                if (p_obj.CustomCoordinate.HasValue)
+                if (p_obj.CustomCoordinate != null)
                 {
-                    result = p_obj.CustomCoordinate.Value;
+                    result = p_obj.CustomCoordinate;
                 }
                 else
                 {
@@ -46,9 +46,9 @@ namespace PaulMapper
             {
                 BaseObstacle obstacle = p_obj as BaseObstacle;
 
-                if (p_obj.CustomCoordinate.HasValue)
+                if (p_obj.CustomCoordinate != null)
                 {
-                    result = p_obj.CustomCoordinate.Value;
+                    result = p_obj.CustomCoordinate;
                 } else
                 {
                     result.x = obstacle.PosX - 2;
@@ -155,7 +155,10 @@ namespace PaulMapper
 
             if (beatmapObject.ObjectType == Beatmap.Enums.ObjectType.Obstacle)
             {
-                Vector2Or3? size = (beatmapObject as BaseObstacle).CustomSize;
+                Vector3? size = null;
+                if ((beatmapObject as BaseObstacle).CustomSize != null)
+                    size = (beatmapObject as BaseObstacle).CustomSize;
+
                 float zScale = 0;
                 float xScale = 0;
                 float yScale = 0;
@@ -164,7 +167,7 @@ namespace PaulMapper
                 {
                     xScale = size.Value.x;
                     yScale = size.Value.y;
-                    zScale = size.Value.z.HasValue ? size.Value.z.Value : (beatmapObject as BaseObstacle).Duration * EditorScaleController.EditorScale;
+                    zScale = size.Value.z != 0 ? size.Value.z : (beatmapObject as BaseObstacle).Duration * EditorScaleController.EditorScale;
                 }
                 else
                 {

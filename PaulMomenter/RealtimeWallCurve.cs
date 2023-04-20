@@ -114,7 +114,7 @@ namespace PaulMapper
 
                 JSONNode customData = wall.CustomData;
                 wall.SetPosition(new Vector2((float)x, (float)y));
-                wall.SetScale(new Vector2Or3((float)widthCurve.ValueAt(time), (float)heightCurve.ValueAt(time), (float)depthCurve.ValueAt(time)));
+                wall.SetScale(new Vector3((float)widthCurve.ValueAt(time), (float)heightCurve.ValueAt(time), (float)depthCurve.ValueAt(time)));
 
                 float rotAtTime = GetRotationValueAtTime(wall.Time, curveObjects);
                 if (rotAtTime != -1)

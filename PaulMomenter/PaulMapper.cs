@@ -802,7 +802,12 @@ namespace PaulMapper
                     foreach (BaseGrid obj in SelectionController.SelectedObjects)
                     {
                         var beatmapObjectContainerCollection = BeatmapObjectContainerCollection.GetCollectionForType(obj.ObjectType);
-                        obj.CustomLocalRotation = obj.CustomLocalRotation.GetValueOrDefault(Vector3.zero) + new Vector3(0, 0, 5);
+
+                        Vector3? rotation = null;
+                        if (obj.CustomLocalRotation != null)
+                            rotation = obj.CustomLocalRotation;
+
+                        obj.CustomLocalRotation = rotation.GetValueOrDefault(Vector3.zero) + new Vector3(0, 0, 5);
                         ObjectContainer con;
                         if (beatmapObjectContainerCollection.LoadedContainers.TryGetValue(obj, out con))
                         {
@@ -819,7 +824,11 @@ namespace PaulMapper
                     foreach (BaseGrid obj in SelectionController.SelectedObjects)
                     {
                         var beatmapObjectContainerCollection = BeatmapObjectContainerCollection.GetCollectionForType(obj.ObjectType);
-                        obj.CustomLocalRotation = obj.CustomLocalRotation.GetValueOrDefault(Vector3.zero) + new Vector3(0, 0, -5);
+                        Vector3? rotation = null;
+                        if (obj.CustomLocalRotation != null)
+                            rotation = obj.CustomLocalRotation;
+
+                        obj.CustomLocalRotation = rotation.GetValueOrDefault(Vector3.zero) + new Vector3(0, 0, -5);
                         ObjectContainer con;
                         if (beatmapObjectContainerCollection.LoadedContainers.TryGetValue(obj, out con))
                         {
@@ -1038,9 +1047,9 @@ namespace PaulMapper
                 {
                     if (con is BaseNote note)
                     {
-                        if (note.CustomCoordinate.HasValue)
+                        if (note.CustomCoordinate != null)
                         {
-                            Vector2 oldPosition2 = note.CustomCoordinate.Value;
+                            Vector2 oldPosition2 = ((Vector2?)note.CustomCoordinate).Value;
                             Vector2 flipped2 = new Vector2((oldPosition2.x + 0.5f) * -1f - 0.5f, oldPosition2.y);
                             note.CustomCoordinate = flipped2;
                         }

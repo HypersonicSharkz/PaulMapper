@@ -30,7 +30,7 @@ namespace PaulMapper
             }
             else
             {
-                obj.CustomDirection = (int)angle;
+                obj.CustomDirection = angle;
             }
         }
 
@@ -39,7 +39,7 @@ namespace PaulMapper
             obj.CustomData["animation"]["scale"] = scale;
         }
 
-        public static void SetScale(this BaseObstacle obj, Vector2Or3 scale)
+        public static void SetScale(this BaseObstacle obj, Vector3 scale)
         {
              obj.CustomSize = scale;
         }
