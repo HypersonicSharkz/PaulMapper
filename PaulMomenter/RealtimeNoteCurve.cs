@@ -108,7 +108,7 @@ namespace PaulMapper
             {
                 noteIndex++;
 
-                float time = note.Time - curveObjects[0].Time;
+                float time = note.SongBpmTime - curveObjects[0].SongBpmTime;
 
                 var x = xCurve.ValueAt(time);
                 var y = yCurve.ValueAt(time);
@@ -120,7 +120,7 @@ namespace PaulMapper
                     note.SetScale(new Vector3((float)widthCurve.ValueAt(time), (float)heightCurve.ValueAt(time), (float)depthCurve.ValueAt(time)));
                 }
 
-                float rotAtTime = GetRotationValueAtTime(note.Time, curveObjects);
+                float rotAtTime = GetRotationValueAtTime(note.SongBpmTime, curveObjects);
                 if (rotAtTime != -1)
                     note.CustomWorldRotation = new Vector3(0, rotAtTime, 0);
 
@@ -146,10 +146,10 @@ namespace PaulMapper
                             //Directions are being forced
 
                             //First get the two points before and after note
-                            CurveParameter paramBefore = curveParameters.Last(p => p.time < note.Time);
-                            CurveParameter paramAfter = curveParameters.First(p => p.time >= note.Time);
+                            CurveParameter paramBefore = curveParameters.Last(p => p.time < note.SongBpmTime);
+                            CurveParameter paramAfter = curveParameters.First(p => p.time >= note.SongBpmTime);
 
-                            float lerpTime = (note.Time - paramBefore.time) / (paramAfter.time - paramBefore.time);
+                            float lerpTime = (note.SongBpmTime - paramBefore.time) / (paramAfter.time - paramBefore.time);
 
                             float ang = Mathf.Lerp(paramBefore.cutDirection.Value, paramAfter.cutDirection.Value, lerpTime);
 
@@ -190,7 +190,7 @@ namespace PaulMapper
                             oldNote.SetRotation(ang);
                         }
                         //Now check dots
-                        if (curveParameters.Any(c => c.dotPoint && Math.Abs(oldNote.Time - c.time) < c.dotTime))
+                        if (curveParameters.Any(c => c.dotPoint && Math.Abs(oldNote.SongBpmTime - c.time) < c.dotTime))
                         {
                             oldNote.CutDirection = 8;
                             if (!PaulmapperData.Instance.transitionRotation)

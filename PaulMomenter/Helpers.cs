@@ -199,7 +199,7 @@ namespace PaulMapper
             V2Note newNote = new V2Note();
             Vector2 notePos = note.GetRealPosition();
 
-            newNote.Time = note.Time;
+            newNote.SongBpmTime = note.SongBpmTime;
 
             newNote.PosX = (int)Math.Round(notePos.x + 2);
             newNote.PosY = (int)Math.Round(notePos.y);

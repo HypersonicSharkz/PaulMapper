@@ -22,8 +22,8 @@ namespace PaulMapper
         {
             BeatmapObjectContainerCollection collection = BeatmapObjectContainerCollection.GetCollectionForType(Beatmap.Enums.ObjectType.Obstacle);
 
-            float startTime = object1.Time;
-            float endTime = object2.Time;
+            float startTime = object1.SongBpmTime;
+            float endTime = object2.SongBpmTime;
 
             float distanceInBeats = endTime - startTime;
             float originalDistance = distanceInBeats;
@@ -35,8 +35,8 @@ namespace PaulMapper
                 BaseObstacle copy = null;
                 copy = (BaseObstacle)object1.Clone();
 
-                copy.Time = (endTime - distanceInBeats);
-                if (copy.Time > endTime)
+                copy.SongBpmTime = (endTime - distanceInBeats);
+                if (copy.SongBpmTime > endTime)
                     break;
 
                 float line = (originalDistance - distanceInBeats);
@@ -49,12 +49,15 @@ namespace PaulMapper
 
                 if (PaulmapperData.Instance.fakeWalls)
                 {
-                    customData["_fake"] = true;
-
-                    if (BeatSaberSongContainer.Instance.Map.Version == "3.0.0")
+                    if (PaulmapperData.IsV3())
+                    {
                         customData["uninteractable"] = true;
+                    } 
                     else
+                    {
+                        customData["_fake"] = true;
                         customData["_interactable"] = false;
+                    }
                 }
 
                 collection.SpawnObject(copy, false, false);
@@ -107,7 +110,7 @@ namespace PaulMapper
         {
             foreach (BaseObstacle wall in curveObjects)
             { 
-                float time = wall.Time - curveObjects[0].Time;
+                float time = wall.SongBpmTime - curveObjects[0].SongBpmTime;
 
                 var x = xCurve.ValueAt(time);
                 var y = yCurve.ValueAt(time);
@@ -116,7 +119,7 @@ namespace PaulMapper
                 wall.SetPosition(new Vector2((float)x, (float)y));
                 wall.SetScale(new Vector3((float)widthCurve.ValueAt(time), (float)heightCurve.ValueAt(time), (float)depthCurve.ValueAt(time)));
 
-                float rotAtTime = GetRotationValueAtTime(wall.Time, curveObjects);
+                float rotAtTime = GetRotationValueAtTime(wall.SongBpmTime, curveObjects);
                 if (rotAtTime != -1)
                     wall.CustomWorldRotation = new Vector3(0, rotAtTime, 0);
 

@@ -157,8 +157,8 @@ namespace PaulMapper
                 {
                     notesContainer = BeatmapObjectContainerCollection.GetCollectionForType(Beatmap.Enums.ObjectType.Note);
                     List<BaseNote> allNotes = (from BaseNote it in notesContainer.LoadedObjects
-                                                  orderby it.Time
-                                                  select it).ToList();
+                                                  orderby it.SongBpmTime
+                                               select it).ToList();
 
                     foreach (BaseNote note in allNotes)
                     {
@@ -188,8 +188,8 @@ namespace PaulMapper
             if (GUI.Button(new Rect(5, 220, guiWidth - 10, 20), "Find All Pauls"))
             {
                 List<BaseNote> allNotes = (from BaseNote it in notesContainer.LoadedObjects
-                                              orderby it.Time
-                                              select it).ToList();
+                                              orderby it.SongBpmTime
+                                           select it).ToList();
 
                 PaulFinder.pauls = PaulFinder.FindAllPauls(allNotes).OrderBy(p => p.Beat).ToList();
             }
@@ -330,7 +330,7 @@ namespace PaulMapper
                 {
                     BaseNote last = null;
                     float summedChange = 0;
-                    foreach (BaseNote beatmapObject in SelectionController.SelectedObjects.OrderBy(s => s.Time).Cast<BaseNote>())
+                    foreach (BaseNote beatmapObject in SelectionController.SelectedObjects.OrderBy(s => s.SongBpmTime).Cast<BaseNote>())
                     {
                         if (last != null)
                         {
@@ -364,7 +364,7 @@ namespace PaulMapper
 
             if (!SelectionController.SelectedObjects.All(n => n.ObjectType == Beatmap.Enums.ObjectType.Note)) { SetNotice("Select only notes", noticeType.Error); return; }
 
-            var ordered = SelectionController.SelectedObjects.OrderBy(s => s.Time).ToList();
+            var ordered = SelectionController.SelectedObjects.OrderBy(s => s.SongBpmTime).ToList();
 
             bool straight = Event.current.modifiers == EventModifiers.Shift;
 
@@ -389,8 +389,8 @@ namespace PaulMapper
         {
             if (SelectionController.SelectedObjects.All(o => o.ObjectType == Beatmap.Enums.ObjectType.Note))
             {
-                List<BaseNote> notes = SelectionController.SelectedObjects.OrderBy(n => n.Time).Cast<BaseNote>().ToList();
-                return ats.GetSecondsFromBeat(notes.Last().Time - notes.First().Time);
+                List<BaseNote> notes = SelectionController.SelectedObjects.OrderBy(n => n.SongBpmTime).Cast<BaseNote>().ToList();
+                return ats.GetSecondsFromBeat(notes.Last().SongBpmTime - notes.First().SongBpmTime);
             }
             return 0;
         }
@@ -459,11 +459,11 @@ namespace PaulMapper
                 {
                     BaseNote beatmapObject1 = SelectionController.SelectedObjects.First() as BaseNote;
                     BaseNote beatmapObject2 = SelectionController.SelectedObjects.Last() as BaseNote;
-                    if ((beatmapObject1.CutDirection == beatmapObject2.CutDirection || paulmapperData.rotateNotes) && beatmapObject1.Time != beatmapObject2.Time)
+                    if ((beatmapObject1.CutDirection == beatmapObject2.CutDirection || paulmapperData.rotateNotes) && beatmapObject1.SongBpmTime != beatmapObject2.SongBpmTime)
                     {
                         windowTotalRect.width += guiWidth;
 
-                        BaseObject[] beatmapObjects = SelectionController.SelectedObjects.OrderBy(o => o.Time).ToArray();
+                        BaseObject[] beatmapObjects = SelectionController.SelectedObjects.OrderBy(o => o.SongBpmTime).ToArray();
 
                         GUI.Box(new Rect(windowRect.x + guiWidth, windowRect.y, guiWidth, windowRect.height), "Quick Menu");
                         float xPos = windowRect.x + guiWidth + 10;
@@ -634,7 +634,7 @@ namespace PaulMapper
 
         public List<BaseObject> CreatePoodle(BaseObject[] beatmapObjects, bool autoDot, int precision, float transitionTime)
         {
-            if (beatmapObjects.Count() != beatmapObjects.Select(p => p.Time).Distinct().Count())
+            if (beatmapObjects.Count() != beatmapObjects.Select(p => p.SongBpmTime).Distinct().Count())
                 return null;
 
             BeatmapObjectContainerCollection collection = BeatmapObjectContainerCollection.GetCollectionForType(beatmapObjects[0].ObjectType);
@@ -663,14 +663,14 @@ namespace PaulMapper
 
                     Dictionary<float, float> points_dir = new Dictionary<float, float>();
 
-                    float endTime = beatmapObjects.Last().Time;
-                    float totalTime = beatmapObjects.Last().Time - beatmapObjects[0].Time;
+                    float endTime = beatmapObjects.Last().SongBpmTime;
+                    float totalTime = beatmapObjects.Last().SongBpmTime - beatmapObjects[0].SongBpmTime;
 
                     Dictionary<float, Color> DistColorDict = new Dictionary<float, Color>();
 
                     foreach (BaseObject beatmapObject in beatmapObjects)
                     {
-                        float startTime = beatmapObject.Time;
+                        float startTime = beatmapObject.SongBpmTime;
 
                         float distanceInBeats = totalTime - (endTime - startTime);
 
@@ -693,7 +693,7 @@ namespace PaulMapper
                     List<float> dotTimes = null;
                     if (autoDot)
                     {
-                        dotTimes = beatmapObjects.Where(p => (p as BaseNote).CutDirection == 8).Select(p => p.Time - transitionTime).ToList();
+                        dotTimes = beatmapObjects.Where(p => (p as BaseNote).CutDirection == 8).Select(p => p.SongBpmTime - transitionTime).ToList();
                     }
 
                     CubicSpline splinex = CubicSpline.CreateNatural(pointsx, pointsx_y);
@@ -711,8 +711,8 @@ namespace PaulMapper
                 if (walls.All(w => w.Type == walls[0].Type && w.Width == walls[0].Width && w.PosX == walls[0].PosX))
                 {
 
-                    float startTime = walls[0].Time;
-                    float endTime = walls[1].Time;
+                    float startTime = walls[0].SongBpmTime;
+                    float endTime = walls[1].SongBpmTime;
 
                     float distanceInBeats = endTime - startTime;
                     float originalDistance = distanceInBeats;
@@ -720,7 +720,7 @@ namespace PaulMapper
                     while (distanceInBeats > 0 - 1 / (float)precision)
                     {
                         BaseObstacle copy = (BaseObstacle)walls[0].Clone();
-                        copy.Time = (endTime - distanceInBeats);
+                        copy.SongBpmTime = (endTime - distanceInBeats);
 
 
                         collection.SpawnObject(copy, false, false);
@@ -844,7 +844,7 @@ namespace PaulMapper
                 //TimeKeeper TP = new TimeKeeper();
                 //TP.Start();
 
-                BaseObject[] beatmapObjects = SelectionController.SelectedObjects.OrderBy(o => o.Time).ToArray();
+                BaseObject[] beatmapObjects = SelectionController.SelectedObjects.OrderBy(o => o.SongBpmTime).ToArray();
 
                 if (beatmapObjects.Length != 2)
                 {
@@ -852,7 +852,7 @@ namespace PaulMapper
                     return;
                 }
 
-                if (beatmapObjects[1].Time - beatmapObjects[0].Time < 1 / paulmapperData.precision)
+                if (beatmapObjects[1].SongBpmTime - beatmapObjects[0].SongBpmTime < 1 / paulmapperData.precision)
                 {
                     SetNotice("Notes are closer than precision", noticeType.Error);
                     return;
@@ -898,7 +898,7 @@ namespace PaulMapper
 
             if (Input.GetKeyDown(KeyCode.F12))
             {
-                BaseObject[] beatmapObjects = SelectionController.SelectedObjects.OrderBy(o => o.Time).ToArray();
+                BaseObject[] beatmapObjects = SelectionController.SelectedObjects.OrderBy(o => o.SongBpmTime).ToArray();
 
                 if (beatmapObjects.Length < 2)
                 {
@@ -907,7 +907,7 @@ namespace PaulMapper
                 }
                 if (beatmapObjects.Length == 2)
                 {
-                    if (beatmapObjects[1].Time - beatmapObjects[0].Time < 1 / paulmapperData.precision)
+                    if (beatmapObjects[1].SongBpmTime - beatmapObjects[0].SongBpmTime < 1 / paulmapperData.precision)
                     {
                         SetNotice("Points are closer than precision", noticeType.Error);
                         return;

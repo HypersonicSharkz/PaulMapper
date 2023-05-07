@@ -53,7 +53,7 @@ namespace PaulMapper
             eventsContainer = BeatmapObjectContainerCollection.GetCollectionForType(Beatmap.Enums.ObjectType.Event) as EventGridContainer;
 
             TracksManager = FindObjectOfType<TracksManager>();
-            BaseObject[] beatmapObjects = parameters.OrderBy(o => o.Time).ToArray();
+            BaseObject[] beatmapObjects = parameters.OrderBy(o => o.SongBpmTime).ToArray();
 
 
             //Materials are weird I think
@@ -62,7 +62,7 @@ namespace PaulMapper
             mainMat = con.GetComponentsInChildren<MeshRenderer>()[0].material;
             selectionMat = con.GetComponentsInChildren<MeshRenderer>()[1].material;
 
-            if (beatmapObjects.Count() != beatmapObjects.Select(p => p.Time).Distinct().Count())
+            if (beatmapObjects.Count() != beatmapObjects.Select(p => p.SongBpmTime).Distinct().Count())
             {
                 Plugin.momenter.SetNotice("2 notes can't be on the same beat!", noticeType.Error);
                 Destroy(this);
@@ -128,9 +128,9 @@ namespace PaulMapper
         public float GetRotationValueAtTime(float time, List<BaseObject> beatmapObjects)
         {
             //Get all relevant rotations
-            IEnumerable<BaseEvent> rotations = eventsContainer.AllRotationEvents.Where(x => PaulMaker.CompareRound(x.Time, beatmapObjects.First().Time, 0.0001f) != -1 && PaulMaker.CompareRound(x.Time, beatmapObjects.Last().Time, 0.0001f) != 1).OrderBy(x => x.Time);
+            IEnumerable<BaseEvent> rotations = eventsContainer.AllRotationEvents.Where(x => PaulMaker.CompareRound(x.SongBpmTime, beatmapObjects.First().SongBpmTime, 0.0001f) != -1 && PaulMaker.CompareRound(x.SongBpmTime, beatmapObjects.Last().SongBpmTime, 0.0001f) != 1).OrderBy(x => x.SongBpmTime);
 
-            BaseEvent rotEvent = rotations.LastOrDefault(x => x.Time <= time);
+            BaseEvent rotEvent = rotations.LastOrDefault(x => x.SongBpmTime <= time);
             if (rotEvent == null)
             {
                 if (rotations.Count() == 1)
@@ -141,21 +141,21 @@ namespace PaulMapper
                     return -1;
             }
 
-            float t1 = rotEvent.Time;
+            float t1 = rotEvent.SongBpmTime;
 
             //Rotation at first note
-            float rot1 = eventsContainer.AllRotationEvents.Where(x => x.Time < t1).Sum(x => x.GetRotationDegreeFromValue().GetValueOrDefault());
+            float rot1 = eventsContainer.AllRotationEvents.Where(x => x.SongBpmTime < t1).Sum(x => x.GetRotationDegreeFromValue().GetValueOrDefault());
             float rot2 = rot1 + rotEvent.GetRotationDegreeFromValue().GetValueOrDefault();
 
 
             //Get time of last rotation, or last note if it is further away
             float t2 = 0;
-            BaseEvent rotEventEnd = rotations.FirstOrDefault(x => x.Time >= time);
+            BaseEvent rotEventEnd = rotations.FirstOrDefault(x => x.SongBpmTime >= time);
 
-            if (rotEventEnd == null || rotEventEnd.Time > beatmapObjects.Last().Time)
-                t2 = beatmapObjects.Last().Time;
+            if (rotEventEnd == null || rotEventEnd.SongBpmTime > beatmapObjects.Last().SongBpmTime)
+                t2 = beatmapObjects.Last().SongBpmTime;
             else
-                t2 = rotEventEnd.Time;
+                t2 = rotEventEnd.SongBpmTime;
 
             if (t1 == t2)
                 return rot1;
@@ -234,14 +234,14 @@ namespace PaulMapper
         float minTimeDif = 0.01f;
         private void AddAnchorPoint()
         {
-            float time = curveObjects.First(o => o.Time >= PaulMomenter.ats.CurrentBeat).Time;
+            float time = curveObjects.First(o => o.SongBpmTime >= PaulMomenter.ats.CurrentBeat).SongBpmTime;
             if (!curveParameters.Any(c => Math.Abs(c.time - time) < minTimeDif))
             {
                 if (PaulMomenter.ats.CurrentBeat < curveParameters.Last().time
                     && PaulMomenter.ats.CurrentBeat > curveParameters.First().time)
                 {
                     //Is between first 2 points
-                    CurveParameter newCP = new CurveParameter(curveObjects.First(o => o.Time >= PaulMomenter.ats.CurrentBeat) as BaseGrid);
+                    CurveParameter newCP = new CurveParameter(curveObjects.First(o => o.SongBpmTime >= PaulMomenter.ats.CurrentBeat) as BaseGrid);
                     SpawnAnchorPoint(newCP);
                     curveParameters.Add(newCP);
                     curveParameters = curveParameters.OrderBy(c => c.time).ToList();
@@ -434,7 +434,7 @@ namespace PaulMapper
                 //Set notes to anchor points for future editing
                 try
                 {
-                    BaseObject noteForAnc = curveObjects.OrderBy(p => p.Time).OrderBy(p => Math.Abs(param.time - p.Time)).First();
+                    BaseObject noteForAnc = curveObjects.OrderBy(p => p.SongBpmTime).OrderBy(p => Math.Abs(param.time - p.SongBpmTime)).First();
 
                     if (noteForAnc.CustomData == null)
                     {
@@ -488,7 +488,7 @@ namespace PaulMapper
         {
             Vector2 notePos = note.GetRealPosition();
 
-            this.time = note.Time;
+            this.time = note.SongBpmTime;
             this.xPos = notePos.x;
             this.yPos = notePos.y;
 

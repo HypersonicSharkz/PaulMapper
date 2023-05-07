@@ -25,11 +25,11 @@ namespace PaulMapper.PaulHelper
             List<Paul> pauls = new List<Paul>();
 
             List<Paul> leftPauls = FindPauls(notesLeft);
-            leftPauls.ForEach(p => p.notes.ForEach(n => n.CustomData["_paul"] = $"{p.notes.First().Time}" ));
+            leftPauls.ForEach(p => p.notes.ForEach(n => n.CustomData["_paul"] = $"{p.notes.First().SongBpmTime}" ));
             pauls.AddRange(leftPauls);
 
             List<Paul> rightPauls = FindPauls(notesRight);
-            rightPauls.ForEach(p => p.notes.ForEach(n => n.CustomData["_paul"] = $"{p.notes.First().Time}"));
+            rightPauls.ForEach(p => p.notes.ForEach(n => n.CustomData["_paul"] = $"{p.notes.First().SongBpmTime}"));
             pauls.AddRange(rightPauls);
 
             //Debug.LogError("Found: " + pauls.Count + " Pauls");
@@ -55,9 +55,9 @@ namespace PaulMapper.PaulHelper
 
             foreach (BaseNote note in notesOneSide)
             {
-                if (note.Time != oldNote.Time)
+                if (note.SongBpmTime != oldNote.SongBpmTime)
                 {
-                    float dist = note.Time - oldNote.Time;
+                    float dist = note.SongBpmTime - oldNote.SongBpmTime;
 
                     if (lastPrecision != 0)
                     {
@@ -120,7 +120,7 @@ namespace PaulMapper.PaulHelper
 
             currentPaul = pauls.IndexOf(paul);
 
-            PaulMomenter.ats.MoveToTimeInBeats(paul.notes[0].Time);
+            PaulMomenter.ats.MoveToTimeInBeats(paul.notes[0].SongBpmTime);
 
 
         }
@@ -186,7 +186,7 @@ namespace PaulMapper.PaulHelper
             JSONNode jsonnode = new JSONObject();
             jsonnode["coordinates"] = from.GetRealPosition();
             jsonnode["tailCoordinates"] = to.GetRealPosition();
-            V3Arc obj = new V3Arc(from.Time, closestGridSnap.PosX, closestGridSnap.PosY, from.Color, overrideAngle.GetValueOrDefault(closestGridSnap.CutDirection), 1f, to.Time, closestGridSnap2.PosX, closestGridSnap2.PosY, overrideAngle.GetValueOrDefault(closestGridSnap2.CutDirection), 1f, 0, jsonnode);
+            V3Arc obj = new V3Arc(from.SongBpmTime, closestGridSnap.PosX, closestGridSnap.PosY, from.Color, overrideAngle.GetValueOrDefault(closestGridSnap.CutDirection), 1f, to.SongBpmTime, closestGridSnap2.PosX, closestGridSnap2.PosY, overrideAngle.GetValueOrDefault(closestGridSnap2.CutDirection), 1f, 0, jsonnode);
             BeatmapObjectContainerCollection collectionForType = BeatmapObjectContainerCollection.GetCollectionForType(ObjectType.Arc);
             collectionForType.SpawnObject(obj, true, true);
             return collectionForType.UnsortedObjects.Last() as BaseArc;
@@ -228,8 +228,8 @@ namespace PaulMapper.PaulHelper
         {
             BeatmapObjectContainerCollection collection = BeatmapObjectContainerCollection.GetCollectionForType(Beatmap.Enums.ObjectType.Note);
 
-            float startTime = note1.Time;
-            float endTime = note2.Time;
+            float startTime = note1.SongBpmTime;
+            float endTime = note2.SongBpmTime;
 
             float distanceInBeats = endTime - startTime;
 
@@ -245,8 +245,8 @@ namespace PaulMapper.PaulHelper
                 copy.CustomData = new JSONObject();
 
                 //copy.CustomData["_paul"] = startTime;
-                copy.Time = (endTime - distanceInBeats);
-                if (copy.Time > endTime)
+                copy.SongBpmTime = (endTime - distanceInBeats);
+                if (copy.SongBpmTime > endTime)
                     break;
 
                 collection.SpawnObject(copy, false, false);
@@ -278,8 +278,8 @@ namespace PaulMapper.PaulHelper
             //TGP.Start();
             BeatmapObjectContainerCollection collection = BeatmapObjectContainerCollection.GetCollectionForType(Beatmap.Enums.ObjectType.Note);
 
-            float startTime = note1.Time;
-            float endTime = note2.Time;
+            float startTime = note1.SongBpmTime;
+            float endTime = note2.SongBpmTime;
 
             float distanceInBeats = endTime - startTime;
             float originalDistance = distanceInBeats;
@@ -297,8 +297,8 @@ namespace PaulMapper.PaulHelper
 
                 copy = (BaseNote)note1.Clone();
 
-                copy.Time = (endTime - distanceInBeats);
-                if (copy.Time > endTime)
+                copy.SongBpmTime = (endTime - distanceInBeats);
+                if (copy.SongBpmTime > endTime)
                     break;
 
                 float line = (originalDistance - distanceInBeats);
@@ -388,8 +388,8 @@ namespace PaulMapper.PaulHelper
                     try
                     {
                         dotTime.Sort();
-                        float closeDotTime = dotTime.OrderBy(d => Mathf.Abs(d - oldNote.Time)).First();
-                        if (Mathf.Abs(oldNote.Time - closeDotTime) < 2 * PaulmapperData.Instance.transitionTime)
+                        float closeDotTime = dotTime.OrderBy(d => Mathf.Abs(d - oldNote.SongBpmTime)).First();
+                        if (Mathf.Abs(oldNote.SongBpmTime - closeDotTime) < 2 * PaulmapperData.Instance.transitionTime)
                         {
                             oldNote.CutDirection = 8;
 
@@ -451,8 +451,8 @@ namespace PaulMapper.PaulHelper
         {
             BeatmapObjectContainerCollection collection = BeatmapObjectContainerCollection.GetCollectionForType(note1.ObjectType);
 
-            float startTime = note1.Time;
-            float endTime = note2.Time;
+            float startTime = note1.SongBpmTime;
+            float endTime = note2.SongBpmTime;
 
             float distanceInBeats = endTime - startTime;
             float originalDistance = distanceInBeats;
@@ -465,8 +465,8 @@ namespace PaulMapper.PaulHelper
 
                 copy = (BaseObject)note1.Clone();
 
-                copy.Time = (endTime - distanceInBeats);
-                if (copy.Time > endTime)
+                copy.SongBpmTime = (endTime - distanceInBeats);
+                if (copy.SongBpmTime > endTime)
                     break;
 
                 collection.SpawnObject(copy, false, false);
@@ -494,7 +494,7 @@ namespace PaulMapper.PaulHelper
             if (Helper.TryGetColorFromObject(note1, out Color col1) && Helper.TryGetColorFromObject(note2, out Color col2))
             {
                 DistColorDict.Add(0, col1);
-                DistColorDict.Add(note2.Time - note1.Time, col2);
+                DistColorDict.Add(note2.SongBpmTime - note1.SongBpmTime, col2);
             }
 
             BeatmapObjectContainerCollection beatmapObjectContainerCollection = UnityEngine.Object.FindObjectOfType<BeatmapObjectContainerCollection>();
@@ -506,8 +506,8 @@ namespace PaulMapper.PaulHelper
             ang += 90;
             float noteRotation = ang;
 
-            float startTime = note1.Time;
-            float endTime = note2.Time;
+            float startTime = note1.SongBpmTime;
+            float endTime = note2.SongBpmTime;
 
 
             float distanceInBeats = endTime - startTime;
@@ -527,8 +527,8 @@ namespace PaulMapper.PaulHelper
                 BaseNote copy = (BaseNote)note1.Clone();
                 copy.CutDirection = 0;
 
-                copy.Time = endTime - distanceInBeats;
-                if (copy.Time > endTime)
+                copy.SongBpmTime = endTime - distanceInBeats;
+                if (copy.SongBpmTime > endTime)
                     break;
 
                     
@@ -615,7 +615,7 @@ namespace PaulMapper.PaulHelper
 
                     if (DistColorDict != null && DistColorDict.Count > 0)
                     {
-                        copy.CustomColor = PaulMaker.LerpColorFromDict(DistColorDict, copy.Time - startTime);
+                        copy.CustomColor = PaulMaker.LerpColorFromDict(DistColorDict, copy.SongBpmTime - startTime);
                     }
 
                     if (PaulmapperData.Instance.rotateNotes)
