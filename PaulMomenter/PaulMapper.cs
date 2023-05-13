@@ -364,7 +364,7 @@ namespace PaulMapper
 
             if (!SelectionController.SelectedObjects.All(n => n.ObjectType == Beatmap.Enums.ObjectType.Note)) { SetNotice("Select only notes", noticeType.Error); return; }
 
-            var ordered = SelectionController.SelectedObjects.OrderBy(s => s.SongBpmTime).ToList();
+            var ordered = SelectionController.SelectedObjects.OrderBy(s => s.JsonTime).ToList();
 
             bool straight = Event.current.modifiers == EventModifiers.Shift;
 

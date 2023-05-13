@@ -186,7 +186,7 @@ namespace PaulMapper.PaulHelper
             JSONNode jsonnode = new JSONObject();
             jsonnode["coordinates"] = from.GetRealPosition();
             jsonnode["tailCoordinates"] = to.GetRealPosition();
-            V3Arc obj = new V3Arc(from.SongBpmTime, closestGridSnap.PosX, closestGridSnap.PosY, from.Color, overrideAngle.GetValueOrDefault(closestGridSnap.CutDirection), 1f, to.SongBpmTime, closestGridSnap2.PosX, closestGridSnap2.PosY, overrideAngle.GetValueOrDefault(closestGridSnap2.CutDirection), 1f, 0, jsonnode);
+            V3Arc obj = new V3Arc(from.JsonTime, closestGridSnap.PosX, closestGridSnap.PosY, from.Color, overrideAngle.GetValueOrDefault(closestGridSnap.CutDirection), 1f, to.JsonTime, closestGridSnap2.PosX, closestGridSnap2.PosY, overrideAngle.GetValueOrDefault(closestGridSnap2.CutDirection), 1f, 0, jsonnode);
             BeatmapObjectContainerCollection collectionForType = BeatmapObjectContainerCollection.GetCollectionForType(ObjectType.Arc);
             collectionForType.SpawnObject(obj, true, true);
             return collectionForType.UnsortedObjects.Last() as BaseArc;
