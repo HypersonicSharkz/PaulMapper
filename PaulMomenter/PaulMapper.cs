@@ -262,7 +262,7 @@ namespace PaulMapper
 
                         try
                         {
-                            Paul paul = PaulFinder.pauls.Last(p => p.Beat < ats.CurrentBeat);
+                            Paul paul = PaulFinder.pauls.Last(p => p.Beat < ats.CurrentSongBpmTime);
 
                             PaulFinder.GoToPaul(paul);
                         }
@@ -279,7 +279,7 @@ namespace PaulMapper
                         //Go to next paul
                         try
                         {
-                            Paul paul = PaulFinder.pauls.First(p => p.Beat > ats.CurrentBeat);
+                            Paul paul = PaulFinder.pauls.First(p => p.Beat > ats.CurrentSongBpmTime);
                             PaulFinder.GoToPaul(paul);
                         }
                         catch

@@ -201,7 +201,7 @@ namespace PaulMapper
             point.selectionMat = selectionMat;
             point.param = curveParameter;
 
-            float zPos = (curveParameter.time - PaulMomenter.ats.CurrentBeat) * EditorScaleController.EditorScale;
+            float zPos = (curveParameter.time - PaulMomenter.ats.CurrentSongBpmTime) * EditorScaleController.EditorScale;
 
             sphere.transform.parent = curveTrack.ObjectParentTransform;
             sphere.transform.position = new Vector3(curveParameter.xPos, curveParameter.yPos, zPos) + point.parameterOffset;
@@ -234,14 +234,14 @@ namespace PaulMapper
         float minTimeDif = 0.01f;
         private void AddAnchorPoint()
         {
-            float time = curveObjects.First(o => o.SongBpmTime >= PaulMomenter.ats.CurrentBeat).SongBpmTime;
+            float time = curveObjects.First(o => o.SongBpmTime >= PaulMomenter.ats.CurrentSongBpmTime).SongBpmTime;
             if (!curveParameters.Any(c => Math.Abs(c.time - time) < minTimeDif))
             {
-                if (PaulMomenter.ats.CurrentBeat < curveParameters.Last().time
-                    && PaulMomenter.ats.CurrentBeat > curveParameters.First().time)
+                if (PaulMomenter.ats.CurrentSongBpmTime < curveParameters.Last().time
+                    && PaulMomenter.ats.CurrentSongBpmTime > curveParameters.First().time)
                 {
                     //Is between first 2 points
-                    CurveParameter newCP = new CurveParameter(curveObjects.First(o => o.SongBpmTime >= PaulMomenter.ats.CurrentBeat) as BaseGrid);
+                    CurveParameter newCP = new CurveParameter(curveObjects.First(o => o.SongBpmTime >= PaulMomenter.ats.CurrentSongBpmTime) as BaseGrid);
                     SpawnAnchorPoint(newCP);
                     curveParameters.Add(newCP);
                     curveParameters = curveParameters.OrderBy(c => c.time).ToList();

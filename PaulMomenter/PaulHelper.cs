@@ -120,7 +120,7 @@ namespace PaulMapper.PaulHelper
 
             currentPaul = pauls.IndexOf(paul);
 
-            PaulMomenter.ats.MoveToTimeInBeats(paul.notes[0].SongBpmTime);
+            PaulMomenter.ats.MoveToSongBpmTime(paul.notes[0].SongBpmTime);
 
 
         }
@@ -131,7 +131,7 @@ namespace PaulMapper.PaulHelper
         {
             Paul paul = null;
 
-            Paul closest = pauls.OrderBy(p => Math.Abs(p.Beat - PaulMomenter.ats.CurrentBeat) ).First();
+            Paul closest = pauls.OrderBy(p => Math.Abs(p.Beat - PaulMomenter.ats.CurrentSongBpmTime) ).First();
             if (lastPaul != null && closest == lastPaul && pauls.Any(p => p.Beat == lastPaul.Beat && p != lastPaul)) 
             {
                 paul = pauls.First(p => p.Beat == lastPaul.Beat && p != lastPaul);
@@ -497,7 +497,7 @@ namespace PaulMapper.PaulHelper
                 DistColorDict.Add(note2.SongBpmTime - note1.SongBpmTime, col2);
             }
 
-            BeatmapObjectContainerCollection beatmapObjectContainerCollection = UnityEngine.Object.FindObjectOfType<BeatmapObjectContainerCollection>();
+            BeatmapObjectContainerCollection collection = BeatmapObjectContainerCollection.GetCollectionForType(Beatmap.Enums.ObjectType.Note);
 
             Vector2 n1 = (note1 as BaseNote).GetPosition();
             Vector2 n2 = (note2 as BaseNote).GetPosition();
@@ -630,12 +630,12 @@ namespace PaulMapper.PaulHelper
                     customData["_paul"] = startTime;
                 }
 
-                    
 
-                beatmapObjectContainerCollection.SpawnObject(copy, false, false);
+                copy.WriteCustom();
+                collection.SpawnObject(copy, false, false);
 
 
-                BaseObject beatmapObject = beatmapObjectContainerCollection.UnsortedObjects[beatmapObjectContainerCollection.UnsortedObjects.Count - 1];
+                BaseObject beatmapObject = collection.UnsortedObjects[collection.UnsortedObjects.Count - 1];
                 spawnedBeatobjects.Add(beatmapObject);
 
 
@@ -649,9 +649,9 @@ namespace PaulMapper.PaulHelper
 
             foreach (BaseObject beatmapObject in new List<BaseObject>() { note1, note2 })
             {
-                beatmapObjectContainerCollection.DeleteObject(beatmapObject, false);
+                collection.DeleteObject(beatmapObject, false);
             }
-
+            
             BeatmapActionContainer.AddAction(new SelectionPastedAction(spawnedBeatobjects, new List<BaseObject>() { note1, note2 }));
 
             foreach (BaseObject note in spawnedBeatobjects)
@@ -659,8 +659,6 @@ namespace PaulMapper.PaulHelper
                 SelectionController.Select(note, true, true, false);
             }
             //beatmapObjectContainerCollection.DeleteObject(note2);
-
-            
         }
 
         public static int CompareRound(float d1, float d2, float rounding)
