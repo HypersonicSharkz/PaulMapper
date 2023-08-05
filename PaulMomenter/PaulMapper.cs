@@ -1,43 +1,63 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using SimpleJSON;
 using Extreme.Mathematics.Curves;
 using System.Data;
-using Discord;
 using PaulMapper.PaulHelper;
-using System.IO;
-using UnityEngine.Localization;
-using UnityEngine.Localization.Settings;
-using UnityEngine.Events;
-using PaulMapper.UI;
 using Beatmap.Base;
-using Beatmap.Containers;
+using System.Reflection;
 
 namespace PaulMapper
 {
     [Plugin("PaulMapper")]
     public class Plugin
     {
-        private bool useNewUI = false;
+        public static bool useNewUI = false;
 
-        public static PaulMomenter momenter;
-        public static PaulWindow main;
+        public static PaulMapper momenter;
+        internal static UIHandler uiHandler;
+
+        public static bool UpToDate = true;
 
         [Init]
         private void Init()
         {
             //Debug.LogError("PaulMapper V0.3 - Loaded");
             SceneManager.sceneLoaded += SceneManager_sceneLoaded;
+
+            Assembly assembly = null;
+            try
+            {
+                assembly = Assembly.Load("ChroMapper-PropEdit");
+                if (assembly.GetName().Version < new Version("0.5.1.0"))
+                {
+                    Debug.LogError("Please update the ChroMapper PropEdit Plugin to get the new UI");
+                    useNewUI = false;
+                }
+                else
+                    useNewUI = true;
+            }
+            catch (Exception)
+            {
+                useNewUI = false;
+            }
+
             if (useNewUI)
             {
-                main = new PaulWindow();
-                ExtensionButtons.AddButton(UIHelpers.LoadSprite("PaulMapper.Resources.Icon.png"), "Prop Edit", new UnityAction(() => main.ToggleWindow()));
+                AddUIHandler();
             }
+
+            ExtensionButtons.AddButton(UIHelper.LoadSprite("PaulMapper.Resources.Icon.png"), "Paul Mapper", () => { momenter?.ToggleUI(); });
+
+            PaulmapperData.GetSaveData();
+            CheckVersion();
+        }
+
+        private void AddUIHandler()
+        {
+            uiHandler = new UIHandler();
         }
 
         [Exit]
@@ -46,16 +66,33 @@ namespace PaulMapper
             momenter?.paulmapperData?.SaveData();
         }
 
-        private void SceneManager_sceneLoaded(Scene arg0, LoadSceneMode arg1)
+        private void CheckVersion()
         {
+            SceneTransitionManager.Instance.StartCoroutine(GitHubUtils.GetLatestReleaseTag((tag) =>
+            {
+                if (string.IsNullOrEmpty(tag))
+                    return;
+
+                System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
+
+                Version version = assembly.GetName().Version;
+                Version githubVersion = new Version(tag.Replace("v", ""));
+
+                if (version < githubVersion)
+                {
+                    UpToDate = false;
+                }
+
+            }));
+        }
+
+        private void SceneManager_sceneLoaded(Scene arg0, LoadSceneMode arg1)
+        {    
             if (arg0.buildIndex == 3) //Mapper scene 
             {
                 if (useNewUI)
                 {
-                    MapEditorUI mapEditorUI = UnityEngine.Object.FindObjectOfType<MapEditorUI>();
-                    main.Init(mapEditorUI);
-                    main.AddField("");
-                    main.AddParsed<int>("Precision", 16);
+                    UpdateUIScene();
                 }
 
                 PaulFinder.pauls = new List<Paul>();
@@ -63,15 +100,20 @@ namespace PaulMapper
                 if (momenter != null && momenter.isActiveAndEnabled)
                     return;
 
-                momenter = new GameObject("PaulMomenter").AddComponent<PaulMomenter>();
+                momenter = new GameObject("PaulMomenter").AddComponent<PaulMapper>();
             }
-
         }
 
+        private void UpdateUIScene()
+        {
+            var mapEditorUI = UnityEngine.Object.FindObjectOfType<MapEditorUI>();
+            useNewUI = uiHandler.TryLoadPaulMapperWindow(mapEditorUI);
+            uiHandler.TryLoadQuickMenu(mapEditorUI);
+        }
     }
 
 
-    public class PaulMomenter : MonoBehaviour
+    public class PaulMapper : MonoBehaviour
     {
         public bool showGUI;
 
@@ -84,6 +126,18 @@ namespace PaulMapper
 
         public PaulmapperData paulmapperData;
 
+        public void ToggleUI()
+        {
+            if (Plugin.useNewUI)
+            {
+                Plugin.uiHandler.ToggleWindow();
+            }
+            else
+            {
+                showGUI = !showGUI;
+            }
+        }
+
         private void Start()
         {
             ats = BeatmapObjectContainerCollection.GetCollectionForType(0).AudioTimeSyncController;
@@ -91,7 +145,7 @@ namespace PaulMapper
             bpmChangesContainer = BeatmapObjectContainerCollection.GetCollectionForType(Beatmap.Enums.ObjectType.BpmChange);
 
 
-            paulmapperData = PaulmapperData.GetSaveData();
+            paulmapperData = PaulmapperData.Instance;
 
             try
             {
@@ -102,12 +156,10 @@ namespace PaulMapper
                 paulmapperData.windowRect = new SerializableRect(windowRect);
                 paulmapperData.SaveData();
             }
-
         }
 
         public static float guiX = 200;
         public static float guiWidth = 140;
-        char warnIcon = '\u26A0';
 
         public static Rect windowRect = new Rect(guiX, 10, guiWidth, 450);
 
@@ -222,7 +274,7 @@ namespace PaulMapper
 
                             foreach (BaseObject beatmapObject in beatmapObjects)
                             {
-                                collection.DeleteObject(beatmapObject, false);
+                                collection.DeleteObjectFix(beatmapObject, false);
                             }
 
                             BeatmapActionContainer.AddAction(new SelectionPastedAction(spawnedNotes, beatmapObjects));
@@ -348,7 +400,9 @@ namespace PaulMapper
 
             if (!string.IsNullOrEmpty(notice))
                 GUI.TextArea(new Rect(0, 400, guiWidth, 50), $"{notice}", style);
-
+            else if (!Plugin.UpToDate)
+                if (GUI.Button(new Rect(0, 400, guiWidth, 50), $"New Version Of Paulmapper is available", style))
+                    System.Diagnostics.Process.Start("https://github.com/HypersonicSharkz/PaulMapper/releases");
 
             if (!int.TryParse(text, out paulmapperData.precision))
                 return;
@@ -358,11 +412,11 @@ namespace PaulMapper
                 return;
         }
 
-        private void SpawnPrecisionArc()
+        public static void SpawnPrecisionArc()
         {
-            if (SelectionController.SelectedObjects.Count < 2) { SetNotice("Select at least two notes", noticeType.Error); return; }
+            if (SelectionController.SelectedObjects.Count < 2) { /*SetNotice("Select at least two notes", noticeType.Error);*/ return; }
 
-            if (!SelectionController.SelectedObjects.All(n => n.ObjectType == Beatmap.Enums.ObjectType.Note)) { SetNotice("Select only notes", noticeType.Error); return; }
+            if (!SelectionController.SelectedObjects.All(n => n.ObjectType == Beatmap.Enums.ObjectType.Note)) { /*SetNotice("Select only notes", noticeType.Error);*/ return; }
 
             var ordered = SelectionController.SelectedObjects.OrderBy(s => s.JsonTime).ToList();
 
@@ -413,15 +467,24 @@ namespace PaulMapper
                 paulmapperData.arcs = GUI.Toggle(new Rect(guiWidth / 2 + 5, 40, guiWidth / 2 - 10, 20), paulmapperData.arcs, "Arcs");
             }
 
+            GUI.Label(new Rect((guiWidth - 110) / 2, 60, 80, 20), "Wall Rot: ");
+            GUI.SetNextControlName("Precision");
+            string text = GUI.TextField(new Rect(80 + (guiWidth - 110) / 2, 60, 30, 20), $"{paulmapperData.wallRotationAmount}");
+
             GUI.Label(new Rect(5, 140, guiWidth - 10, 20), "Disable Badcuts:");
             paulmapperData.disableBadCutDirection = GUI.Toggle(new Rect(5, 160, guiWidth - 10, 20), paulmapperData.disableBadCutDirection, "Direction");
             paulmapperData.disableBadCutSaberType = GUI.Toggle(new Rect(5, 180, guiWidth - 10, 20), paulmapperData.disableBadCutSaberType, "Saber Type");
             paulmapperData.disableBadCutSpeed = GUI.Toggle(new Rect(5, 200, guiWidth - 10, 20), paulmapperData.disableBadCutSpeed, "Speed");
+
+            if (!int.TryParse(text, out paulmapperData.wallRotationAmount))
+                return;
+
+            paulmapperData.wallRotationAmount = Math.Max(1, paulmapperData.wallRotationAmount);
         }
 
         private void OnGUI()
         {
-            if (showGUI)
+            if (!Plugin.useNewUI && showGUI)
             {
                 Rect newWindowRect = GUI.Window(0, windowRect, UpdatePaulMapperWindow, advancedMenu ? "Advanced Paul Menu" : "Paul Menu");
                 Rect settingsWindowRect = Rect.zero;
@@ -613,7 +676,7 @@ namespace PaulMapper
                     if (!isHovering)
                     {
                         isHovering = true;
-                        CMInputCallbackInstaller.DisableActionMaps(typeof(PaulMomenter), PaulActions.actionMapsDisabled);
+                        CMInputCallbackInstaller.DisableActionMaps(typeof(PaulMapper), PaulActions.actionMapsDisabled);
                     }
                 }
                 else
@@ -621,7 +684,7 @@ namespace PaulMapper
                     if (isHovering)
                     {
                         isHovering = false;
-                        CMInputCallbackInstaller.ClearDisabledActionMaps(typeof(PaulMomenter), PaulActions.actionMapsDisabled);
+                        CMInputCallbackInstaller.ClearDisabledActionMaps(typeof(PaulMapper), PaulActions.actionMapsDisabled);
                     }
                 }
             }
@@ -723,7 +786,7 @@ namespace PaulMapper
                         copy.SongBpmTime = (endTime - distanceInBeats);
 
 
-                        collection.SpawnObject(copy, false, false);
+                        collection.SpawnObjectFix(copy, false, false);
                         BaseObject beatmapObject = collection.UnsortedObjects.Last() as BaseObject;
                         spawnedNotes.Add(beatmapObject);
 
@@ -741,47 +804,51 @@ namespace PaulMapper
         }
 
 
-        public enum noticeType
-        {
-            None,
-            Warning,
-            Error
-        }
-
         string[] symbols = new string[] { "", "⚠", "‼️" };
         float lastNoticeTime;
         public void SetNotice(string p_notice, noticeType noticeType)
         {
-            string initalText = symbols[(int)noticeType] + ": " + p_notice;
-            int lastWhiteSpace = 0;
-
-            int lines = 0;
-            List<char> copied = initalText.ToList();
-            for (int i = 0; i < copied.Count; i++)
+            if (Plugin.useNewUI)
             {
-
-                if (char.IsWhiteSpace(copied[i]))
-                {
-                    lastWhiteSpace = i;
-                }
-
-                if (i % 20 == 0)
-                {
-                    initalText.Insert(lastWhiteSpace + lines, "\n");
-                    lines++;
-                }
+                Plugin.uiHandler.SetNotice(p_notice, noticeType);
             }
+            else
+            {
+                string initalText = symbols[(int)noticeType] + ": " + p_notice;
+                int lastWhiteSpace = 0;
 
-            lastNoticeTime = Time.time;
-            notice = initalText;
+                int lines = 0;
+                List<char> copied = initalText.ToList();
+                for (int i = 0; i < copied.Count; i++)
+                {
+
+                    if (char.IsWhiteSpace(copied[i]))
+                    {
+                        lastWhiteSpace = i;
+                    }
+
+                    if (i % 20 == 0)
+                    {
+                        initalText.Insert(lastWhiteSpace + lines, "\n");
+                        lines++;
+                    }
+                }
+
+                notice = initalText;
+                lastNoticeTime = Time.time;
+            }
         }
 
         private void Update()
         {
+            if (Plugin.useNewUI)
+                Plugin.uiHandler.UpdateUI();
+
             //Notice update
             if (Time.time - lastNoticeTime > 10)
                 notice = string.Empty;
 
+            /*
             if (Input.GetKeyDown(KeyCode.F10))
             {
                 advancedMenu = false;
@@ -789,31 +856,23 @@ namespace PaulMapper
                 {
                     advancedMenu = true;
                     isHovering = false;
-                    CMInputCallbackInstaller.ClearDisabledActionMaps(typeof(PaulMomenter), PaulActions.actionMapsDisabled);
+                    CMInputCallbackInstaller.ClearDisabledActionMaps(typeof(PaulMapper), PaulActions.actionMapsDisabled);
                 }
 
                 showGUI = !showGUI;
+            }*/
+
+            if (Input.GetKeyDown(KeyCode.F10))
+            {
+                ToggleUI();
             }
+
 
             if (Input.GetKeyDown(KeyCode.LeftArrow))
             {
                 if (Input.GetKey(KeyCode.LeftAlt))
                 {
-                    foreach (BaseGrid obj in SelectionController.SelectedObjects)
-                    {
-                        var beatmapObjectContainerCollection = BeatmapObjectContainerCollection.GetCollectionForType(obj.ObjectType);
-
-                        Vector3? rotation = null;
-                        if (obj.CustomLocalRotation != null)
-                            rotation = obj.CustomLocalRotation;
-
-                        obj.CustomLocalRotation = rotation.GetValueOrDefault(Vector3.zero) + new Vector3(0, 0, 5);
-                        ObjectContainer con;
-                        if (beatmapObjectContainerCollection.LoadedContainers.TryGetValue(obj, out con))
-                        {
-                            con.UpdateGridPosition();
-                        }
-                    }
+                    Helper.RotateWalls(false, true);
                 }
             }
 
@@ -821,21 +880,24 @@ namespace PaulMapper
             {
                 if (Input.GetKey(KeyCode.LeftAlt))
                 {
-                    foreach (BaseGrid obj in SelectionController.SelectedObjects)
-                    {
-                        var beatmapObjectContainerCollection = BeatmapObjectContainerCollection.GetCollectionForType(obj.ObjectType);
-                        Vector3? rotation = null;
-                        if (obj.CustomLocalRotation != null)
-                            rotation = obj.CustomLocalRotation;
-
-                        obj.CustomLocalRotation = rotation.GetValueOrDefault(Vector3.zero) + new Vector3(0, 0, -5);
-                        ObjectContainer con;
-                        if (beatmapObjectContainerCollection.LoadedContainers.TryGetValue(obj, out con))
-                        {
-                            con.UpdateGridPosition();
-                        }
-                    }
+                    Helper.RotateWalls(true, true);
                 }                
+            }
+
+            if (Input.GetKeyDown(KeyCode.UpArrow))
+            {
+                if (Input.GetKey(KeyCode.LeftAlt))
+                {
+                    Helper.RotateWalls(false, false);
+                }
+            }
+
+            if (Input.GetKeyDown(KeyCode.DownArrow))
+            {
+                if (Input.GetKey(KeyCode.LeftAlt))
+                {
+                    Helper.RotateWalls(true, false);
+                }
             }
 
 
@@ -885,7 +947,7 @@ namespace PaulMapper
 
                 foreach (BaseObject beatmapObject in beatmapObjects)
                 {
-                    collection.DeleteObject(beatmapObject, false);
+                    collection.DeleteObjectFix(beatmapObject, false);
                 }
 
                 BeatmapActionContainer.AddAction(new SelectionPastedAction(spawnedNotes, beatmapObjects));

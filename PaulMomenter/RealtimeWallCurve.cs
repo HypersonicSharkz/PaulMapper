@@ -1,17 +1,11 @@
 ﻿using Beatmap.Base;
 using Beatmap.Containers;
-using Beatmap.Shared;
 using Extreme.Mathematics.Curves;
 using PaulMapper.PaulHelper;
 using SimpleJSON;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
-using UnityEngine.Localization;
-using UnityEngine.Localization.Settings;
 
 namespace PaulMapper
 {
@@ -60,7 +54,14 @@ namespace PaulMapper
                     }
                 }
 
-                collection.SpawnObject(copy, false, false);
+                if (copy.CustomWorldRotation != null)
+                {
+                    Vector3 rot = copy.CustomWorldRotation.ReadVector3(new Vector3(0, 0, 0));
+                    copy.CustomWorldRotation = new Vector3(rot.x, rot.y, 0);
+                }
+
+                copy.WriteCustom();
+                collection.SpawnObjectFix(copy, false, false);
 
                 BaseObject beatmapObject = collection.UnsortedObjects.Last() as BaseObject;
                 spawnedBeatobjects.Add(beatmapObject);
@@ -69,6 +70,7 @@ namespace PaulMapper
             }
 
             curveObjects = spawnedBeatobjects;
+            base.SpawnObjects();
         }
 
         protected override void SpawnAnchorPoint(CurveParameter curveParameter)
@@ -123,6 +125,21 @@ namespace PaulMapper
                 if (rotAtTime != -1)
                     wall.CustomWorldRotation = new Vector3(0, rotAtTime, 0);
 
+                //Local rotation
+                //First get the two points before and after note
+                CurveParameter paramBefore = curveParameters.Last(p => p.time <= wall.SongBpmTime);
+                CurveParameter paramAfter = curveParameters.First(p => p.time >= wall.SongBpmTime);
+
+                float lerpTime = 1;
+                if (paramBefore != paramAfter)
+                    lerpTime = (wall.SongBpmTime - paramBefore.time) / (paramAfter.time - paramBefore.time);
+
+                float rotX = Mathf.Lerp(paramBefore.rotation.x, paramAfter.rotation.x, lerpTime);
+                float rotY = Mathf.Lerp(paramBefore.rotation.y, paramAfter.rotation.y, lerpTime);
+                float rotZ = Mathf.Lerp(paramBefore.rotation.z, paramAfter.rotation.z, lerpTime);
+
+                wall.CustomLocalRotation = new Vector3(rotX, rotY, rotZ);
+
                 Color color = Color.white;
                 //Color handling 
                 if (colorDist != null && colorDist.Count > 0)
@@ -131,11 +148,11 @@ namespace PaulMapper
                     wall.SetColor(color);
                 }
 
-                ObjectContainer con;
-                bool flag = beatmapObjectContainerCollection.LoadedContainers.TryGetValue(wall, out con);
-                if (flag)
+                if (beatmapObjectContainerCollection.LoadedContainers.TryGetValue(wall, out ObjectContainer con))
                 {
                     con.UpdateGridPosition();
+                    if (wall.CustomLocalRotation == null || wall.CustomLocalRotation.ReadVector3() == Vector3.zero)
+                        con.transform.localEulerAngles = Vector3.zero;
 
                     if (colorDist != null && colorDist.Count > 0)
                         (con as ObstacleContainer).SetColor(color);

@@ -6,8 +6,6 @@ using SimpleJSON;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace PaulMapper.PaulHelper
@@ -31,8 +29,6 @@ namespace PaulMapper.PaulHelper
             List<Paul> rightPauls = FindPauls(notesRight);
             rightPauls.ForEach(p => p.notes.ForEach(n => n.CustomData["_paul"] = $"{p.notes.First().SongBpmTime}"));
             pauls.AddRange(rightPauls);
-
-            //Debug.LogError("Found: " + pauls.Count + " Pauls");
 
             return pauls;
         }
@@ -120,7 +116,7 @@ namespace PaulMapper.PaulHelper
 
             currentPaul = pauls.IndexOf(paul);
 
-            PaulMomenter.ats.MoveToSongBpmTime(paul.notes[0].SongBpmTime);
+            PaulMapper.ats.MoveToSongBpmTime(paul.notes[0].SongBpmTime);
 
 
         }
@@ -131,7 +127,7 @@ namespace PaulMapper.PaulHelper
         {
             Paul paul = null;
 
-            Paul closest = pauls.OrderBy(p => Math.Abs(p.Beat - PaulMomenter.ats.CurrentSongBpmTime) ).First();
+            Paul closest = pauls.OrderBy(p => Math.Abs(p.Beat - PaulMapper.ats.CurrentSongBpmTime) ).First();
             if (lastPaul != null && closest == lastPaul && pauls.Any(p => p.Beat == lastPaul.Beat && p != lastPaul)) 
             {
                 paul = pauls.First(p => p.Beat == lastPaul.Beat && p != lastPaul);
@@ -170,7 +166,7 @@ namespace PaulMapper.PaulHelper
 
             foreach (BaseObject beatmapObject in notes)
             {
-                collection.DeleteObject(beatmapObject, false);
+                collection.DeleteObjectFix(beatmapObject, false);
             }
 
             BeatmapActionContainer.AddAction(new SelectionDeletedAction(notes));
@@ -188,7 +184,7 @@ namespace PaulMapper.PaulHelper
             jsonnode["tailCoordinates"] = to.GetRealPosition();
             V3Arc obj = new V3Arc(from.JsonTime, closestGridSnap.PosX, closestGridSnap.PosY, from.Color, overrideAngle.GetValueOrDefault(closestGridSnap.CutDirection), 1f, to.JsonTime, closestGridSnap2.PosX, closestGridSnap2.PosY, overrideAngle.GetValueOrDefault(closestGridSnap2.CutDirection), 1f, 0, jsonnode);
             BeatmapObjectContainerCollection collectionForType = BeatmapObjectContainerCollection.GetCollectionForType(ObjectType.Arc);
-            collectionForType.SpawnObject(obj, true, true);
+            collectionForType.SpawnObjectFix(obj, true, true);
             return collectionForType.UnsortedObjects.Last() as BaseArc;
         }
 
@@ -249,7 +245,8 @@ namespace PaulMapper.PaulHelper
                 if (copy.SongBpmTime > endTime)
                     break;
 
-                collection.SpawnObject(copy, false, false);
+                copy.WriteCustom();
+                collection.SpawnObjectFix(copy, false, false);
 
                 BaseObject beatmapObject = collection.UnsortedObjects.Last();
                 spawnedBeatobjects.Add(beatmapObject);
@@ -413,7 +410,7 @@ namespace PaulMapper.PaulHelper
                 customData["_paul"] = startTime;
 
 
-                collection.SpawnObject(copy, false, false);
+                collection.SpawnObjectFix(copy, false, false);
 
 
                 BaseObject beatmapObject = collection.UnsortedObjects.Last();
@@ -469,7 +466,7 @@ namespace PaulMapper.PaulHelper
                 if (copy.SongBpmTime > endTime)
                     break;
 
-                collection.SpawnObject(copy, false, false);
+                collection.SpawnObjectFix(copy, false, false);
                 BaseObject beatmapObject = collection.UnsortedObjects.Last();
                 spawnedBeatobjects.Add(beatmapObject);
 
@@ -497,10 +494,10 @@ namespace PaulMapper.PaulHelper
                 DistColorDict.Add(note2.SongBpmTime - note1.SongBpmTime, col2);
             }
 
-            BeatmapObjectContainerCollection collection = BeatmapObjectContainerCollection.GetCollectionForType(Beatmap.Enums.ObjectType.Note);
+            BeatmapObjectContainerCollection collection = BeatmapObjectContainerCollection.GetCollectionForType(note1.ObjectType);
 
-            Vector2 n1 = (note1 as BaseNote).GetPosition();
-            Vector2 n2 = (note2 as BaseNote).GetPosition();
+            Vector2 n1 = (note1 as BaseGrid).GetPosition();
+            Vector2 n2 = (note2 as BaseGrid).GetPosition();
 
             float ang = Mathf.Atan2(n2.y - n1.y, n2.x - n1.x) * 180 / Mathf.PI;
             ang += 90;
@@ -513,25 +510,26 @@ namespace PaulMapper.PaulHelper
             float distanceInBeats = endTime - startTime;
             float originalDistance = distanceInBeats;
 
-            Vector2 note1pos = (note1 as BaseNote).GetRealPosition();
-            Vector2 note2pos = (note2 as BaseNote).GetRealPosition();
+            Vector2 note1pos = (note1 as BaseGrid).GetRealPosition();
+            Vector2 note2pos = (note2 as BaseGrid).GetRealPosition();
 
-            BaseNote oldNote = null;
+            BaseGrid oldNote = null;
             int noteIndex = 1;
 
             List<BaseObject> spawnedBeatobjects = new List<BaseObject>();
 
             while (distanceInBeats > 0 - 1 / (float)precision)
             {
-                BaseNote note1Note = note1 as BaseNote;
-                BaseNote copy = (BaseNote)note1.Clone();
-                copy.CutDirection = 0;
+                BaseGrid note1Note = note1 as BaseGrid;
+                BaseGrid copy = (BaseGrid)note1.Clone();
+
+                if (copy is BaseNote copyNote)
+                    copyNote.CutDirection = 0;
 
                 copy.SongBpmTime = endTime - distanceInBeats;
                 if (copy.SongBpmTime > endTime)
                     break;
 
-                    
 
                 if (note1pos != note2pos)
                 {
@@ -618,13 +616,16 @@ namespace PaulMapper.PaulHelper
                         copy.CustomColor = PaulMaker.LerpColorFromDict(DistColorDict, copy.SongBpmTime - startTime);
                     }
 
-                    if (PaulmapperData.Instance.rotateNotes)
+                    if (copy is BaseNote)
                     {
-                        (copy as BaseNote).SetRotation(noteRotation);
-                    }
-                    else if (PaulmapperData.Instance.vibro)
-                    {
-                        copy.CutDirection = (noteIndex % 2);
+                        if (PaulmapperData.Instance.rotateNotes)
+                        {
+                            (copy as BaseNote).SetRotation(noteRotation);
+                        }
+                        else if (PaulmapperData.Instance.vibro)
+                        {
+                            (copy as BaseNote).CutDirection = (noteIndex % 2);
+                        }
                     }
 
                     customData["_paul"] = startTime;
@@ -632,7 +633,7 @@ namespace PaulMapper.PaulHelper
 
 
                 copy.WriteCustom();
-                collection.SpawnObject(copy, false, false);
+                collection.SpawnObjectFix(copy, false, false);
 
 
                 BaseObject beatmapObject = collection.UnsortedObjects[collection.UnsortedObjects.Count - 1];
@@ -644,12 +645,12 @@ namespace PaulMapper.PaulHelper
                 noteIndex += 1;
             }
 
-            if ((spawnedBeatobjects[spawnedBeatobjects.Count - 2] as BaseNote).CustomDirection.HasValue)
+            if (note1 is BaseNote && (spawnedBeatobjects[spawnedBeatobjects.Count - 2] as BaseNote).CustomDirection.HasValue)
                 (spawnedBeatobjects[spawnedBeatobjects.Count - 1] as BaseNote).SetRotation((spawnedBeatobjects[spawnedBeatobjects.Count - 2] as BaseNote).CustomDirection.Value);
 
             foreach (BaseObject beatmapObject in new List<BaseObject>() { note1, note2 })
             {
-                collection.DeleteObject(beatmapObject, false);
+                collection.DeleteObjectFix(beatmapObject, false);
             }
             
             BeatmapActionContainer.AddAction(new SelectionPastedAction(spawnedBeatobjects, new List<BaseObject>() { note1, note2 }));
@@ -687,7 +688,8 @@ namespace PaulMapper.PaulHelper
             typeof(CMInput.IBeatmapObjectsActions),
             typeof(CMInput.INodeEditorActions),
             typeof(CMInput.ISavingActions),
-            typeof(CMInput.ITimelineActions)
+            typeof(CMInput.ITimelineActions),
+            typeof(CMInput.IPlaybackActions)
         };
 
         public static Type[] actionMapsDisabled

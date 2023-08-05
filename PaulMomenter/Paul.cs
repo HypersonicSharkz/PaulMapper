@@ -1,10 +1,7 @@
 ﻿using Beatmap.Base;
 using Newtonsoft.Json;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace PaulMapper
 {
@@ -23,7 +20,7 @@ namespace PaulMapper
         public int PaulPrecision;
 
         [JsonProperty(Order = 4)]
-        public float PaulLength { get => PaulMomenter.ats.GetSecondsFromBeat(notes[notes.Count - 1].SongBpmTime - notes[0].SongBpmTime); }
+        public float PaulLength { get => PaulMapper.ats.GetSecondsFromBeat(notes[notes.Count - 1].SongBpmTime - notes[0].SongBpmTime); }
 
         [JsonIgnore]
         public Dictionary<float, float> AngleChangeOverTimeDict = new Dictionary<float, float>();

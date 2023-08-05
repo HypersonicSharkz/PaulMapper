@@ -1,10 +1,6 @@
 ﻿using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace PaulMapper
@@ -19,14 +15,15 @@ namespace PaulMapper
         public bool arcs = true;
         public bool autoDot = true;
         public float transitionTime = 0.3f;
-        public bool transitionRotation = false;
+        public bool transitionRotation = true;
         public bool usePointRotations = false;
         internal bool fakeWalls;
         public bool useScale = false;
         public bool disableBadCutDirection = false;
         public bool disableBadCutSpeed = false;
         public bool disableBadCutSaberType = false;
-
+        public int wallRotationAmount = 5;
+        public bool enableQuickMenu = true;
 
         public static PaulmapperData GetSaveData()
         {

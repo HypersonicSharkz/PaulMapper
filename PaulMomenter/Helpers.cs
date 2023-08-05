@@ -1,18 +1,36 @@
 ﻿using Beatmap.Base;
-using Beatmap.Shared;
+using Beatmap.Containers;
 using Beatmap.V2;
+using PaulMapper.PaulHelper;
 using SimpleJSON;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Reflection;
 using UnityEngine;
 
 namespace PaulMapper
 {
     public static class Helper
     {
+        public static Vector3 GetRotation(this BaseGrid p_obj)
+        {
+            Vector3 rot = Vector3.zero;
+
+            if (p_obj.CustomWorldRotation != null)
+            {
+                Vector3 worldRot = p_obj.CustomWorldRotation.ReadVector3();
+                if (worldRot.x == 0 && worldRot.y == 0)
+                {
+                    rot = worldRot;
+                }
+            }
+
+            rot += p_obj.CustomLocalRotation != null ? p_obj.CustomLocalRotation.ReadVector3(Vector3.zero) : Vector3.zero;
+
+            return rot;
+        }
+
         public static Vector2 GetRealPosition(this BaseGrid p_obj)
         {
             Vector2 result = new Vector2();
@@ -232,7 +250,108 @@ namespace PaulMapper
             {315, 6},
             {45, 7}
         };
+
+        private static Vector3 RotatePointAroundPivot(Vector3 point, Vector3 pivot, Quaternion rotation)
+        {
+            Vector3 direction = point - pivot;
+            Vector3 rotatedDirection = rotation * direction;
+            return pivot + rotatedDirection;
+        }
+
+        public static void RotateWalls(bool clockWise, bool leftToRight)
+        {
+            List<BeatmapAction> actions = new List<BeatmapAction>();
+            foreach (BaseGrid obj in SelectionController.SelectedObjects)
+            {
+                if (!(obj is BaseObstacle wall))
+                    continue;
+
+                BaseObstacle original = (BaseObstacle)wall.Clone();
+
+                var beatmapObjectContainerCollection = BeatmapObjectContainerCollection.GetCollectionForType(obj.ObjectType);
+
+                Vector3? rotation = null;
+                if (obj.CustomLocalRotation != null)
+                    rotation = obj.CustomLocalRotation;
+
+                if (leftToRight)
+                    obj.CustomLocalRotation = rotation.GetValueOrDefault(Vector3.zero) + new Vector3(0, 0, (clockWise ? -1 : 1) * PaulmapperData.Instance.wallRotationAmount);
+                else
+                    obj.CustomLocalRotation = rotation.GetValueOrDefault(Vector3.zero) + new Vector3((clockWise ? -1 : 1) * PaulmapperData.Instance.wallRotationAmount, 0, 0);
+
+                ObjectContainer con;
+                if (beatmapObjectContainerCollection.LoadedContainers.TryGetValue(obj, out con))
+                {
+                    con.UpdateGridPosition();
+                    if (obj.CustomLocalRotation == null || obj.CustomLocalRotation.ReadVector3() == Vector3.zero)
+                        con.transform.localEulerAngles = Vector3.zero;
+                }
+
+                actions.Add(new BeatmapObjectModifiedAction(obj, obj, original));
+            }
+
+            BeatmapActionContainer.AddAction(new ActionCollectionAction(actions, true, false));
+        }
+
+        public static void SpawnPrecisionArc()
+        {
+            if (SelectionController.SelectedObjects.Count < 2) { Plugin.momenter.SetNotice("Select at least two notes", noticeType.Error); return; }
+
+            if (!SelectionController.SelectedObjects.All(n => n.ObjectType == Beatmap.Enums.ObjectType.Note)) { Plugin.momenter.SetNotice("Select only notes", noticeType.Error); return; }
+
+            var ordered = SelectionController.SelectedObjects.OrderBy(s => s.JsonTime).ToList();
+
+            bool straight = Event.current.modifiers == EventModifiers.Shift;
+
+            List<BeatmapAction> actions = new List<BeatmapAction>();
+            for (int i = 1; i < ordered.Count; i++)
+            {
+                BaseNote from = (BaseNote)ordered[i - 1];
+                BaseNote to = (BaseNote)ordered[i];
+                BaseArc arc = null;
+                if (straight)
+                    arc = PaulMaker.GenerateArc(from, to, 8);
+                else
+                    arc = PaulMaker.GenerateArc(from, to);
+
+                if (arc != null)
+                    actions.Add(new BeatmapObjectPlacementAction(arc, new List<BaseObject>(), "Arcs"));
+            }
+            BeatmapActionContainer.AddAction(new ActionCollectionAction(actions, true, true));
+        }
+
+        public static void DeleteObjectFix(this BeatmapObjectContainerCollection col, BaseObject obj, bool triggersAction = true, bool refreshesPool = true, string comment = "No comment.", bool inCollectionOfDeletes = false)
+        {
+            Type type = typeof(BeatmapObjectContainerCollection);
+            MethodInfo method = type.GetMethod("DeleteObject", new Type[] { typeof(BaseObject), typeof(bool), typeof(bool), typeof(string) });
+
+            if (method == null)
+            {
+                //Normal build
+                method = type.GetMethod("DeleteObject", new Type[] { typeof(BaseObject), typeof(bool), typeof(bool), typeof(string), typeof(bool) });
+                method.Invoke(col, new object[] { obj, triggersAction, refreshesPool, comment, inCollectionOfDeletes });
+            }
+            else
+            {
+                //Anim build
+                method.Invoke(col, new object[] { obj, triggersAction, refreshesPool, comment });
+            }
+        }
+
+        public static void SpawnObjectFix(this BeatmapObjectContainerCollection col, BaseObject obj, bool removeConflicting = true, bool refreshesPool = true, bool inCollectionOfSpawns = false)
+        {
+            Type type = typeof(BeatmapObjectContainerCollection);
+            MethodInfo method = type.GetMethod("SpawnObject", new Type[] { typeof(BaseObject), typeof(bool), typeof(bool)});
+
+            if (method == null)
+            {
+                //Normal build
+                method = type.GetMethod("SpawnObject", new Type[] { typeof(BaseObject), typeof(bool), typeof(bool), typeof(bool) });
+                method.Invoke(col, new object[] { obj, removeConflicting, refreshesPool, inCollectionOfSpawns });
+            }
+            else
+                //Anim build
+                method.Invoke(col, new object[] { obj, removeConflicting, refreshesPool});
+        }
     }
-
-
 }

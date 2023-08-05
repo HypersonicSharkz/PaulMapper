@@ -3,10 +3,7 @@ using Beatmap.Containers;
 using PaulMapper.PaulHelper;
 using SimpleJSON;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace PaulMapper
@@ -24,11 +21,12 @@ namespace PaulMapper
                     initialObjects.All(p => (p as BeatmapNote).CutDirection == 8),
                     colorDist, new List<float>()
                 ).ToList();*/
-
             curveObjects = PaulMaker.GeneratePoodle(object1,
                                                     object2,
                                                     PaulmapperData.Instance.precision,
                                                     initialObjects.All(p => (p as BaseNote).CutDirection == 8));
+
+            base.SpawnObjects();
         }
 
         protected override void SpawnAnchorPoint(CurveParameter curveParameter)
@@ -61,6 +59,7 @@ namespace PaulMapper
             }
         }
 
+
         protected override void UpdateMenuData(int id)
         {
             base.UpdateMenuData(id);
@@ -76,7 +75,10 @@ namespace PaulMapper
                     {
                         float cutDir;
                         if (float.TryParse(t, out cutDir))
+                        {
                             parm.cutDirection = cutDir;
+                            UpdateAnchorPoints();
+                        }
                     }));
                 }
 
@@ -94,7 +96,10 @@ namespace PaulMapper
                     {
                         float time;
                         if (float.TryParse(t, out time))
+                        {
                             parm.dotTime = time;
+                            UpdateAnchorPoints();
+                        }
                     }));
                 }
             }
@@ -130,7 +135,6 @@ namespace PaulMapper
                 {
                     color = PaulMaker.LerpColorFromDict(colorDist, time);
                     note.SetColor(color);
-
                 }
 
                 //Now update direction
@@ -231,30 +235,30 @@ namespace PaulMapper
                     }
                 }
 
-
-
-
                 oldNote = note;
+            }
 
-
-                ObjectContainer con;
-                if (beatmapObjectContainerCollection.LoadedContainers.TryGetValue(oldNote, out con))
-                {
-                    con.UpdateGridPosition();
-                    SetNoteCut(con as NoteContainer);
-
-                    float xE = 0f;
-                    float yE = 0f;
-                    
-                    Vector3 directionEuler = new Vector3(xE, yE, oldNote.GetNoteDirection());
-
-                    if (colorDist != null && colorDist.Count > 0)
-                        (con as NoteContainer).SetColor(color);
-
-                    con.transform.localEulerAngles = directionEuler;
-                }
+            foreach (BaseNote note in curveObjects)
+            {
+                UpdateGraphics(note, note.CustomColor);
             }
         }
+
+        private void UpdateGraphics(BaseNote note, Color? color)
+        {
+            ObjectContainer con;
+            if (note != null && beatmapObjectContainerCollection.LoadedContainers.TryGetValue(note, out con))
+            {
+                con.UpdateGridPosition();
+                BeatmapObjectContainerCollection.GetCollectionForType<NoteGridContainer>(Beatmap.Enums.ObjectType.Note).RefreshSpecialAngles(note, false, false);
+
+                if (colorDist != null && colorDist.Count > 0)
+                    (con as NoteContainer).SetColor(color);
+
+                SetNoteCut(con as NoteContainer);
+            }
+        }
+
         public void SetNoteCut(NoteContainer note)
         {
             bool flag = note.NoteData.Type != 3;
