@@ -867,36 +867,38 @@ namespace PaulMapper
                 ToggleUI();
             }
 
-
-            if (Input.GetKeyDown(KeyCode.LeftArrow))
+            if (!RealtimeCurve.Editing)
             {
-                if (Input.GetKey(KeyCode.LeftAlt))
+                if (Input.GetKeyDown(KeyCode.LeftArrow))
                 {
-                    Helper.RotateWalls(false, true);
+                    if (Input.GetKey(KeyCode.LeftAlt))
+                    {
+                        Helper.RotateWalls(false, true);
+                    }
                 }
-            }
 
-            if (Input.GetKeyDown(KeyCode.RightArrow))
-            {
-                if (Input.GetKey(KeyCode.LeftAlt))
+                if (Input.GetKeyDown(KeyCode.RightArrow))
                 {
-                    Helper.RotateWalls(true, true);
-                }                
-            }
-
-            if (Input.GetKeyDown(KeyCode.UpArrow))
-            {
-                if (Input.GetKey(KeyCode.LeftAlt))
-                {
-                    Helper.RotateWalls(false, false);
+                    if (Input.GetKey(KeyCode.LeftAlt))
+                    {
+                        Helper.RotateWalls(true, true);
+                    }
                 }
-            }
 
-            if (Input.GetKeyDown(KeyCode.DownArrow))
-            {
-                if (Input.GetKey(KeyCode.LeftAlt))
+                if (Input.GetKeyDown(KeyCode.UpArrow))
                 {
-                    Helper.RotateWalls(true, false);
+                    if (Input.GetKey(KeyCode.LeftAlt))
+                    {
+                        Helper.RotateWalls(false, false);
+                    }
+                }
+
+                if (Input.GetKeyDown(KeyCode.DownArrow))
+                {
+                    if (Input.GetKey(KeyCode.LeftAlt))
+                    {
+                        Helper.RotateWalls(true, false);
+                    }
                 }
             }
 

@@ -24,6 +24,8 @@ namespace PaulMapper
         public bool disableBadCutSaberType = false;
         public int wallRotationAmount = 5;
         public bool enableQuickMenu = true;
+        public bool useEndPrecision;
+        public int endPrecision;
 
         public static PaulmapperData GetSaveData()
         {

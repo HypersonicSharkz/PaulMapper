@@ -24,6 +24,7 @@ namespace PaulMapper
             curveObjects = PaulMaker.GeneratePoodle(object1,
                                                     object2,
                                                     PaulmapperData.Instance.precision,
+                                                    PaulmapperData.Instance.useEndPrecision ? PaulmapperData.Instance.endPrecision : PaulmapperData.Instance.precision,
                                                     initialObjects.All(p => (p as BaseNote).CutDirection == 8));
 
             base.SpawnObjects();
@@ -125,7 +126,7 @@ namespace PaulMapper
                     note.SetScale(new Vector3((float)widthCurve.ValueAt(time), (float)heightCurve.ValueAt(time), (float)depthCurve.ValueAt(time)));
                 }
 
-                float rotAtTime = GetRotationValueAtTime(note.SongBpmTime, curveObjects);
+                float rotAtTime = Helper.GetRotationValueAtTime(note.SongBpmTime, curveObjects);
                 if (rotAtTime != -1)
                     note.CustomWorldRotation = new Vector3(0, rotAtTime, 0);
 

@@ -22,9 +22,14 @@ namespace PaulMapper
             float distanceInBeats = endTime - startTime;
             float originalDistance = distanceInBeats;
 
+            float npsStart = PaulmapperData.Instance.precision;
+            float npsEnd = PaulmapperData.Instance.useEndPrecision ? PaulmapperData.Instance.endPrecision : PaulmapperData.Instance.precision;
+
+            float precision = npsStart;
+
             List<BaseObject> spawnedBeatobjects = new List<BaseObject>();
 
-            while (distanceInBeats > 0 - 1 / (float)PaulmapperData.Instance.precision)
+            while (distanceInBeats > 0 - 1 / precision)
             {
                 BaseObstacle copy = null;
                 copy = (BaseObstacle)object1.Clone();
@@ -66,7 +71,8 @@ namespace PaulMapper
                 BaseObject beatmapObject = collection.UnsortedObjects.Last() as BaseObject;
                 spawnedBeatobjects.Add(beatmapObject);
 
-                distanceInBeats -= 1 / (float)PaulmapperData.Instance.precision;
+                precision = Mathf.Lerp(npsEnd, npsStart, distanceInBeats / (endTime - startTime));
+                distanceInBeats -= 1 / precision;
             }
 
             curveObjects = spawnedBeatobjects;
@@ -121,7 +127,7 @@ namespace PaulMapper
                 wall.SetPosition(new Vector2((float)x, (float)y));
                 wall.SetScale(new Vector3((float)widthCurve.ValueAt(time), (float)heightCurve.ValueAt(time), (float)depthCurve.ValueAt(time)));
 
-                float rotAtTime = GetRotationValueAtTime(wall.SongBpmTime, curveObjects);
+                float rotAtTime = Helper.GetRotationValueAtTime(wall.SongBpmTime, curveObjects);
                 if (rotAtTime != -1)
                     wall.CustomWorldRotation = new Vector3(0, rotAtTime, 0);
 

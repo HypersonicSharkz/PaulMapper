@@ -26,6 +26,13 @@ namespace PaulMapper
         private float lastNoticeTime = float.NegativeInfinity;
         public TextMeshProUGUI noticeLabel;
 
+        private GameObject navigateButtons;
+
+        private UIButton gotoPaul;
+        private UIButton selectCurrent;
+        private UIButton selectAll;
+        private TextMeshProUGUI paulNavNumber;
+
         public UIHandler()
         {
 
@@ -40,10 +47,11 @@ namespace PaulMapper
         {
             float bpm = BeatSaberSongContainer.Instance.Song.BeatsPerMinute;
             float nps = (bpm / 60) / (1 / (float)PaulmapperData.Instance.precision);
+            float npsEnd = PaulmapperData.Instance.useEndPrecision ? (bpm / 60) / (1 / (float)PaulmapperData.Instance.endPrecision) : nps;
 
             var tmp = npsLabel.GetComponent<TextMeshProUGUI>();
-            tmp.text = "NPS " + nps.ToString("0.00");
-            tmp.color = LerpErrorColor(40f, 80f, nps);
+            tmp.text = "NPS " + nps.ToString("0.00") + (PaulmapperData.Instance.useEndPrecision ? (" -> " + npsEnd.ToString("0.00")) : "");
+            tmp.color = LerpErrorColor(40f, 80f, Math.Max(nps, npsEnd));
         }
 
         public void UpdateQuickMenu()
@@ -312,6 +320,19 @@ namespace PaulMapper
                     UpdateNPS();
                 }));
 
+                GameObject gameObject6 = UI.AddField(panel, " ", null);
+                UI.AddParsed<int>(gameObject6, PaulmapperData.Instance.endPrecision, (val =>
+                {
+                    PaulmapperData.Instance.endPrecision = val.GetValueOrDefault(16);
+                    UpdateNPS();
+                }));
+                UI.AddCheckbox(gameObject6, PaulmapperData.Instance.useEndPrecision, delegate (bool val)
+                {
+                    PaulmapperData.Instance.useEndPrecision = val;
+                    UpdateNPS();
+                });
+
+
                 npsLabel = UI.AddLabel(panel, "PaulMapper", "", Vector2.zero, null, null, 12, new Vector2(0, 10), TextAlignmentOptions.MidlineLeft);
                 UpdateNPS();
 
@@ -424,6 +445,123 @@ namespace PaulMapper
 
                 #endregion
 
+                #region Navigation
+
+                Collapsible NavigationCollapsible = Collapsible.Create(this.panel, "Navigation", "Navigation", false);
+                GameObject gameObject19 = new GameObject();
+                RectTransform rectTransform = gameObject19.AddComponent<RectTransform>();
+                gameObject19.transform.SetParent(NavigationCollapsible.panel.transform);
+                UI.AttachTransform(gameObject19, new Vector2(1f, 30f), Vector2.zero, null, null, new Vector2?(new Vector2(0.5f, 0.5f)));
+                UIButton uibutton3 = UI.AddButton(gameObject19, "Find All Pauls", delegate ()
+                {
+                    List<BaseNote> allNotes = (from BaseNote it in PaulMapper.notesContainer.LoadedObjects
+                                               orderby it.SongBpmTime
+                                               select it).ToList<BaseNote>();
+                    PaulFinder.pauls = (from p in PaulFinder.FindAllPauls(allNotes)
+                                        orderby p.Beat
+                                        select p).ToList<Paul>();
+                    this.navigateButtons.SetActive(PaulFinder.pauls.Count > 0);
+                    this.selectCurrent.gameObject.SetActive(PaulFinder.pauls.Count > 0);
+                    this.gotoPaul.gameObject.SetActive(PaulFinder.pauls.Count > 0);
+                    this.selectAll.gameObject.SetActive(PaulFinder.pauls.Count > 0);
+                    NavigationCollapsible.SetExpanded(true);
+                    this.UpdatePaulNumber();
+                });
+                UI.AttachTransform(uibutton3.gameObject, new Vector2(1f, 30f), Vector2.zero, null, null, new Vector2?(new Vector2(0f, 0.5f))).localScale = new Vector3(0.45f, 0.45f);
+
+                this.gotoPaul = UI.AddButton(gameObject19, "GoTo Paul", delegate ()
+                {
+                    PersistentUI.Instance.ShowInputBox("Go to paul", delegate (string result)
+                    {
+                        int num = 0;
+                        bool flag3 = int.TryParse(result, out num);
+                        if (flag3)
+                        {
+                            PaulFinder.GoToPaul(PaulFinder.pauls[num - 1]);
+                            this.UpdatePaulNumber();
+                        }
+                    }, "0");
+                });
+                UI.AttachTransform(this.gotoPaul.gameObject, new Vector2(1f, 30f), Vector2.zero, null, null, new Vector2?(new Vector2(1f, 0.5f))).localScale = new Vector3(0.45f, 0.45f);
+                this.navigateButtons = new GameObject();
+                RectTransform rectTransform2 = this.navigateButtons.AddComponent<RectTransform>();
+                this.navigateButtons.transform.SetParent(NavigationCollapsible.panel.transform);
+                UI.AttachTransform(this.navigateButtons, new Vector2(1f, 15f), Vector2.zero, null, null, new Vector2?(new Vector2(0.5f, 0.5f)));
+                GameObject gameObject20 = UI.AddLabel(this.navigateButtons, "PaulMapper", "1/25", Vector2.zero, new Vector2?(Vector2.zero), new Vector2?(Vector2.one), 12, new Vector2?(new Vector2(0f, 10f)), TextAlignmentOptions.Center);
+                gameObject20.GetComponent<RectTransform>().pivot = new Vector2(0.5f, 0.5f);
+                this.paulNavNumber = gameObject20.GetComponent<TextMeshProUGUI>();
+                UIButton uibutton4 = UI.AddButton(this.navigateButtons, "<", delegate ()
+                {
+                    try
+                    {
+                        Paul paul = PaulFinder.pauls.Last((Paul p) => p.Beat < PaulMapper.ats.CurrentSongBpmTime);
+                        PaulFinder.GoToPaul(paul);
+                    }
+                    catch
+                    {
+                        PaulFinder.GoToPaul(PaulFinder.pauls.Last<Paul>());
+                    }
+                    this.UpdatePaulNumber();
+                });
+                uibutton4.Text.transform.localScale = new Vector3(2f, 2f, 2f);
+                UI.AttachTransform(uibutton4.gameObject, new Vector2(1f, 15f), Vector2.zero, null, null, new Vector2?(new Vector2(0f, 0.5f))).localScale = new Vector3(0.2f, 0.2f);
+                UIButton uibutton5 = UI.AddButton(this.navigateButtons, ">", delegate ()
+                {
+                    try
+                    {
+                        Paul paul = PaulFinder.pauls.First((Paul p) => p.Beat > PaulMapper.ats.CurrentSongBpmTime);
+                        PaulFinder.GoToPaul(paul);
+                    }
+                    catch
+                    {
+                        PaulFinder.GoToPaul(PaulFinder.pauls.First<Paul>());
+                    }
+                    this.UpdatePaulNumber();
+                });
+                uibutton5.Text.transform.localScale = new Vector3(2f, 2f, 2f);
+                UI.AttachTransform(uibutton5.gameObject, new Vector2(1f, 15f), Vector2.zero, null, null, new Vector2?(new Vector2(1f, 0.5f))).localScale = new Vector3(0.2f, 0.2f);
+                this.selectCurrent = UI.AddButton(NavigationCollapsible.panel, "Select Current", delegate ()
+                {
+                    PaulFinder.SelectCurrentPaul();
+                    this.UpdatePaulNumber();
+                });
+                UI.AttachTransform(this.selectCurrent.gameObject, new Vector2(-20f, 15f), Vector2.zero, null, null, null);
+                this.selectAll = UI.AddButton(NavigationCollapsible.panel, "Select All", delegate ()
+                {
+                    PaulFinder.SelectAllPauls();
+                });
+                UI.AttachTransform(this.selectAll.gameObject, new Vector2(-20f, 15f), Vector2.zero, null, null, null);
+                this.navigateButtons.SetActive(false);
+                this.selectCurrent.gameObject.SetActive(false);
+                this.gotoPaul.gameObject.SetActive(false);
+                this.selectAll.gameObject.SetActive(false);
+
+                #endregion
+
+                UIButton uibutton6 = UI.AddButton(this.panel, "Refresh World Rotations", delegate ()
+                {
+                    List<BaseNote> allNotes = (from BaseNote it in PaulMapper.notesContainer.LoadedObjects
+                                                orderby it.SongBpmTime
+                                                select it).ToList<BaseNote>();
+                    List<Paul> list = PaulFinder.FindAllPauls(allNotes);
+                    foreach (Paul paul in list)
+                    {
+                        foreach (BaseNote baseNote in paul.notes)
+                        {
+                            float rotationValueAtTime = Helper.GetRotationValueAtTime(baseNote.SongBpmTime, paul.notes.Cast<BaseObject>().ToList<BaseObject>());
+                            bool flag3 = rotationValueAtTime != -1f;
+                            if (flag3)
+                            {
+                                baseNote.CustomWorldRotation = new Vector3(0f, rotationValueAtTime, 0f);
+                            }
+                        }
+                    }
+                });
+                UI.AttachTransform(uibutton6.gameObject, new Vector2(-20f, 30f), Vector2.zero, null, null, null);
+                
+
+
+
                 var quickCon = UI.AddField(panel, "Enable Quick Menu");
                 UI.AddCheckbox(quickCon, PaulmapperData.Instance.enableQuickMenu, (val =>
                 {
@@ -460,6 +598,11 @@ namespace PaulMapper
             {
                 System.Diagnostics.Process.Start("https://github.com/HypersonicSharkz/PaulMapper/releases");
             }
+        }
+
+        private void UpdatePaulNumber()
+        {
+            this.paulNavNumber.text = string.Format("{0}/{1}", PaulFinder.currentPaul + 1, PaulFinder.pauls.Count);
         }
 
         private void PaulWindow_onResize()

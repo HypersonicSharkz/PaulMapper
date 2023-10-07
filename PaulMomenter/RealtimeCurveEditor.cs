@@ -12,6 +12,8 @@ namespace PaulMapper
 {
     public class RealtimeCurve : MonoBehaviour
     {
+        public static bool Editing;
+
         public Curve xCurve;
         public Curve yCurve;
 
@@ -45,6 +47,7 @@ namespace PaulMapper
 
         private void Start()
         {
+            RealtimeCurve.Editing = false;
             if (Plugin.useNewUI)
                 StartCurvePointEditor();
         }
@@ -159,44 +162,6 @@ namespace PaulMapper
                     }
                 }
             }
-        }
-
-        public float GetRotationValueAtTime(float time, List<BaseObject> beatmapObjects)
-        {
-            //Get all relevant rotations
-            IEnumerable<BaseEvent> rotations = eventsContainer.AllRotationEvents.Where(x => PaulMaker.CompareRound(x.SongBpmTime, beatmapObjects.First().SongBpmTime, 0.0001f) != -1 && PaulMaker.CompareRound(x.SongBpmTime, beatmapObjects.Last().SongBpmTime, 0.0001f) != 1).OrderBy(x => x.SongBpmTime);
-
-            BaseEvent rotEvent = rotations.LastOrDefault(x => x.SongBpmTime <= time);
-            if (rotEvent == null)
-            {
-                if (rotations.Count() == 1)
-                {
-                    rotEvent = rotations.First();
-                }
-                else
-                    return -1;
-            }
-
-            float t1 = rotEvent.SongBpmTime;
-
-            //Rotation at first note
-            float rot1 = eventsContainer.AllRotationEvents.Where(x => x.SongBpmTime < t1).Sum(x => x.GetRotationDegreeFromValue().GetValueOrDefault());
-            float rot2 = rot1 + rotEvent.GetRotationDegreeFromValue().GetValueOrDefault();
-
-
-            //Get time of last rotation, or last note if it is further away
-            float t2 = 0;
-            BaseEvent rotEventEnd = rotations.FirstOrDefault(x => x.SongBpmTime >= time);
-
-            if (rotEventEnd == null || rotEventEnd.SongBpmTime > beatmapObjects.Last().SongBpmTime)
-                t2 = beatmapObjects.Last().SongBpmTime;
-            else
-                t2 = rotEventEnd.SongBpmTime;
-
-            if (t1 == t2)
-                return rot1;
-
-            return Mathf.Lerp(rot1, rot2, (time - t1) / (t2 - t1));
         }
 
         protected virtual void UpdateObjects()
@@ -541,6 +506,7 @@ namespace PaulMapper
             }
 
             BeatmapActionContainer.AddAction(new ActionCollectionAction(actions, true, true));
+            RealtimeCurve.Editing = false;
 
             if (Plugin.useNewUI)
                 FinishCurveEditor();

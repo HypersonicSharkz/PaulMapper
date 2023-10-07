@@ -220,7 +220,7 @@ namespace PaulMapper.PaulHelper
         }
 
 
-        public static List<BaseObject> GeneratePoodle(BaseObject note1, BaseObject note2, int l_precision = 32, bool dots = false)
+        public static List<BaseObject> GeneratePoodle(BaseObject note1, BaseObject note2, int l_precision = 16, int endPreicision = 16, bool dots = false)
         {
             BeatmapObjectContainerCollection collection = BeatmapObjectContainerCollection.GetCollectionForType(Beatmap.Enums.ObjectType.Note);
 
@@ -229,9 +229,15 @@ namespace PaulMapper.PaulHelper
 
             float distanceInBeats = endTime - startTime;
 
+
+            float npsStart = PaulmapperData.Instance.precision;
+            float npsEnd = PaulmapperData.Instance.useEndPrecision ? PaulmapperData.Instance.endPrecision : PaulmapperData.Instance.precision;
+
+            float precision = npsStart;
+
             List<BaseObject> spawnedBeatobjects = new List<BaseObject>();
 
-            while (distanceInBeats > 0 - 1 / (float)l_precision)
+            while (distanceInBeats > 0 - 1 / precision)
             {
                 BaseNote note1Note = note1 as BaseNote;
                 BaseNote copy = null;
@@ -251,7 +257,8 @@ namespace PaulMapper.PaulHelper
                 BaseObject beatmapObject = collection.UnsortedObjects.Last();
                 spawnedBeatobjects.Add(beatmapObject);
 
-                distanceInBeats -= 1 / (float)l_precision;
+                precision = Mathf.Lerp(npsEnd, npsStart, distanceInBeats / (endTime - startTime));
+                distanceInBeats -= 1 / precision;
             }
 
             return spawnedBeatobjects;
