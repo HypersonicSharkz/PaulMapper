@@ -251,7 +251,7 @@ namespace PaulMapper
             if (note != null && beatmapObjectContainerCollection.LoadedContainers.TryGetValue(note, out con))
             {
                 con.UpdateGridPosition();
-                BeatmapObjectContainerCollection.GetCollectionForType<NoteGridContainer>(Beatmap.Enums.ObjectType.Note).RefreshSpecialAngles(note, false, false);
+                BeatmapObjectContainerCollection.GetCollectionForType<NoteGridContainer>(note.ObjectType).RefreshSpecialAngles(note, false, false);
 
                 if (colorDist != null && colorDist.Count > 0)
                     (con as NoteContainer).SetColor(color);
@@ -281,7 +281,6 @@ namespace PaulMapper
             {
                 note.SetArrowVisible(false);
                 note.SetDotVisible(false);
-                note.SetColor(null);
             }
         }
     }

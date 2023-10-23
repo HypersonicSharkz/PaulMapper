@@ -56,7 +56,7 @@ namespace PaulMapper
 
         public static bool IsV3()
         {
-            return BeatSaberSongContainer.Instance.Map.Version == "3.2.0";
+            return BeatSaberSongContainer.Instance.Map.Version.Split('.')[0] == "3";
         }
     }
 
