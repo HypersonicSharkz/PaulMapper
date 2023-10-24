@@ -141,7 +141,9 @@ namespace PaulMapper.PaulHelper
 
 
             foreach (BaseNote note in paul.notes)
-                SelectionController.Select(note, true, true, true);
+                SelectionController.Select(note, true, true, false);
+
+            SelectionController.SelectionChangedEvent?.Invoke();
 
             currentPaul = pauls.IndexOf(paul);
 
@@ -153,8 +155,9 @@ namespace PaulMapper.PaulHelper
             foreach (Paul paul in pauls) 
             {
                 foreach (BaseNote note in paul.notes)
-                    SelectionController.Select(note, true, true, true);
+                    SelectionController.Select(note, true, true, false);
             }
+            SelectionController.SelectionChangedEvent?.Invoke();
         }
 
         public static void KeepFirstNotes()
