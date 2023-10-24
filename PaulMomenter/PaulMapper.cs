@@ -66,7 +66,7 @@ namespace PaulMapper
             momenter?.paulmapperData?.SaveData();
         }
 
-        private void CheckVersion()
+        public static void CheckVersion()
         {
             SceneTransitionManager.Instance.StartCoroutine(GitHubUtils.GetLatestReleaseTag((tag) =>
             {
@@ -401,7 +401,7 @@ namespace PaulMapper
             if (!string.IsNullOrEmpty(notice))
                 GUI.TextArea(new Rect(0, 400, guiWidth, 50), $"{notice}", style);
             else if (!Plugin.UpToDate)
-                if (GUI.Button(new Rect(0, 400, guiWidth, 50), $"New Version Of Paulmapper is available", style))
+                if (GUI.Button(new Rect(0, 400, guiWidth, 50), $"New Version Of Paul Mapper is available", style))
                     System.Diagnostics.Process.Start("https://github.com/HypersonicSharkz/PaulMapper/releases");
 
             if (!int.TryParse(text, out paulmapperData.precision))
@@ -848,19 +848,28 @@ namespace PaulMapper
             if (Time.time - lastNoticeTime > 10)
                 notice = string.Empty;
 
-            /*
-            if (Input.GetKeyDown(KeyCode.F10))
+            //Update checker
+            if (Plugin.UpToDate && Time.time - lastUpdateCheck > 60)
             {
-                advancedMenu = false;
-                if (Input.GetKey(KeyCode.LeftShift) && !showGUI)
-                {
-                    advancedMenu = true;
-                    isHovering = false;
-                    CMInputCallbackInstaller.ClearDisabledActionMaps(typeof(PaulMapper), PaulActions.actionMapsDisabled);
-                }
+                lastUpdateCheck = Time.time;
+                Plugin.CheckVersion();
+                Debug.Log("CHECKING");
+            }
+                
 
-                showGUI = !showGUI;
-            }*/
+                /*
+                if (Input.GetKeyDown(KeyCode.F10))
+                {
+                    advancedMenu = false;
+                    if (Input.GetKey(KeyCode.LeftShift) && !showGUI)
+                    {
+                        advancedMenu = true;
+                        isHovering = false;
+                        CMInputCallbackInstaller.ClearDisabledActionMaps(typeof(PaulMapper), PaulActions.actionMapsDisabled);
+                    }
+
+                    showGUI = !showGUI;
+                }*/
 
             if (Input.GetKeyDown(KeyCode.F10))
             {
@@ -1024,6 +1033,8 @@ namespace PaulMapper
                 3
             }
         };
+        private float lastUpdateCheck;
+
         public void MirrorSelected()
         {
             List<BeatmapAction> allActions = new List<BeatmapAction>();

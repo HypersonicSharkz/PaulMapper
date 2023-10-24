@@ -135,7 +135,7 @@ namespace PaulMapper
             {
                 if (!Plugin.UpToDate)
                 {
-                    SetNotice("New Version Of <color=#5495ff><u><link=github>Paulmapper</link></u></color> is available", noticeType.None);
+                    SetNotice("New Version Of <color=#5495ff><u><link=github>Paul Mapper</link></u></color> is available", noticeType.None);
                 }
                 else
                 {
