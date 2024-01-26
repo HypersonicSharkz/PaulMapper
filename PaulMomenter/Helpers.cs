@@ -361,7 +361,9 @@ namespace PaulMapper
 
         public static void DeleteObjectFix(this BeatmapObjectContainerCollection col, BaseObject obj, bool triggersAction = true, bool refreshesPool = true, string comment = "No comment.", bool inCollectionOfDeletes = false)
         {
-            Type type = typeof(BeatmapObjectContainerCollection);
+            col.DeleteObject(obj, triggersAction, refreshesPool, comment, inCollectionOfDeletes);
+
+            /*Type type = typeof(BeatmapObjectContainerCollection);
             MethodInfo method = type.GetMethod("DeleteObject", new Type[] { typeof(BaseObject), typeof(bool), typeof(bool), typeof(string) });
 
             if (method == null)
@@ -374,11 +376,14 @@ namespace PaulMapper
             {
                 //Anim build
                 method.Invoke(col, new object[] { obj, triggersAction, refreshesPool, comment });
-            }
+            }*/
         }
 
         public static void SpawnObjectFix(this BeatmapObjectContainerCollection col, BaseObject obj, bool removeConflicting = true, bool refreshesPool = true, bool inCollectionOfSpawns = false)
         {
+            col.SpawnObject(obj, removeConflicting, refreshesPool, inCollectionOfSpawns);
+
+            /*
             Type type = typeof(BeatmapObjectContainerCollection);
             MethodInfo method = type.GetMethod("SpawnObject", new Type[] { typeof(BaseObject), typeof(bool), typeof(bool)});
 
@@ -390,7 +395,7 @@ namespace PaulMapper
             }
             else
                 //Anim build
-                method.Invoke(col, new object[] { obj, removeConflicting, refreshesPool});
+                method.Invoke(col, new object[] { obj, removeConflicting, refreshesPool});*/
         }
     }
 }

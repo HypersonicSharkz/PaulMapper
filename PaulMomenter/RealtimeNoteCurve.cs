@@ -236,6 +236,8 @@ namespace PaulMapper
                     }
                 }
 
+                note.WriteCustom();
+
                 oldNote = note;
             }
 

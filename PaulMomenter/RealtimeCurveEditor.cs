@@ -468,6 +468,8 @@ namespace PaulMapper
             {
                 if (obj.CustomData != null && obj.CustomData["_isAnchor"]) obj.CustomData.Remove("_isAnchor");
 
+                obj.WriteCustom();
+
                 actions.Add(new BeatmapObjectModifiedAction(obj, obj, originalCurveObjects[curveObjects.IndexOf(obj)]));
 
                 if (dotStart || (obj is Beatmap.V3.V3ColorNote note && curveObjects.IndexOf(obj) > 0 && note.CutDirection == 8 && PaulmapperData.Instance.arcs))

@@ -855,25 +855,34 @@ namespace PaulMapper
                 Plugin.CheckVersion();
                 Debug.Log("CHECKING");
             }
-                
 
-                /*
-                if (Input.GetKeyDown(KeyCode.F10))
+
+            /*
+            if (Input.GetKeyDown(KeyCode.F10))
+            {
+                advancedMenu = false;
+                if (Input.GetKey(KeyCode.LeftShift) && !showGUI)
                 {
-                    advancedMenu = false;
-                    if (Input.GetKey(KeyCode.LeftShift) && !showGUI)
-                    {
-                        advancedMenu = true;
-                        isHovering = false;
-                        CMInputCallbackInstaller.ClearDisabledActionMaps(typeof(PaulMapper), PaulActions.actionMapsDisabled);
-                    }
+                    advancedMenu = true;
+                    isHovering = false;
+                    CMInputCallbackInstaller.ClearDisabledActionMaps(typeof(PaulMapper), PaulActions.actionMapsDisabled);
+                }
 
-                    showGUI = !showGUI;
-                }*/
+                showGUI = !showGUI;
+            }*/
 
             if (Input.GetKeyDown(KeyCode.F10))
             {
+                if (Input.GetKey(KeyCode.LeftShift) && !showGUI)
+                {
+                    advancedMenu = true;
+                }
+                else
+                {
+                    advancedMenu = false;
+                }
                 ToggleUI();
+
             }
 
             if (!RealtimeCurve.Editing)
