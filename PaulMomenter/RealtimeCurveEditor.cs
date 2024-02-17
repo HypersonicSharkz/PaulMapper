@@ -661,20 +661,14 @@ namespace PaulMapper
 
             if (OnScroll != null)
             {
-                ScrollType scrollType = ScrollType.None;
+                ScrollType scrollType = ScrollType.Rotation;
 
                 if (Input.GetKey(KeyCode.LeftAlt))
                 {
                     if (Input.GetKey(KeyCode.LeftShift))
-                    {
                         scrollType = ScrollType.Height;
-                    } else if (Input.GetKey(KeyCode.LeftControl))
-                    {
+                    else if (Input.GetKey(KeyCode.LeftControl))
                         scrollType = ScrollType.Width;
-                    } else
-                    {
-                        scrollType = ScrollType.Rotation;
-                    }
 
                     if (Input.GetAxisRaw("Mouse ScrollWheel") > 0)
                     {

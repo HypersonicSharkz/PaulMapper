@@ -787,7 +787,7 @@ namespace PaulMapper
 
 
                         collection.SpawnObjectFix(copy, false, false);
-                        BaseObject beatmapObject = collection.UnsortedObjects.Last() as BaseObject;
+                        BaseObject beatmapObject = copy;
                         spawnedNotes.Add(beatmapObject);
 
 

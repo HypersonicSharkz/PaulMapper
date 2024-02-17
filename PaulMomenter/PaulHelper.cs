@@ -14,6 +14,7 @@ namespace PaulMapper.PaulHelper
     {
         public static List<Paul> pauls = new List<Paul>();
         public static int currentPaul = 0;
+        static Paul lastPaul;
 
         public static List<Paul> FindAllPauls(List<BaseNote> allNotes)
         {
@@ -64,10 +65,12 @@ namespace PaulMapper.PaulHelper
                             if (!paul)
                             {
                                 paul = true;
-                                groupedNotes = new List<BaseNote>();
-                                groupedNotes.Add(notesOneSide[notesOneSide.IndexOf(note) - 2]);
-                                groupedNotes.Add(oldNote);
-                                groupedNotes.Add(note);
+                                groupedNotes = new List<BaseNote>
+                                {
+                                    notesOneSide[notesOneSide.IndexOf(note) - 2],
+                                    oldNote,
+                                    note
+                                };
                             }
                             else
                             {
@@ -120,8 +123,6 @@ namespace PaulMapper.PaulHelper
 
 
         }
-
-        static Paul lastPaul;
 
         public static void SelectCurrentPaul()
         {
@@ -188,7 +189,7 @@ namespace PaulMapper.PaulHelper
             V3Arc obj = new V3Arc(from.JsonTime, closestGridSnap.PosX, closestGridSnap.PosY, from.Color, overrideAngle.GetValueOrDefault(closestGridSnap.CutDirection), 1f, to.JsonTime, closestGridSnap2.PosX, closestGridSnap2.PosY, overrideAngle.GetValueOrDefault(closestGridSnap2.CutDirection), 1f, 0, jsonnode);
             BeatmapObjectContainerCollection collectionForType = BeatmapObjectContainerCollection.GetCollectionForType(ObjectType.Arc);
             collectionForType.SpawnObjectFix(obj, true, true);
-            return collectionForType.UnsortedObjects.Last() as BaseArc;
+            return obj as BaseArc;
         }
 
         public static Color LerpColorFromDict(Dictionary<float, Color> colorDict, float dist)
@@ -242,10 +243,7 @@ namespace PaulMapper.PaulHelper
 
             while (distanceInBeats > 0 - 1 / precision)
             {
-                BaseNote note1Note = note1 as BaseNote;
-                BaseNote copy = null;
-
-                copy = (BaseNote)note1Note.Clone();
+                BaseNote copy = (BaseNote)note1.Clone();
 
                 copy.CustomData = new JSONObject();
 
@@ -253,12 +251,11 @@ namespace PaulMapper.PaulHelper
                 copy.SongBpmTime = (endTime - distanceInBeats);
                 if (copy.SongBpmTime > endTime)
                     break;
-
-                copy.WriteCustom();
+               
                 collection.SpawnObjectFix(copy, false, false);
+                copy.WriteCustom();
 
-                BaseObject beatmapObject = collection.UnsortedObjects.Last();
-                spawnedBeatobjects.Add(beatmapObject);
+                spawnedBeatobjects.Add(copy);
 
                 precision = Mathf.Lerp(npsEnd, npsStart, distanceInBeats / (endTime - startTime));
                 distanceInBeats -= 1 / precision;
@@ -319,14 +316,10 @@ namespace PaulMapper.PaulHelper
 
                 copy.SetPosition(new Vector2((float)x, (float)y));
 
-                //customData["_position"] = new Vector2((float)x, (float)y);
-                //if (BeatSaberSongContainer.Instance.Map.Version == "3.0.0") customData["coordinates"] = new Vector2((float)x, (float)y);
-
                 //Color handling 
                 if (colorDict != null && colorDict.Count > 0)
                 {
                     copy.SetColor(LerpColorFromDict(colorDict, line));
-                    //customData["_color"] = LerpColorFromDict(colorDict, line);
                 }
 
                 if (dots)
@@ -355,11 +348,9 @@ namespace PaulMapper.PaulHelper
                             }
 
                             oldNote.SetRotation(ang);
-                            //customData_old["_cutDirection"] = ang;
 
                         } else
                         {
-                            //Find angle for old object to face new one
                             Vector2 op = oldNote.GetPosition();
                             Vector2 cp = copy.GetPosition();
 
@@ -379,7 +370,6 @@ namespace PaulMapper.PaulHelper
                             }
 
                             oldNote.SetRotation(ang);
-                            //customData_old["_cutDirection"] = ang;
                         }
                     }
                 }
@@ -403,7 +393,6 @@ namespace PaulMapper.PaulHelper
                             if (!PaulmapperData.Instance.transitionRotation && customData_old != null)
                             {
                                 oldNote.SetRotation(0);
-                                //customData_old["_cutDirection"] = 0;
                             }
                         }
 
@@ -414,17 +403,12 @@ namespace PaulMapper.PaulHelper
                     }
 
                 }
-
-
-                //}
                 customData["_paul"] = startTime;
 
+                copy.WriteCustom();
 
                 collection.SpawnObjectFix(copy, false, false);
-
-
-                BaseObject beatmapObject = collection.UnsortedObjects.Last();
-                spawnedBeatobjects.Add(beatmapObject);
+                spawnedBeatobjects.Add(copy);
 
 
                 oldNote = copy;
@@ -462,7 +446,6 @@ namespace PaulMapper.PaulHelper
             float endTime = note2.SongBpmTime;
 
             float distanceInBeats = endTime - startTime;
-            float originalDistance = distanceInBeats;
 
             List<BaseObject> spawnedBeatobjects = new List<BaseObject>();
 
@@ -477,7 +460,7 @@ namespace PaulMapper.PaulHelper
                     break;
 
                 collection.SpawnObjectFix(copy, false, false);
-                BaseObject beatmapObject = collection.UnsortedObjects.Last();
+                BaseObject beatmapObject = copy;
                 spawnedBeatobjects.Add(beatmapObject);
 
 
@@ -646,7 +629,7 @@ namespace PaulMapper.PaulHelper
                 collection.SpawnObjectFix(copy, false, false);
 
 
-                BaseObject beatmapObject = collection.UnsortedObjects[collection.UnsortedObjects.Count - 1];
+                BaseObject beatmapObject = copy;
                 spawnedBeatobjects.Add(beatmapObject);
 
 

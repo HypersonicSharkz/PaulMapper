@@ -70,7 +70,7 @@ namespace PaulMapper
                 } else
                 {
                     result.x = obstacle.PosX - 2;
-                    result.y = (float)obstacle.PosY - 0.5f;
+                    result.y = (float)obstacle.PosY;
                 }
             }
 
@@ -323,7 +323,7 @@ namespace PaulMapper
                 {
                     con.UpdateGridPosition();
                     if (obj.CustomLocalRotation == null || obj.CustomLocalRotation.ReadVector3() == Vector3.zero)
-                        con.transform.localEulerAngles = Vector3.zero;
+                        con.Animator.LocalTarget.localEulerAngles = Vector3.zero;
                 }
 
                 actions.Add(new BeatmapObjectModifiedAction(obj, obj, original));
@@ -361,22 +361,22 @@ namespace PaulMapper
 
         public static void DeleteObjectFix(this BeatmapObjectContainerCollection col, BaseObject obj, bool triggersAction = true, bool refreshesPool = true, string comment = "No comment.", bool inCollectionOfDeletes = false)
         {
-            col.DeleteObject(obj, triggersAction, refreshesPool, comment, inCollectionOfDeletes);
+            //col.DeleteObject(obj, triggersAction, refreshesPool, comment, inCollectionOfDeletes);
 
-            /*Type type = typeof(BeatmapObjectContainerCollection);
-            MethodInfo method = type.GetMethod("DeleteObject", new Type[] { typeof(BaseObject), typeof(bool), typeof(bool), typeof(string) });
+            Type type = typeof(BeatmapObjectContainerCollection);
+            MethodInfo method = type.GetMethod("DeleteObject", new Type[] { typeof(BaseObject), typeof(bool), typeof(bool), typeof(string), typeof(bool) });
 
             if (method == null)
             {
-                //Normal build
-                method = type.GetMethod("DeleteObject", new Type[] { typeof(BaseObject), typeof(bool), typeof(bool), typeof(string), typeof(bool) });
-                method.Invoke(col, new object[] { obj, triggersAction, refreshesPool, comment, inCollectionOfDeletes });
+                //Dev build
+                method = type.GetMethod("DeleteObject", new Type[] { typeof(BaseObject), typeof(bool), typeof(bool), typeof(string), typeof(bool), typeof(bool) });
+                method.Invoke(col, new object[] { obj, triggersAction, refreshesPool, comment, inCollectionOfDeletes, true });
             }
             else
             {
-                //Anim build
-                method.Invoke(col, new object[] { obj, triggersAction, refreshesPool, comment });
-            }*/
+                //Stable build
+                method.Invoke(col, new object[] { obj, triggersAction, refreshesPool, comment, inCollectionOfDeletes });
+            }
         }
 
         public static void SpawnObjectFix(this BeatmapObjectContainerCollection col, BaseObject obj, bool removeConflicting = true, bool refreshesPool = true, bool inCollectionOfSpawns = false)

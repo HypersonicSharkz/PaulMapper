@@ -68,7 +68,7 @@ namespace PaulMapper
                 copy.WriteCustom();
                 collection.SpawnObjectFix(copy, false, false);
 
-                BaseObject beatmapObject = collection.UnsortedObjects.Last() as BaseObject;
+                BaseObject beatmapObject = copy;
                 spawnedBeatobjects.Add(beatmapObject);
 
                 precision = Mathf.Lerp(npsEnd, npsStart, distanceInBeats / (endTime - startTime));
@@ -84,7 +84,7 @@ namespace PaulMapper
             base.SpawnAnchorPoint(curveParameter);
 
 
-            curveParameter.anchorPoint.OnScroll += delegate (int dir, ScrollType scrollType) { AnchorPoint_OnScroll(curveParameter, dir, scrollType); };
+            curveParameter.anchorPoint.OnScroll += (int dir, ScrollType scrollType) => AnchorPoint_OnScroll(curveParameter, dir, scrollType);
 
         }
 
@@ -102,11 +102,11 @@ namespace PaulMapper
                     curveWallParameter.scale.y += scalingMul * dir;
                     break;
 
-                case ScrollType.Rotation:
+                case ScrollType.Duration:
                     curveWallParameter.scale.z += scalingMul * dir;
                     break;
             }
-            
+            UpdateAnchorPoints();
         }
 
         protected override void GetCurves(List<CurveParameter> beatmapNotes, out Curve curvex, out Curve curvey)
@@ -158,7 +158,7 @@ namespace PaulMapper
                 {
                     con.UpdateGridPosition();
                     if (wall.CustomLocalRotation == null || wall.CustomLocalRotation.ReadVector3() == Vector3.zero)
-                        con.transform.localEulerAngles = Vector3.zero;
+                        con.Animator.LocalTarget.localEulerAngles = Vector3.zero;
 
                     if (colorDist != null && colorDist.Count > 0)
                         (con as ObstacleContainer).SetColor(color);
@@ -170,6 +170,9 @@ namespace PaulMapper
         {
             base.UpdateMenuData(id);
             CurveParameter parm = selectedCurvePoint;
+
+            GUI.Label(new Rect(5, 145, 140 - 5, 25), $"Dot Point:");
+            parm.dotPoint = GUI.Toggle(new Rect(150 + 5, 145, 150 - 5, 20), parm.dotPoint, "");
         }
     }
 }

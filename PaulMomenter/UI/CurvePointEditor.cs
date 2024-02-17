@@ -1,5 +1,6 @@
 ﻿using ChroMapper_PropEdit.Components;
 using ChroMapper_PropEdit.UserInterface;
+using SimpleJSON;
 using System;
 using TMPro;
 using UnityEngine;
@@ -24,6 +25,7 @@ namespace PaulMapper
         private static TMP_InputField cuttmp;
         private static Toggle dotcheck;
         private static TMP_InputField dottimetmp;
+        private static UITextInput rotationtmp;
 
         public delegate void ParameterChange();
         public static event ParameterChange ParameterChanged;
@@ -70,6 +72,8 @@ namespace PaulMapper
                 cuttmp.transform.parent.gameObject.SetActive(false);
                 dotcheck.transform.parent.gameObject.SetActive(false);
                 dottimetmp.transform.parent.gameObject.SetActive(false);
+                rotationtmp.transform.parent.gameObject.SetActive(true);
+                rotationtmp.InputField.text = editing.rotation.x + ", " + editing.rotation.y + ", " + editing.rotation.z;
                 return;
             }
             else
@@ -77,6 +81,7 @@ namespace PaulMapper
                 cuttmp.transform.parent.gameObject.SetActive(true);
                 dotcheck.transform.parent.gameObject.SetActive(true);
                 dottimetmp.transform.parent.gameObject.SetActive(true);
+                rotationtmp.transform.parent.gameObject.SetActive(false);
             }
 
             if (PaulmapperData.Instance.usePointRotations && editing.cutDirection.HasValue)
@@ -192,6 +197,22 @@ namespace PaulMapper
                     editing.dotTime = d;
                     OnParameterChanged();
                 })).GetComponent<TMP_InputField>();
+
+                var rotation = UI.AddField(panel, "Rotation");
+                rotationtmp = UI.AddTextbox(rotation, editing.rotation.x + ", " + editing.rotation.y + ", " + editing.rotation.z, val =>
+                {
+                    try
+                    {
+                        string[] s = val.Split(',');
+                        Vector3 vector3 = new Vector3(float.Parse(s[0].Trim()), float.Parse(s[1].Trim()), float.Parse(s[2].Trim()));
+                        editing.rotation = vector3;
+                        OnParameterChanged();
+                    } 
+                    catch (Exception)
+                    {
+                        OnParameterChanged();
+                    }
+                });
 
                 return true;
             }
