@@ -27,11 +27,6 @@ namespace PaulMapper
                                                     PaulmapperData.Instance.useEndPrecision ? PaulmapperData.Instance.endPrecision : PaulmapperData.Instance.precision,
                                                     initialObjects.All(p => (p as BaseNote).CutDirection == 8));
 
-            foreach (var obj in curveObjects)
-            {
-
-                Debug.LogError(obj.SongBpmTime);
-            }
             base.SpawnObjects();
         }
 
