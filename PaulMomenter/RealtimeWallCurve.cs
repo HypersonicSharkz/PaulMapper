@@ -66,7 +66,7 @@ namespace PaulMapper
                 }
 
                 copy.WriteCustom();
-                collection.SpawnObjectFix(copy, false, false);
+                collection.SpawnObjectFix(copy, false, true);
 
                 BaseObject beatmapObject = copy;
                 spawnedBeatobjects.Add(beatmapObject);
@@ -153,6 +153,8 @@ namespace PaulMapper
                     color = PaulMaker.LerpColorFromDict(colorDist, time);
                     wall.SetColor(color);
                 }
+
+                wall.WriteCustom();
 
                 if (beatmapObjectContainerCollection.LoadedContainers.TryGetValue(wall, out ObjectContainer con))
                 {

@@ -82,15 +82,24 @@ namespace PaulMapper
 
             curveTrack = TracksManager.CreateTrack(0);
 
-            object1 = beatmapObjects.First();
-            object2 = beatmapObjects.Last();
+            object1 = (BaseObject)beatmapObjects.First().Clone();
+            object2 = (BaseObject)beatmapObjects.Last().Clone();
             this.initialObjects = parameters;
 
             curveParameters = ObjectsToParameters(beatmapObjects.ToList());
 
             GetCurves(curveParameters, out xCurve, out yCurve);
+
+            //then delete notes
+            foreach (BaseObject beatmapObject in initialObjects)
+            {
+                beatmapObjectContainerCollection.DeleteObjectFix(beatmapObject, false);
+            }
+
             SpawnObjects();
             originalCurveObjects = curveObjects.Select(c => (BaseObject)c.Clone()).ToList();
+            BeatmapActionContainer.AddAction(new SelectionPastedAction(curveObjects, initialObjects));
+
             SpawnAnchorPoints();
         }
 
@@ -175,15 +184,6 @@ namespace PaulMapper
             {
                 SpawnAnchorPoint(point);
             }
-
-            //then delete notes
-            
-            foreach (BaseObject beatmapObject in initialObjects)
-            {
-                beatmapObjectContainerCollection.DeleteObjectFix(beatmapObject, false);
-            }
-
-            BeatmapActionContainer.AddAction(new SelectionPastedAction(curveObjects, initialObjects));
 
             foreach (BaseObject note in curveObjects)
             {
@@ -463,7 +463,7 @@ namespace PaulMapper
         {
             List<BeatmapAction> actions = new List<BeatmapAction>();
             bool dotStart = false;
-
+            Debug.Log("Finish");
             foreach (BaseObject obj in curveObjects)
             {
                 if (obj.CustomData != null && obj.CustomData["_isAnchor"]) obj.CustomData.Remove("_isAnchor");

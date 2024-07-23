@@ -252,7 +252,7 @@ namespace PaulMapper.PaulHelper
                 if (copy.SongBpmTime > endTime)
                     break;
                
-                collection.SpawnObjectFix(copy, false, false);
+                collection.SpawnObjectFix(copy, false, true);
                 copy.WriteCustom();
 
                 spawnedBeatobjects.Add(copy);
