@@ -186,10 +186,23 @@ namespace PaulMapper.PaulHelper
             JSONNode jsonnode = new JSONObject();
             jsonnode["coordinates"] = from.GetRealPosition();
             jsonnode["tailCoordinates"] = to.GetRealPosition();
-            V3Arc obj = new V3Arc(from.JsonTime, closestGridSnap.PosX, closestGridSnap.PosY, from.Color, overrideAngle.GetValueOrDefault(closestGridSnap.CutDirection), 1f, to.JsonTime, closestGridSnap2.PosX, closestGridSnap2.PosY, overrideAngle.GetValueOrDefault(closestGridSnap2.CutDirection), 1f, 0, jsonnode);
+            BaseArc arc = new BaseArc {
+                JsonTime = from.JsonTime,
+                PosX = closestGridSnap.PosX,
+                PosY = closestGridSnap.PosY, 
+                Color = from.Color,
+                CutDirection = overrideAngle.GetValueOrDefault(closestGridSnap.CutDirection),
+                HeadControlPointLengthMultiplier = 1f,
+                TailJsonTime = to.JsonTime,
+                TailPosX = closestGridSnap2.PosX,
+                TailPosY = closestGridSnap2.PosY,
+                TailCutDirection = overrideAngle.GetValueOrDefault(closestGridSnap2.CutDirection),
+                TailControlPointLengthMultiplier = 1f,
+                MidAnchorMode = 0,
+                CustomData = jsonnode };
             BeatmapObjectContainerCollection collectionForType = BeatmapObjectContainerCollection.GetCollectionForType(ObjectType.Arc);
-            collectionForType.SpawnObjectFix(obj, true, true);
-            return obj as BaseArc;
+            collectionForType.SpawnObjectFix(arc, true, true);
+            return arc;
         }
 
         public static Color LerpColorFromDict(Dictionary<float, Color> colorDict, float dist)

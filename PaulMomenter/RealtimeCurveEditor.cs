@@ -472,7 +472,7 @@ namespace PaulMapper
 
                 actions.Add(new BeatmapObjectModifiedAction(obj, obj, originalCurveObjects[curveObjects.IndexOf(obj)]));
 
-                if (dotStart || (obj is Beatmap.V3.V3ColorNote note && curveObjects.IndexOf(obj) > 0 && note.CutDirection == 8 && PaulmapperData.Instance.arcs))
+                if (dotStart || (obj is BaseNote note && curveObjects.IndexOf(obj) > 0 && note.CutDirection == 8 && PaulmapperData.Instance.arcs))
                 {
                     dotStart = true;
 
