@@ -232,8 +232,8 @@ namespace PaulMapper
             float t1 = rotEvent.SongBpmTime;
 
             //Rotation at first note
-            float rot1 = eventsContainer.AllRotationEvents.Where(x => x.SongBpmTime < t1).Sum(x => x.GetRotationDegreeFromValue().GetValueOrDefault());
-            float rot2 = rot1 + rotEvent.GetRotationDegreeFromValue().GetValueOrDefault();
+            float rot1 = eventsContainer.AllRotationEvents.Where(x => x.SongBpmTime < t1).Sum(x => x.Rotation);
+            float rot2 = rot1 + rotEvent.Rotation;
 
 
             //Get time of last rotation, or last note if it is further away
@@ -253,7 +253,7 @@ namespace PaulMapper
 
         public static BaseNote GetClosestGridSnap(BaseNote note)
         {
-            V2Note newNote = new V2Note();
+            BaseNote newNote = new BaseNote();
             Vector2 notePos = note.GetRealPosition();
 
             newNote.SongBpmTime = note.SongBpmTime;

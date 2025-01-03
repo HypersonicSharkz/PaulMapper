@@ -454,9 +454,9 @@ namespace PaulMapper
                 UI.AttachTransform(gameObject19, new Vector2(1f, 30f), Vector2.zero, null, null, new Vector2?(new Vector2(0.5f, 0.5f)));
                 UIButton uibutton3 = UI.AddButton(gameObject19, "Find All Pauls", delegate ()
                 {
-                    List<BaseNote> allNotes = (from BaseNote it in PaulMapper.notesContainer.LoadedObjects
+                    List<BaseGrid> allNotes = (from BaseGrid it in PaulMapper.notesContainer.LoadedObjects
                                                orderby it.SongBpmTime
-                                               select it).ToList<BaseNote>();
+                                               select it).ToList<BaseGrid>();
                     PaulFinder.pauls = (from p in PaulFinder.FindAllPauls(allNotes)
                                         orderby p.Beat
                                         select p).ToList<Paul>();
@@ -540,9 +540,9 @@ namespace PaulMapper
 
                 UIButton uibutton6 = UI.AddButton(this.panel, "Refresh World Rotations", delegate ()
                 {
-                    List<BaseNote> allNotes = (from BaseNote it in PaulMapper.notesContainer.LoadedObjects
+                    List<BaseGrid> allNotes = (from BaseGrid it in PaulMapper.notesContainer.LoadedObjects
                                                 orderby it.SongBpmTime
-                                                select it).ToList<BaseNote>();
+                                                select it).ToList<BaseGrid>();
                     List<Paul> list = PaulFinder.FindAllPauls(allNotes);
                     foreach (Paul paul in list)
                     {

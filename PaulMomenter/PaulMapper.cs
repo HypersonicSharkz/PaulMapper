@@ -240,7 +240,7 @@ namespace PaulMapper
 
             if (GUI.Button(new Rect(5, 220, guiWidth - 10, 20), "Find All Pauls"))
             {
-                List<BaseNote> allNotes = (from BaseNote it in notesContainer.LoadedObjects
+                List<BaseGrid> allNotes = (from BaseGrid it in notesContainer.LoadedObjects
                                               orderby it.SongBpmTime
                                            select it).ToList();
 

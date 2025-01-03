@@ -8,7 +8,7 @@ namespace PaulMapper
     public class Paul
     {
         [JsonIgnore]
-        public List<BaseNote> notes;
+        public List<BaseGrid> notes;
 
         [JsonProperty(Order = 1)]
         public int PaulNumber { get => PaulHelper.PaulFinder.pauls.IndexOf(this) + 1; }

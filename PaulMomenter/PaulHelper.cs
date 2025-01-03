@@ -16,10 +16,10 @@ namespace PaulMapper.PaulHelper
         public static int currentPaul = 0;
         static Paul lastPaul;
 
-        public static List<Paul> FindAllPauls(List<BaseNote> allNotes)
+        public static List<Paul> FindAllPauls(List<BaseGrid> allNotes)
         {
-            List<BaseNote> notesLeft = allNotes.Where(n => n.Type == 0).ToList();
-            List<BaseNote> notesRight = allNotes.Where(n => n.Type == 1).ToList();
+            List<BaseGrid> notesLeft = allNotes.Where(n => n is BaseNote note && note.Type == 0).ToList();
+            List<BaseGrid> notesRight = allNotes.Where(n => n is BaseNote note && note.Type == 1).ToList();
 
             List<Paul> pauls = new List<Paul>();
 
@@ -34,23 +34,23 @@ namespace PaulMapper.PaulHelper
             return pauls;
         }
 
-        public static List<Paul> FindPauls(List<BaseNote> notesOneSide)
+        public static List<Paul> FindPauls(List<BaseGrid> notesOneSide)
         {
             if (notesOneSide.Count <= 0)
                 return new List<Paul>();
 
             //Find closest notes
 
-            BaseNote oldNote = notesOneSide[0];
+            BaseGrid oldNote = notesOneSide[0];
 
             List<Paul> foundPauls = new List<Paul>();
 
             bool paul = false;
 
-            List<BaseNote> groupedNotes = new List<BaseNote>();
+            List<BaseGrid> groupedNotes = new List<BaseGrid>();
             float lastPrecision = 0;
 
-            foreach (BaseNote note in notesOneSide)
+            foreach (BaseGrid note in notesOneSide)
             {
                 if (note.SongBpmTime != oldNote.SongBpmTime)
                 {
@@ -65,7 +65,7 @@ namespace PaulMapper.PaulHelper
                             if (!paul)
                             {
                                 paul = true;
-                                groupedNotes = new List<BaseNote>
+                                groupedNotes = new List<BaseGrid>
                                 {
                                     notesOneSide[notesOneSide.IndexOf(note) - 2],
                                     oldNote,
@@ -164,7 +164,7 @@ namespace PaulMapper.PaulHelper
         public static void KeepFirstNotes()
         {
             
-            List<BaseNote> notes = pauls.Where(p => p.notes.Any(n => SelectionController.SelectedObjects.Contains(n))).SelectMany(p => p.notes.Skip(1)).ToList();
+            List<BaseGrid> notes = pauls.Where(p => p.notes.Any(n => SelectionController.SelectedObjects.Contains(n))).SelectMany(p => p.notes.Skip(1)).ToList();
 
             BeatmapObjectContainerCollection collection = BeatmapObjectContainerCollection.GetCollectionForType(Beatmap.Enums.ObjectType.Note);
 
@@ -186,10 +186,25 @@ namespace PaulMapper.PaulHelper
             JSONNode jsonnode = new JSONObject();
             jsonnode["coordinates"] = from.GetRealPosition();
             jsonnode["tailCoordinates"] = to.GetRealPosition();
-            V3Arc obj = new V3Arc(from.JsonTime, closestGridSnap.PosX, closestGridSnap.PosY, from.Color, overrideAngle.GetValueOrDefault(closestGridSnap.CutDirection), 1f, to.JsonTime, closestGridSnap2.PosX, closestGridSnap2.PosY, overrideAngle.GetValueOrDefault(closestGridSnap2.CutDirection), 1f, 0, jsonnode);
+            BaseArc obj = new BaseArc(); //new BaseArc(from.JsonTime, closestGridSnap.PosX, closestGridSnap.PosY, from.Color, overrideAngle.GetValueOrDefault(closestGridSnap.CutDirection), 1f, to.JsonTime, closestGridSnap2.PosX, closestGridSnap2.PosY, overrideAngle.GetValueOrDefault(closestGridSnap2.CutDirection), 1f, 0, jsonnode);
+            
+            obj.JsonTime = from.JsonTime;
+            obj.PosX = closestGridSnap.PosX;
+            obj.PosY = closestGridSnap.PosY;
+            obj.Color = from.Color;
+            obj.CutDirection = overrideAngle.GetValueOrDefault(closestGridSnap.CutDirection);
+            obj.HeadControlPointLengthMultiplier = 1;
+            obj.TailJsonTime = to.JsonTime;
+            obj.TailPosX = closestGridSnap2.PosX;
+            obj.TailPosY = closestGridSnap2.PosY;
+            obj.TailCutDirection = overrideAngle.GetValueOrDefault(closestGridSnap2.CutDirection);
+            obj.TailControlPointLengthMultiplier = 1f;
+            obj.MidAnchorMode = 0;
+            obj.CustomData = jsonnode;
+
             BeatmapObjectContainerCollection collectionForType = BeatmapObjectContainerCollection.GetCollectionForType(ObjectType.Arc);
             collectionForType.SpawnObjectFix(obj, true, true);
-            return obj as BaseArc;
+            return obj;
         }
 
         public static Color LerpColorFromDict(Dictionary<float, Color> colorDict, float dist)
