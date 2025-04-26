@@ -300,7 +300,7 @@ namespace PaulMapper
         public static void RotateWalls(bool clockWise, bool leftToRight)
         {
             List<BeatmapAction> actions = new List<BeatmapAction>();
-            foreach (BaseGrid obj in SelectionController.SelectedObjects)
+            foreach (BaseObject obj in SelectionController.SelectedObjects)
             {
                 if (!(obj is BaseObstacle wall))
                     continue;
@@ -310,23 +310,23 @@ namespace PaulMapper
                 var beatmapObjectContainerCollection = BeatmapObjectContainerCollection.GetCollectionForType(obj.ObjectType);
 
                 Vector3? rotation = null;
-                if (obj.CustomLocalRotation != null)
-                    rotation = obj.CustomLocalRotation;
+                if (wall.CustomLocalRotation != null)
+                    rotation = wall.CustomLocalRotation;
 
                 if (leftToRight)
-                    obj.CustomLocalRotation = rotation.GetValueOrDefault(Vector3.zero) + new Vector3(0, 0, (clockWise ? -1 : 1) * PaulmapperData.Instance.wallRotationAmount);
+                    wall.CustomLocalRotation = rotation.GetValueOrDefault(Vector3.zero) + new Vector3(0, 0, (clockWise ? -1 : 1) * PaulmapperData.Instance.wallRotationAmount);
                 else
-                    obj.CustomLocalRotation = rotation.GetValueOrDefault(Vector3.zero) + new Vector3((clockWise ? -1 : 1) * PaulmapperData.Instance.wallRotationAmount, 0, 0);
+                    wall.CustomLocalRotation = rotation.GetValueOrDefault(Vector3.zero) + new Vector3((clockWise ? -1 : 1) * PaulmapperData.Instance.wallRotationAmount, 0, 0);
 
                 ObjectContainer con;
-                if (beatmapObjectContainerCollection.LoadedContainers.TryGetValue(obj, out con))
+                if (beatmapObjectContainerCollection.LoadedContainers.TryGetValue(wall, out con))
                 {
                     con.UpdateGridPosition();
-                    if (obj.CustomLocalRotation == null || obj.CustomLocalRotation.ReadVector3() == Vector3.zero)
+                    if (wall.CustomLocalRotation == null || wall.CustomLocalRotation.ReadVector3() == Vector3.zero)
                         con.Animator.LocalTarget.localEulerAngles = Vector3.zero;
                 }
 
-                actions.Add(new BeatmapObjectModifiedAction(obj, obj, original));
+                actions.Add(new BeatmapObjectModifiedAction(wall, wall, original));
             }
 
             BeatmapActionContainer.AddAction(new ActionCollectionAction(actions, true, false));

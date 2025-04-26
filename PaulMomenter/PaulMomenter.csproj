@@ -12,7 +12,7 @@
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
-    <ChromapperPath>E:\ChroMapper 0.7.0\chromapper</ChromapperPath>
+    <ChromapperPath>F:\chromapper</ChromapperPath>
     <ManagedPath>$(ChromapperPath)\ChroMapper_Data\Managed\</ManagedPath>
     <PluginsPath>$(ChromapperPath)\Plugins\</PluginsPath>
   </PropertyGroup>
@@ -38,7 +38,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="ChroMapper-PropEdit">
-      <HintPath>$(PluginsPath)\ChroMapper-PropEdit.dll</HintPath>
+      <HintPath>$(PluginsPath)\ChroMapper-11-PropEdit.dll</HintPath>
     </Reference>
     <Reference Include="Extreme.Numerics, Version=7.0.19.0, Culture=neutral, PublicKeyToken=9e513770f58567b2, processorArchitecture=MSIL">
       <HintPath>$(PluginsPath)\PaulMapper\Extreme.Numerics.dll</HintPath>
