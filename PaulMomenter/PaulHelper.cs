@@ -1,12 +1,15 @@
 ﻿using Beatmap.Base;
 using Beatmap.Enums;
 using Beatmap.V3;
+using ChroMapper_PropEdit.Enums;
+using Extreme.DataAnalysis;
 using Extreme.Mathematics.Curves;
 using SimpleJSON;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace PaulMapper.PaulHelper
 {
@@ -521,6 +524,12 @@ namespace PaulMapper.PaulHelper
             Vector2 note1pos = (note1 as BaseGrid).GetRealPosition();
             Vector2 note2pos = (note2 as BaseGrid).GetRealPosition();
 
+            Vector3 note1Scale = Helper.GetObjectScale(note1 as BaseGrid);
+            Vector3 note2Scale = Helper.GetObjectScale(note2 as BaseGrid);
+
+            Vector3 note1Rotation = (note1 as BaseGrid).GetRotation();
+            Vector3 note2Rotation = (note2 as BaseGrid).GetRotation();
+
             BaseGrid oldNote = null;
             int noteIndex = 1;
 
@@ -614,7 +623,6 @@ namespace PaulMapper.PaulHelper
                         }
                     }
 
-                    copy.CustomData = new JSONObject();
                     JSONNode customData = copy.CustomData;
 
                     copy.CustomCoordinate = Vector2.Lerp(note1pos, note2pos, line);
@@ -622,6 +630,17 @@ namespace PaulMapper.PaulHelper
                     if (DistColorDict != null && DistColorDict.Count > 0)
                     {
                         copy.CustomColor = PaulMaker.LerpColorFromDict(DistColorDict, copy.SongBpmTime - startTime);
+                    }
+
+                    if (copy is BaseObstacle wall)
+                    {
+                        wall.SetScale(Vector3.Lerp(note1Scale, note2Scale, line));
+
+                        float rotX = Mathf.Lerp(note1Rotation.x, note2Rotation.x, line);
+                        float rotY = Mathf.Lerp(note1Rotation.y, note2Rotation.y, line);
+                        float rotZ = Mathf.Lerp(note1Rotation.z, note2Rotation.z, line);
+
+                        wall.CustomLocalRotation = new Vector3(rotX, rotY, rotZ);
                     }
 
                     if (copy is BaseNote)
@@ -635,10 +654,7 @@ namespace PaulMapper.PaulHelper
                             (copy as BaseNote).CutDirection = (noteIndex % 2);
                         }
                     }
-
-                    customData["_paul"] = startTime;
                 }
-
 
                 copy.WriteCustom();
                 collection.SpawnObjectFix(copy, false, false);

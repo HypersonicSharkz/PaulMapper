@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace PaulMapper
 {
@@ -566,10 +567,9 @@ namespace PaulMapper
 
             Color col = Color.clear;
             Helper.TryGetColorFromObject(note, out col);
-            
             this.color = col;
 
-            Helper.GetObjectScale(note, out scale);
+            scale = Helper.GetObjectScale(note);
 
             type = note.ObjectType;
 

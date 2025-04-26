@@ -167,9 +167,9 @@ namespace PaulMapper
             return false;
         }
 
-        public static void GetObjectScale(BaseGrid beatmapObject, out Vector3 scale)
+        public static Vector3 GetObjectScale(BaseGrid beatmapObject)
         {
-            scale = new Vector3(1, 1, 1);
+            Vector3 scale = new Vector3(1, 1, 1);
 
             if (beatmapObject.ObjectType == Beatmap.Enums.ObjectType.Obstacle)
             {
@@ -210,6 +210,7 @@ namespace PaulMapper
                 } 
             }
 
+            return scale;
         }
 
         public static float GetRotationValueAtTime(float time, List<BaseObject> beatmapObjects)

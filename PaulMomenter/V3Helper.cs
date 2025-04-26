@@ -18,14 +18,7 @@ namespace PaulMapper
 
         public static void SetRotation(this BaseNote obj, float angle)
         {
-            if (obj is V3ColorNote)
-            {
-                obj.AngleOffset = (int)angle - 180;
-            }
-            else
-            {
-                obj.CustomDirection = angle;
-            }
+            obj.CustomDirection = angle;
         }
 
         public static void SetScale(this BaseObject obj, Vector3 scale)
