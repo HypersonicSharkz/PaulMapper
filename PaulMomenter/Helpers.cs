@@ -213,7 +213,7 @@ namespace PaulMapper
             return scale;
         }
 
-        public static float GetRotationValueAtTime(float time, List<BaseObject> beatmapObjects)
+        public static float? GetRotationValueAtTime(float time, List<BaseObject> beatmapObjects)
         {
             //Get all relevant rotations
             EventGridContainer eventsContainer = BeatmapObjectContainerCollection.GetCollectionForType(Beatmap.Enums.ObjectType.Event) as EventGridContainer;
@@ -227,7 +227,7 @@ namespace PaulMapper
                     rotEvent = rotations.First();
                 }
                 else
-                    return -1;
+                    return null;
             }
 
             float t1 = rotEvent.SongBpmTime;

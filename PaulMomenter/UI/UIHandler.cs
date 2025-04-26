@@ -374,6 +374,12 @@ namespace PaulMapper
                     UI.AttachTransform(u.gameObject, new Vector2(-20, 30), Vector2.zero);
                 }
 
+                var worldRotCon = UI.AddField(noteCollapsible.panel, "Adjust To World Rotation");
+                UI.AddCheckbox(worldRotCon, PaulmapperData.Instance.adjustToWorldRotation, val =>
+                {
+                    PaulmapperData.Instance.adjustToWorldRotation = val;
+                });
+
                 #endregion
 
                 #region Transition Settings
@@ -546,14 +552,39 @@ namespace PaulMapper
                     List<Paul> list = PaulFinder.FindAllPauls(allNotes);
                     foreach (Paul paul in list)
                     {
+                        BaseNote oldNote = null;
                         foreach (BaseNote baseNote in paul.notes)
                         {
-                            float rotationValueAtTime = Helper.GetRotationValueAtTime(baseNote.SongBpmTime, paul.notes.Cast<BaseObject>().ToList<BaseObject>());
-                            bool flag3 = rotationValueAtTime != -1f;
-                            if (flag3)
+                            if (oldNote != null)
                             {
-                                baseNote.CustomWorldRotation = new Vector3(0f, rotationValueAtTime, 0f);
-                            }
+                                Vector2 op = oldNote.GetPosition();
+
+                                float? rotationValueAtTime = Helper.GetRotationValueAtTime(baseNote.SongBpmTime, paul.notes.Cast<BaseObject>().ToList<BaseObject>());
+                                if (rotationValueAtTime.HasValue)
+                                    baseNote.CustomWorldRotation = new Vector3(0f, rotationValueAtTime.Value, 0f);
+
+                                if (!PaulmapperData.Instance.adjustToWorldRotation)
+                                    continue;
+
+                                float xPos = baseNote.GetPosition().x;
+                                float yPos = baseNote.GetPosition().y;
+
+
+                                if (rotationValueAtTime.HasValue)
+                                {
+                                    float oldWorldRot = Helper.GetRotationValueAtTime(oldNote.SongBpmTime, paul.notes.Cast<BaseObject>().ToList<BaseObject>()) ?? 0;
+                                    float rotDif = (rotationValueAtTime.Value - oldWorldRot) * (Mathf.PI / 180f);
+
+                                    xPos += Mathf.Cos(Mathf.PI / 2 - rotDif);// * (note.SongBpmTime - oldNote.SongBpmTime);
+                                }
+
+                                float ang = Mathf.Atan2(yPos - op.y, xPos - op.x) * 180 / Mathf.PI;
+                                ang += 90;
+
+                                oldNote.SetRotation(ang);
+                            }                            
+
+                            oldNote = baseNote;
                         }
                     }
                 });

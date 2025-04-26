@@ -128,9 +128,9 @@ namespace PaulMapper
                     note.SetScale(new Vector3((float)widthCurve.ValueAt(time), (float)heightCurve.ValueAt(time), (float)depthCurve.ValueAt(time)));
                 }
 
-                float rotAtTime = Helper.GetRotationValueAtTime(note.SongBpmTime, curveObjects);
-                if (rotAtTime != -1)
-                    note.CustomWorldRotation = new Vector3(0, rotAtTime, 0);
+                float? rotAtTime = Helper.GetRotationValueAtTime(note.SongBpmTime, curveObjects);
+                if (rotAtTime.HasValue)
+                    note.CustomWorldRotation = new Vector3(0, rotAtTime.Value, 0);
 
                 Color color = Color.white;
                 //Color handling 
@@ -179,7 +179,19 @@ namespace PaulMapper
                             Vector2 op = oldNote.GetPosition();
                             Vector2 cp = note.GetPosition();
 
-                            float ang = Mathf.Atan2(cp.y - op.y, cp.x - op.x) * 180 / Mathf.PI;
+                            float xPos = cp.x;
+                            float yPos = cp.y;
+
+
+                            if (PaulmapperData.Instance.adjustToWorldRotation && rotAtTime.HasValue)
+                            {
+                                float oldWorldRot = Helper.GetRotationValueAtTime(oldNote.SongBpmTime, curveObjects) ?? 0;
+                                float rotDif = (rotAtTime.Value - oldWorldRot) * (Mathf.PI / 180f);
+
+                                xPos += Mathf.Cos(Mathf.PI / 2 - rotDif);// * (note.SongBpmTime - oldNote.SongBpmTime);
+                            }
+
+                            float ang = Mathf.Atan2(yPos - op.y, xPos - op.x) * 180 / Mathf.PI;
                             ang += 90;
 
 

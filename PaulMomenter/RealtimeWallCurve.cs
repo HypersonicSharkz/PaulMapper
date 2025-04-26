@@ -127,9 +127,9 @@ namespace PaulMapper
                 wall.SetPosition(new Vector2((float)x, (float)y));
                 wall.SetScale(new Vector3((float)widthCurve.ValueAt(time), (float)heightCurve.ValueAt(time), (float)depthCurve.ValueAt(time)));
 
-                float rotAtTime = Helper.GetRotationValueAtTime(wall.SongBpmTime, curveObjects);
-                if (rotAtTime != -1)
-                    wall.CustomWorldRotation = new Vector3(0, rotAtTime, 0);
+                float? rotAtTime = Helper.GetRotationValueAtTime(wall.SongBpmTime, curveObjects);
+                if (rotAtTime.HasValue)
+                    wall.CustomWorldRotation = new Vector3(0, rotAtTime.Value, 0);
 
                 //Local rotation
                 //First get the two points before and after note

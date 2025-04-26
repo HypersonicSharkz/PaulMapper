@@ -26,6 +26,7 @@ namespace PaulMapper
         public bool enableQuickMenu = true;
         public bool useEndPrecision;
         public int endPrecision;
+        public bool adjustToWorldRotation = true;
 
         public static PaulmapperData GetSaveData()
         {
