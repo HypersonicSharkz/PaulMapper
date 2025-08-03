@@ -25,7 +25,7 @@ namespace PaulMapper
         private static TMP_InputField cuttmp;
         private static Toggle dotcheck;
         private static TMP_InputField dottimetmp;
-        private static UITextInput rotationtmp;
+        private static Textbox rotationtmp;
 
         public delegate void ParameterChange();
         public static event ParameterChange ParameterChanged;
@@ -73,7 +73,7 @@ namespace PaulMapper
                 dotcheck.transform.parent.gameObject.SetActive(false);
                 dottimetmp.transform.parent.gameObject.SetActive(false);
                 rotationtmp.transform.parent.gameObject.SetActive(true);
-                rotationtmp.InputField.text = editing.rotation.x + ", " + editing.rotation.y + ", " + editing.rotation.z;
+                rotationtmp.Value = editing.rotation.x + ", " + editing.rotation.y + ", " + editing.rotation.z;
                 return;
             }
             else
