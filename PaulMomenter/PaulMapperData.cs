@@ -5,10 +5,9 @@ using UnityEngine;
 
 namespace PaulMapper
 {
-    public class PaulmapperData
+    public class PaulMapperData
     {
-        public static PaulmapperData Instance;
-        public SerializableRect windowRect = new SerializableRect(new Rect(200, 10, 140, 440));
+        public static PaulMapperData Instance;
         public int precision = 32;
         public bool vibro = false;
         public bool rotateNotes = true;
@@ -28,21 +27,21 @@ namespace PaulMapper
         public int endPrecision;
         public bool adjustToWorldRotation = true;
 
-        public static PaulmapperData GetSaveData()
+        public static PaulMapperData GetSaveData()
         {
 
-            PaulmapperData data = null;
+            PaulMapperData data = null;
 
             try
             {
-                data = JsonConvert.DeserializeObject<PaulmapperData>(File.ReadAllText(Path.Combine(Application.persistentDataPath, "paulMapper.json")));
+                data = JsonConvert.DeserializeObject<PaulMapperData>(File.ReadAllText(Path.Combine(Application.persistentDataPath, "paulMapper.json")));
             } catch
             {
-                data = new PaulmapperData();
+                data = new PaulMapperData();
             }
 
             if (data == null)
-                data = new PaulmapperData();
+                data = new PaulMapperData();
 
             File.WriteAllText(Path.Combine(Application.persistentDataPath, "paulMapper.json"), JsonConvert.SerializeObject(data, Formatting.Indented));
             Instance = data;
@@ -58,30 +57,6 @@ namespace PaulMapper
         public static bool IsV3()
         {
             return int.Parse(BeatSaberSongContainer.Instance.Map.Version.Split('.')[0]) >= 3;
-        }
-    }
-
-    [Serializable]
-    public class SerializableRect
-    {
-        public float x;
-        public float y;
-
-        public SerializableRect(Rect rect)
-        {
-            x = rect.x;
-            y = rect.y;
-        }
-
-        public Rect getRect()
-        {
-            return new Rect(x, y, 140, 450);
-        }
-
-        public void setRect(Rect rect)
-        {
-            x = rect.x;
-            y = rect.y;
         }
     }
 }

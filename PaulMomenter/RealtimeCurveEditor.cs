@@ -49,7 +49,6 @@ namespace PaulMapper
         private void Start()
         {
             RealtimeCurve.Editing = false;
-            if (Plugin.useNewUI)
                 StartCurvePointEditor();
         }
 
@@ -140,7 +139,7 @@ namespace PaulMapper
                 {
                     if (Input.GetKey(KeyCode.LeftAlt))
                     {
-                        selectedCurvePoint.rotation += new Vector3(0, 0, PaulmapperData.Instance.wallRotationAmount);
+                        selectedCurvePoint.rotation += new Vector3(0, 0, PaulMapperData.Instance.wallRotationAmount);
                         UpdateAnchorPoints();
                     }
                 }
@@ -149,7 +148,7 @@ namespace PaulMapper
                 {
                     if (Input.GetKey(KeyCode.LeftAlt))
                     {
-                        selectedCurvePoint.rotation += new Vector3(0, 0, -PaulmapperData.Instance.wallRotationAmount);
+                        selectedCurvePoint.rotation += new Vector3(0, 0, -PaulMapperData.Instance.wallRotationAmount);
                         UpdateAnchorPoints();
                     }
                 }
@@ -158,7 +157,7 @@ namespace PaulMapper
                 {
                     if (Input.GetKey(KeyCode.LeftAlt))
                     {
-                        selectedCurvePoint.rotation += new Vector3(PaulmapperData.Instance.wallRotationAmount, 0, 0);
+                        selectedCurvePoint.rotation += new Vector3(PaulMapperData.Instance.wallRotationAmount, 0, 0);
                         UpdateAnchorPoints();
                     }
                 }
@@ -167,7 +166,7 @@ namespace PaulMapper
                 {
                     if (Input.GetKey(KeyCode.LeftAlt))
                     {
-                        selectedCurvePoint.rotation += new Vector3(-PaulmapperData.Instance.wallRotationAmount, 0, 0);
+                        selectedCurvePoint.rotation += new Vector3(-PaulMapperData.Instance.wallRotationAmount, 0, 0);
                         UpdateAnchorPoints();
                     }
                 }
@@ -191,13 +190,12 @@ namespace PaulMapper
                 SelectionController.Select(note, true, true, false);
             }
 
-            if (Plugin.useNewUI)
-                UpdateQuickMenu();
+            UpdateQuickMenu();
         }
 
         private void UpdateQuickMenu()
         {
-            Plugin.uiHandler.UpdateQuickMenu();
+            PaulMapper.uiHandler.UpdateQuickMenu();
         }
 
         protected virtual void SpawnAnchorPoint(CurveParameter curveParameter)
@@ -256,10 +254,7 @@ namespace PaulMapper
                 selectedCurvePoint.yPos = selectedCurvePoint.anchorPoint.GetAsParameter().y;
             }
 
-            if (Plugin.useNewUI)
-            {
-                UpdateCurvePointEditor(selectedCurvePoint);
-            }
+            UpdateCurvePointEditor(selectedCurvePoint);
 
             GetCurves(curveParameters, out xCurve, out yCurve);
             UpdateObjects();
@@ -360,106 +355,6 @@ namespace PaulMapper
             depthCurve = CubicSpline.CreateNatural(pointsx, beatmapNotes.Select(p => (double)p.scale.z).ToList());
         }
 
-        void OnGUI()
-        {
-            if (!Plugin.useNewUI && selectedCurvePoint != null)
-            {
-                CurveParameter parm = selectedCurvePoint;
-
-                Rect mainRect = PaulmapperData.Instance.windowRect.getRect();
-                Rect newWindowRect = GUI.Window(1, new Rect(mainRect.x + mainRect.width, mainRect.y, 300, 180), UpdateMenuData, "Curve Point");
-            }
-        }
-
-        protected virtual void UpdateMenuData(int id)
-        {
-            CurveParameter parm = selectedCurvePoint;
-
-            GUI.Label(new Rect(5, 20, 140 - 5, 25), $"xPos:");
-            if (GUI.Button(new Rect(150 + 5, 20, 150 - 5, 20), parm.xPos.ToString("0.00"), "Label"))
-            {
-                PersistentUI.Instance.ShowInputBox("Point X-Position", new Action<string>(delegate (string t)
-                {
-                    float x;
-                    if (float.TryParse(t, out x))
-                    {
-                        parm.anchorPoint.transform.position = new Vector3(x + parm.anchorPoint.parameterOffset.x, parm.anchorPoint.transform.position.y, parm.anchorPoint.transform.position.z);
-                        UpdateAnchorPoints();
-                    }
-                }));
-            }
-
-
-
-            GUI.Label(new Rect(5, 35, 140 - 5, 25), $"yPos:");
-            if (GUI.Button(new Rect(150 + 5, 35, 150 - 5, 20), parm.yPos.ToString("0.00"), "Label"))
-            {
-                PersistentUI.Instance.ShowInputBox("Point Y-Position", new Action<string>(delegate (string t)
-                {
-                    float y;
-                    if (float.TryParse(t, out y))
-                    {
-                        parm.anchorPoint.transform.position = new Vector3(parm.anchorPoint.transform.position.x, y + parm.anchorPoint.parameterOffset.y, parm.anchorPoint.transform.position.z);
-                        UpdateAnchorPoints();
-                    }
-                }));
-            }
-
-            GUI.Label(new Rect(5, 50, 140 - 5, 25), $"Width:");
-            if (GUI.Button(new Rect(150 + 5, 50, 150 - 5, 20), parm.scale.x.ToString("0.00"), "Label"))
-            {
-                PersistentUI.Instance.ShowInputBox("Point Width", new Action<string>(delegate (string t)
-                {
-                    float width;
-                    if (float.TryParse(t, out width))
-                    {
-                        parm.scale.x = width;
-                        UpdateAnchorPoints();
-                    }
-                }));
-            }
-
-            GUI.Label(new Rect(5, 65, 140 - 5, 25), $"Height:");
-            if (GUI.Button(new Rect(150 + 5, 65, 150 - 5, 20), parm.scale.y.ToString("0.00"), "Label"))
-            {
-                PersistentUI.Instance.ShowInputBox("Point Height", new Action<string>(delegate (string t)
-                {
-                    float height;
-                    if (float.TryParse(t, out height))
-                    {
-                        parm.scale.y = height;
-                        UpdateAnchorPoints();
-                    }
-                }));
-            }
-
-            GUI.Label(new Rect(5, 80, 140 - 5, 25), $"Length:");
-            if (GUI.Button(new Rect(150 + 5, 80, 150 - 5, 20), parm.scale.z.ToString("0.00"), "Label"))
-            {
-                PersistentUI.Instance.ShowInputBox("Point Length", new Action<string>(delegate (string t)
-                {
-                    float height;
-                    if (float.TryParse(t, out height))
-                    {
-                        parm.scale.z = height;
-                        UpdateAnchorPoints();
-                    }
-                }));
-            }
-
-
-
-            GUI.Label(new Rect(5, 110, 140 - 5, 25), $"Color:");
-            if (GUI.Button(new Rect(150 + 5, 110, 150 - 5, 40), parm.color.ToString(), "Label"))
-            {
-                PersistentUI.Instance.ShowColorInputBox("Mapper", "bookmark.update.color", new Action<Color?>(delegate (Color? color)
-                {
-                    parm.color = color.HasValue ? color.Value : Color.clear;
-                    UpdateAnchorPoints();
-                }), parm.color);
-            }
-        }
-
         public void FinishCurve()
         {
             List<BeatmapAction> actions = new List<BeatmapAction>();
@@ -473,7 +368,7 @@ namespace PaulMapper
 
                 actions.Add(new BeatmapObjectModifiedAction(obj, obj, originalCurveObjects[curveObjects.IndexOf(obj)]));
 
-                if (dotStart || (obj is BaseNote note && curveObjects.IndexOf(obj) > 0 && note.CutDirection == 8 && PaulmapperData.Instance.arcs))
+                if (dotStart || (obj is BaseNote note && curveObjects.IndexOf(obj) > 0 && note.CutDirection == 8 && PaulMapperData.Instance.arcs))
                 {
                     dotStart = true;
 
@@ -511,8 +406,7 @@ namespace PaulMapper
             BeatmapActionContainer.AddAction(new ActionCollectionAction(actions, true, true));
             RealtimeCurve.Editing = false;
 
-            if (Plugin.useNewUI)
-                FinishCurveEditor();
+            FinishCurveEditor();
 
             Destroy(gameObject);
         }
@@ -577,7 +471,7 @@ namespace PaulMapper
             {
                 cutDirection = (note as BaseNote).GetNoteDirection();
                 this.dotPoint = (note as BaseNote).CutDirection == 8;
-                this.dotTime = PaulmapperData.Instance.transitionTime;
+                this.dotTime = PaulMapperData.Instance.transitionTime;
             }
 
             rotation = note.GetRotation();

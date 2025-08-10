@@ -84,7 +84,7 @@ namespace PaulMapper
                 rotationtmp.transform.parent.gameObject.SetActive(false);
             }
 
-            if (PaulmapperData.Instance.usePointRotations && editing.cutDirection.HasValue)
+            if (PaulMapperData.Instance.usePointRotations && editing.cutDirection.HasValue)
             {
                 cuttmp.text = editing.cutDirection.Value.ToString("0.00");
                 cuttmp.transform.parent.gameObject.SetActive(true);

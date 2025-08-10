@@ -127,10 +127,6 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>$(ManagedPath)\UnityEngine.JSONSerializeModule.dll</HintPath>
     </Reference>
-    <Reference Include="UnityEngine.TextCoreModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>$(ManagedPath)\UnityEngine.TextCoreModule.dll</HintPath>
-    </Reference>
     <Reference Include="UnityEngine.TextRenderingModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>$(ManagedPath)\UnityEngine.TextRenderingModule.dll</HintPath>
@@ -158,7 +154,7 @@
     <Compile Include="PaulHelper.cs" />
     <Compile Include="PaulMapper.cs" />
     <Compile Include="Helpers.cs" />
-    <Compile Include="PaulSaveHelper.cs" />
+    <Compile Include="PaulMapperData.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>

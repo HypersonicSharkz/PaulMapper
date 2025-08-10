@@ -16,14 +16,14 @@ namespace PaulMapper
         {
             BeatmapObjectContainerCollection collection = BeatmapObjectContainerCollection.GetCollectionForType(Beatmap.Enums.ObjectType.Obstacle);
 
-            float startTime = object1.SongBpmTime;
-            float endTime = object2.SongBpmTime;
+            float startTime = object1.JsonTime;
+            float endTime = object2.JsonTime;
 
             float distanceInBeats = endTime - startTime;
             float originalDistance = distanceInBeats;
 
-            float npsStart = PaulmapperData.Instance.precision;
-            float npsEnd = PaulmapperData.Instance.useEndPrecision ? PaulmapperData.Instance.endPrecision : PaulmapperData.Instance.precision;
+            float npsStart = PaulMapperData.Instance.precision;
+            float npsEnd = PaulMapperData.Instance.useEndPrecision ? PaulMapperData.Instance.endPrecision : PaulMapperData.Instance.precision;
 
             float precision = npsStart;
 
@@ -34,8 +34,8 @@ namespace PaulMapper
                 BaseObstacle copy = null;
                 copy = (BaseObstacle)object1.Clone();
 
-                copy.SongBpmTime = (endTime - distanceInBeats);
-                if (copy.SongBpmTime > endTime)
+                copy.JsonTime = (endTime - distanceInBeats);
+                if (copy.JsonTime > endTime)
                     break;
 
                 float line = (originalDistance - distanceInBeats);
@@ -46,9 +46,9 @@ namespace PaulMapper
                 copy.CustomData = new JSONObject();
                 JSONNode customData = copy.CustomData;
 
-                if (PaulmapperData.Instance.fakeWalls)
+                if (PaulMapperData.Instance.fakeWalls)
                 {
-                    if (PaulmapperData.IsV3())
+                    if (PaulMapperData.IsV3())
                     {
                         customData["uninteractable"] = true;
                     } 
@@ -166,15 +166,6 @@ namespace PaulMapper
                         (con as ObstacleContainer).SetColor(color);
                 }
             }
-        }
-
-        protected override void UpdateMenuData(int id)
-        {
-            base.UpdateMenuData(id);
-            CurveParameter parm = selectedCurvePoint;
-
-            GUI.Label(new Rect(5, 145, 140 - 5, 25), $"Dot Point:");
-            parm.dotPoint = GUI.Toggle(new Rect(150 + 5, 145, 150 - 5, 20), parm.dotPoint, "");
         }
     }
 }

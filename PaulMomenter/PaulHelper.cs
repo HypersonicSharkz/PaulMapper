@@ -246,14 +246,14 @@ namespace PaulMapper.PaulHelper
         {
             BeatmapObjectContainerCollection collection = BeatmapObjectContainerCollection.GetCollectionForType(Beatmap.Enums.ObjectType.Note);
 
-            float startTime = note1.SongBpmTime;
-            float endTime = note2.SongBpmTime;
+            float startTime = note1.JsonTime;
+            float endTime = note2.JsonTime;
 
             float distanceInBeats = endTime - startTime;
 
 
-            float npsStart = PaulmapperData.Instance.precision;
-            float npsEnd = PaulmapperData.Instance.useEndPrecision ? PaulmapperData.Instance.endPrecision : PaulmapperData.Instance.precision;
+            float npsStart = PaulMapperData.Instance.precision;
+            float npsEnd = PaulMapperData.Instance.useEndPrecision ? PaulMapperData.Instance.endPrecision : PaulMapperData.Instance.precision;
 
             float precision = npsStart;
 
@@ -266,8 +266,8 @@ namespace PaulMapper.PaulHelper
                 copy.CustomData = new JSONObject();
 
                 //copy.CustomData["_paul"] = startTime;
-                copy.SongBpmTime = (endTime - distanceInBeats);
-                if (copy.SongBpmTime > endTime)
+                copy.JsonTime = (endTime - distanceInBeats);
+                if (copy.JsonTime > endTime)
                     break;
                
                 collection.SpawnObjectFix(copy, false, true);
@@ -300,8 +300,8 @@ namespace PaulMapper.PaulHelper
             //TGP.Start();
             BeatmapObjectContainerCollection collection = BeatmapObjectContainerCollection.GetCollectionForType(Beatmap.Enums.ObjectType.Note);
 
-            float startTime = note1.SongBpmTime;
-            float endTime = note2.SongBpmTime;
+            float startTime = note1.JsonTime;
+            float endTime = note2.JsonTime;
 
             float distanceInBeats = endTime - startTime;
             float originalDistance = distanceInBeats;
@@ -319,8 +319,8 @@ namespace PaulMapper.PaulHelper
 
                 copy = (BaseNote)note1.Clone();
 
-                copy.SongBpmTime = (endTime - distanceInBeats);
-                if (copy.SongBpmTime > endTime)
+                copy.JsonTime = (endTime - distanceInBeats);
+                if (copy.JsonTime > endTime)
                     break;
 
                 float line = (originalDistance - distanceInBeats);
@@ -346,7 +346,7 @@ namespace PaulMapper.PaulHelper
                 }
 
                 JSONNode customData_old = null;
-                if (PaulmapperData.Instance.rotateNotes)
+                if (PaulMapperData.Instance.rotateNotes)
                 {
                     //Fix rotation
                     if (oldNote != null)
@@ -360,7 +360,7 @@ namespace PaulMapper.PaulHelper
                             customData_old = oldNote.CustomData;
                             oldNote.CutDirection = 0;
 
-                            if (PaulmapperData.Instance.vibro)
+                            if (PaulMapperData.Instance.vibro)
                             {
                                 ang += 180 * (noteIndex % 2);
                             }
@@ -379,7 +379,7 @@ namespace PaulMapper.PaulHelper
                             //Set rotation
                             customData_old = oldNote.CustomData;
 
-                            if (PaulmapperData.Instance.vibro)
+                            if (PaulMapperData.Instance.vibro)
                             {
                                 ang = Mathf.Atan2(Math.Abs(cp.y - op.y), Math.Abs(cp.x - op.x)) * 180 / Mathf.PI;
                                 ang += 90;
@@ -391,7 +391,7 @@ namespace PaulMapper.PaulHelper
                         }
                     }
                 }
-                else if (PaulmapperData.Instance.vibro)
+                else if (PaulMapperData.Instance.vibro)
                 {
                     copy.CutDirection = (noteIndex % 2);
                 }
@@ -404,11 +404,11 @@ namespace PaulMapper.PaulHelper
                     {
                         dotTime.Sort();
                         float closeDotTime = dotTime.OrderBy(d => Mathf.Abs(d - oldNote.SongBpmTime)).First();
-                        if (Mathf.Abs(oldNote.SongBpmTime - closeDotTime) < 2 * PaulmapperData.Instance.transitionTime)
+                        if (Mathf.Abs(oldNote.SongBpmTime - closeDotTime) < 2 * PaulMapperData.Instance.transitionTime)
                         {
                             oldNote.CutDirection = 8;
 
-                            if (!PaulmapperData.Instance.transitionRotation && customData_old != null)
+                            if (!PaulMapperData.Instance.transitionRotation && customData_old != null)
                             {
                                 oldNote.SetRotation(0);
                             }
@@ -442,7 +442,7 @@ namespace PaulMapper.PaulHelper
                     (spawnedBeatobjects[spawnedBeatobjects.Count - 1] as BaseNote).SetRotation(pointsDir.Last().Value);
                 } else
                 {
-                    (spawnedBeatobjects[spawnedBeatobjects.Count - 1] as BaseNote).SetRotation((spawnedBeatobjects[spawnedBeatobjects.Count - 2] as BaseNote).CustomDirection.Value + (PaulmapperData.Instance.vibro ? 180 : 0));
+                    (spawnedBeatobjects[spawnedBeatobjects.Count - 1] as BaseNote).SetRotation((spawnedBeatobjects[spawnedBeatobjects.Count - 2] as BaseNote).CustomDirection.Value + (PaulMapperData.Instance.vibro ? 180 : 0));
                 }
             }
 
@@ -460,8 +460,8 @@ namespace PaulMapper.PaulHelper
         {
             BeatmapObjectContainerCollection collection = BeatmapObjectContainerCollection.GetCollectionForType(note1.ObjectType);
 
-            float startTime = note1.SongBpmTime;
-            float endTime = note2.SongBpmTime;
+            float startTime = note1.JsonTime;
+            float endTime = note2.JsonTime;
 
             float distanceInBeats = endTime - startTime;
 
@@ -473,8 +473,8 @@ namespace PaulMapper.PaulHelper
 
                 copy = (BaseObject)note1.Clone();
 
-                copy.SongBpmTime = (endTime - distanceInBeats);
-                if (copy.SongBpmTime > endTime)
+                copy.JsonTime = (endTime - distanceInBeats);
+                if (copy.JsonTime > endTime)
                     break;
 
                 collection.SpawnObjectFix(copy, false, false);
@@ -543,8 +543,8 @@ namespace PaulMapper.PaulHelper
                 if (copy is BaseNote copyNote)
                     copyNote.CutDirection = 0;
 
-                copy.SongBpmTime = endTime - distanceInBeats;
-                if (copy.SongBpmTime > endTime)
+                copy.JsonTime = endTime - distanceInBeats;
+                if (copy.JsonTime > endTime)
                     break;
 
 
@@ -645,11 +645,11 @@ namespace PaulMapper.PaulHelper
 
                     if (copy is BaseNote)
                     {
-                        if (PaulmapperData.Instance.rotateNotes)
+                        if (PaulMapperData.Instance.rotateNotes)
                         {
                             (copy as BaseNote).SetRotation(noteRotation);
                         }
-                        else if (PaulmapperData.Instance.vibro)
+                        else if (PaulMapperData.Instance.vibro)
                         {
                             (copy as BaseNote).CutDirection = (noteIndex % 2);
                         }

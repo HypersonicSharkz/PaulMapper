@@ -18,7 +18,7 @@ namespace PaulMapper
 
         public static void SetRotation(this BaseNote obj, float angle)
         {
-            if (PaulmapperData.IsV3())
+            if (PaulMapperData.IsV3())
             {
                 obj.AngleOffset = (int)angle - 180;
             } 

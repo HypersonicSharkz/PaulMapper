@@ -254,10 +254,8 @@ namespace PaulMapper
 
         public static BaseNote GetClosestGridSnap(BaseNote note)
         {
-            BaseNote newNote = new BaseNote();
+            BaseNote newNote = (BaseNote)note.Clone();
             Vector2 notePos = note.GetRealPosition();
-
-            newNote.SongBpmTime = note.SongBpmTime;
 
             newNote.PosX = (int)Math.Round(notePos.x + 2);
             newNote.PosY = (int)Math.Round(notePos.y);
@@ -315,9 +313,9 @@ namespace PaulMapper
                     rotation = wall.CustomLocalRotation;
 
                 if (leftToRight)
-                    wall.CustomLocalRotation = rotation.GetValueOrDefault(Vector3.zero) + new Vector3(0, 0, (clockWise ? -1 : 1) * PaulmapperData.Instance.wallRotationAmount);
+                    wall.CustomLocalRotation = rotation.GetValueOrDefault(Vector3.zero) + new Vector3(0, 0, (clockWise ? -1 : 1) * PaulMapperData.Instance.wallRotationAmount);
                 else
-                    wall.CustomLocalRotation = rotation.GetValueOrDefault(Vector3.zero) + new Vector3((clockWise ? -1 : 1) * PaulmapperData.Instance.wallRotationAmount, 0, 0);
+                    wall.CustomLocalRotation = rotation.GetValueOrDefault(Vector3.zero) + new Vector3((clockWise ? -1 : 1) * PaulMapperData.Instance.wallRotationAmount, 0, 0);
 
                 ObjectContainer con;
                 if (beatmapObjectContainerCollection.LoadedContainers.TryGetValue(wall, out con))
