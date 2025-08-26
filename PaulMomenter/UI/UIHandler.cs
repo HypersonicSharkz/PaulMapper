@@ -33,8 +33,6 @@ namespace PaulMapper
         private UIButton selectAll;
         private TextMeshProUGUI paulNavNumber;
 
-        private float lastBpm;
-
         public UIHandler()
         {
             
@@ -43,11 +41,6 @@ namespace PaulMapper
         public void UpdateNPS()
         {
             float bpm = BeatSaberSongContainer.Instance.Map.BpmAtJsonTime(PaulMapper.ats.CurrentJsonTime) ?? 100;
-
-            if (bpm == lastBpm) //Skip if bpm hasn't changed
-                return;
-
-            lastBpm = bpm;
             float nps = (bpm / 60) / (1 / (float)PaulMapperData.Instance.precision);
             float npsEnd = PaulMapperData.Instance.useEndPrecision ? (bpm / 60) / (1 / (float)PaulMapperData.Instance.endPrecision) : nps;
 
@@ -319,18 +312,21 @@ namespace PaulMapper
                 speedLabel = UI.AddLabel(panel, "PaulMapper", "", Vector2.zero, null, null, 12, new Vector2(0, 10), TextAlignmentOptions.MidlineLeft);
 
                 var precisionCon = UI.AddField(panel, "Precision");
-                UI.AddParsed<int>(precisionCon, PaulMapperData.Instance.precision, (val =>
+                var parsed = UI.AddParsed<int>(precisionCon, null, (val =>
                 {
                     PaulMapperData.Instance.precision = val.GetValueOrDefault(16);
                     UpdateNPS();
                 }));
+                parsed.InputField.text = PaulMapperData.Instance.precision.ToString();
 
                 GameObject gameObject6 = UI.AddField(panel, " ", null);
-                UI.AddParsed<int>(gameObject6, PaulMapperData.Instance.endPrecision, (val =>
+                parsed = UI.AddParsed<int>(gameObject6, null, (val =>
                 {
                     PaulMapperData.Instance.endPrecision = val.GetValueOrDefault(16);
                     UpdateNPS();
                 }));
+                parsed.InputField.text = PaulMapperData.Instance.endPrecision.ToString();
+
                 UI.AddCheckbox(gameObject6, PaulMapperData.Instance.useEndPrecision, delegate (bool val)
                 {
                     PaulMapperData.Instance.useEndPrecision = val;
@@ -392,10 +388,11 @@ namespace PaulMapper
                 var transitionCollapsible = Collapsible.Create(panel, "Transition Settings", "Transition Settings", false);
 
                 var transitionCon = UI.AddField(transitionCollapsible.panel, "Transition Time");
-                UI.AddParsed<float>(transitionCon, PaulMapperData.Instance.transitionTime, (val =>
+                parsed = UI.AddParsed<float>(transitionCon, null, (val =>
                 {
                     PaulMapperData.Instance.transitionTime = val.GetValueOrDefault(0.3f);
                 }));
+                parsed.InputField.text = PaulMapperData.Instance.transitionTime.ToString();
 
                 var keepRotationCon = UI.AddField(transitionCollapsible.panel, "Keep Rotation");
                 UI.AddCheckbox(keepRotationCon, PaulMapperData.Instance.transitionRotation, (val =>
@@ -425,10 +422,11 @@ namespace PaulMapper
                 }));
 
                 var wallrotaionCon = UI.AddField(wallCollapsible.panel, "Wall Rotation");
-                UI.AddParsed<int>(wallrotaionCon, PaulMapperData.Instance.wallRotationAmount, (val =>
+                parsed = UI.AddParsed<int>(wallrotaionCon, null, (val =>
                 {
                     PaulMapperData.Instance.wallRotationAmount = val.GetValueOrDefault(5);
                 }));
+                parsed.InputField.text = PaulMapperData.Instance.wallRotationAmount.ToString();
 
                 #endregion
 
@@ -609,7 +607,18 @@ namespace PaulMapper
 
                 SelectionController.SelectionChangedEvent = (Action)Delegate.Combine(SelectionController.SelectionChangedEvent, new Action(UpdateSelectionUI));
                 SelectionController.SelectionChangedEvent = (Action)Delegate.Combine(SelectionController.SelectionChangedEvent, new Action(UpdateQuickMenu));
-                PaulMapper.ats.TimeChanged = (Action)Delegate.Combine(PaulMapper.ats.TimeChanged, new Action(UpdateNPS));
+                float lastBpm = 0;
+                PaulMapper.ats.TimeChanged = (Action)Delegate.Combine(PaulMapper.ats.TimeChanged, new Action(() => 
+                {
+                    float bpm = BeatSaberSongContainer.Instance.Map.BpmAtJsonTime(PaulMapper.ats.CurrentJsonTime) ?? 100;
+                    
+                    if (bpm == lastBpm)
+                        return;
+
+                    lastBpm = bpm;
+
+                    UpdateNPS();
+                }));
 
                 #endregion
 

@@ -101,6 +101,8 @@ namespace PaulMapper
             BeatmapActionContainer.AddAction(new SelectionPastedAction(curveObjects, initialObjects));
 
             SpawnAnchorPoints();
+
+            PaulMapper.uiHandler.UpdateSelectionUI();
         }
 
         private void Update()
@@ -258,6 +260,8 @@ namespace PaulMapper
 
             GetCurves(curveParameters, out xCurve, out yCurve);
             UpdateObjects();
+
+            PaulMapper.uiHandler.UpdateSelectionUI();
         }
 
         private void UpdateCurvePointEditor(CurveParameter p)
