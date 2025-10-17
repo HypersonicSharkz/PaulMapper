@@ -502,7 +502,7 @@ namespace PaulMapper.PaulHelper
             if (Helper.TryGetColorFromObject(note1, out Color col1) && Helper.TryGetColorFromObject(note2, out Color col2))
             {
                 DistColorDict.Add(0, col1);
-                DistColorDict.Add(note2.SongBpmTime - note1.SongBpmTime, col2);
+                DistColorDict.Add(note2.JsonTime - note1.JsonTime, col2);
             }
 
             BeatmapObjectContainerCollection collection = BeatmapObjectContainerCollection.GetCollectionForType(note1.ObjectType);
@@ -514,8 +514,8 @@ namespace PaulMapper.PaulHelper
             ang += 90;
             float noteRotation = ang;
 
-            float startTime = note1.SongBpmTime;
-            float endTime = note2.SongBpmTime;
+            float startTime = note1.JsonTime;
+            float endTime = note2.JsonTime;
 
 
             float distanceInBeats = endTime - startTime;
@@ -629,7 +629,7 @@ namespace PaulMapper.PaulHelper
 
                     if (DistColorDict != null && DistColorDict.Count > 0)
                     {
-                        copy.CustomColor = PaulMaker.LerpColorFromDict(DistColorDict, copy.SongBpmTime - startTime);
+                        copy.CustomColor = PaulMaker.LerpColorFromDict(DistColorDict, copy.JsonTime - startTime);
                     }
 
                     if (copy is BaseObstacle wall)
