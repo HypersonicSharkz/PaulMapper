@@ -164,6 +164,137 @@ namespace PaulMapper.PaulHelper
             SelectionController.SelectionChangedEvent?.Invoke();
         }
 
+        public static List<BaseGrid> GetPaulFromNote(BaseObject obj)
+        {
+            if (obj == null)
+                return new List<BaseGrid>();
+            
+
+            float epsilon = 1f/8f; // proximity threshold
+            float start = obj.SongBpmTime;
+            float end = obj.SongBpmTime;
+            float maxDirectionDifference = 0.5f;
+            float maxSquareDistDifference = 0.5f;
+
+            List<BaseGrid> result = new List<BaseGrid>();
+
+            if (obj is BaseNote note)
+            {
+                List<BaseNote> allNotes = PaulMapper.notesContainer.ObjectsWithContainers.OfType<BaseNote>().Where(n => n.Type == note.Type).ToList();
+                int noteIndex = allNotes.IndexOf(note);
+
+                // Move left
+                int index = noteIndex - 1;
+                while (index >= 0 && allNotes[index].SongBpmTime >= start - epsilon)
+                {
+                    start = allNotes[index].SongBpmTime;
+                    result.Add(allNotes[index]);
+                    index--;
+                }
+
+                // Move right
+                index = noteIndex + 1;
+                while (index < allNotes.Count && allNotes[index].SongBpmTime <= end + epsilon)
+                {
+                    end = allNotes[index].SongBpmTime;
+                    result.Add(allNotes[index]);
+                    index++;
+                }
+            }
+            else if (obj is BaseObstacle obstacle)
+            {
+                List<BaseObstacle> allWalls = PaulMapper.obstacleContainer.ObjectsWithContainers.OfType<BaseObstacle>().OrderBy(w => w.SongBpmTime).ToList();
+                int wallIndex = allWalls.IndexOf(obstacle);
+
+                Vector3 prevDir = Vector3.zero;
+
+                // Move left
+                int index = wallIndex - 1;
+                BaseObstacle prev = obstacle;
+                while (index >= 0 && allWalls[index].SongBpmTime >= start - epsilon)
+                {
+                    var candidate = allWalls[index];
+
+                    if (PaulMaker.EqualsRound(candidate.SongBpmTime, start, 0.01f))
+                    {
+                        index--;
+                        continue;
+                    }
+
+                    var posCandidate = candidate.GetRealPosition();
+                    var posPrev = prev.GetRealPosition();
+
+                    var dist = posPrev - posCandidate; // backward for left search
+                    if (dist.sqrMagnitude > maxSquareDistDifference)
+                    {
+                        index--;
+                        continue;
+                    }
+
+                    var dir = (new Vector3(posPrev.x, posPrev.y, prev.SongBpmTime) - new Vector3(posCandidate.x, posCandidate.y, candidate.SongBpmTime)).normalized;
+
+                    if (prevDir != Vector3.zero && Vector3.Dot(dir, prevDir) < maxDirectionDifference)
+                    {
+                        index--;
+                        continue;
+                    }
+
+                    start = candidate.SongBpmTime;
+                    result.Add(candidate);
+                    prev = candidate;
+                    prevDir = dir;
+                    index--;
+                }
+
+
+                // Move right
+                index = wallIndex + 1;
+                prev = obstacle;
+                prevDir = Vector3.zero;
+                while (index < allWalls.Count && allWalls[index].SongBpmTime <= end + epsilon)
+                {
+                    var candidate = allWalls[index];
+                    if (PaulMaker.EqualsRound(candidate.SongBpmTime, end, 0.01f))
+                    {
+                        index++;
+                        continue;
+                    }
+
+                    var posCandidate = candidate.GetRealPosition();
+                    var posPrev = prev.GetRealPosition();
+
+                    var dist = posCandidate - posPrev;
+
+                    if (dist.sqrMagnitude > maxSquareDistDifference)
+                    {
+                        index++;
+                        continue;
+                    }
+
+                    var dir = (new Vector3(posCandidate.x, posCandidate.y, candidate.SongBpmTime) - new Vector3(posPrev.x, posPrev.y, prev.SongBpmTime)).normalized;
+
+                    if (prevDir != Vector3.zero)
+                    {
+                        if (Vector3.Dot(dir, prevDir) < maxDirectionDifference) //Points opposite ways
+                        {
+                            index++;
+                            continue; //Skip in this case
+                        }
+                    }
+
+                    end = candidate.SongBpmTime;
+                    result.Add(candidate);
+                    prev = candidate;
+                    prevDir = dir;
+                    index++;
+                }
+            }
+
+            return result;
+        }
+
+            
+
         public static void KeepFirstNotes()
         {
             

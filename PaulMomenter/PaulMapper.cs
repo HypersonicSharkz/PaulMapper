@@ -29,6 +29,8 @@ namespace PaulMapper
 
             PaulMapperData.GetSaveData();
             CheckVersion();
+
+            SelectionController.ObjectWasSelectedEvent = (Action<BaseObject>)Delegate.Combine(SelectionController.ObjectWasSelectedEvent, new Action<BaseObject>(OnNoteSelected));
         }
 
         [Exit]
@@ -69,6 +71,25 @@ namespace PaulMapper
                 }
             }
         }
+
+        private bool skipTest = false;
+        private void OnNoteSelected(BaseObject obj)
+        {
+            if (skipTest)
+                return;
+
+
+            if (Input.GetKey(KeyCode.LeftShift) && Input.GetKey(KeyCode.LeftControl))
+            {
+                List<BaseGrid> objects = PaulHelper.PaulFinder.GetPaulFromNote(obj);
+                skipTest = true;
+                foreach (BaseGrid grid in objects)
+                {
+                    SelectionController.Select(grid, true);
+                }
+                skipTest = false;
+            }
+        }
     }
 
 
@@ -79,6 +100,7 @@ namespace PaulMapper
 
         public static AudioTimeSyncController ats;
         public static BeatmapObjectContainerCollection notesContainer;
+        public static BeatmapObjectContainerCollection obstacleContainer;
         public static BeatmapObjectContainerCollection bpmChangesContainer;
 
         internal static UIHandler uiHandler = new UIHandler();
@@ -95,6 +117,7 @@ namespace PaulMapper
             ats = BeatmapObjectContainerCollection.GetCollectionForType(Beatmap.Enums.ObjectType.Note).AudioTimeSyncController;
             notesContainer = BeatmapObjectContainerCollection.GetCollectionForType(Beatmap.Enums.ObjectType.Note);
             bpmChangesContainer = BeatmapObjectContainerCollection.GetCollectionForType(Beatmap.Enums.ObjectType.BpmChange);
+            obstacleContainer = BeatmapObjectContainerCollection.GetCollectionForType(Beatmap.Enums.ObjectType.Obstacle);
 
 
             paulmapperData = PaulMapperData.Instance;
@@ -276,6 +299,11 @@ namespace PaulMapper
                     {
                         Helper.RotateWalls(true, false);
                     }
+                }
+
+                if (Input.GetMouseButtonDown(0) && Input.GetKey(KeyCode.LeftShift) && Input.GetKey(KeyCode.LeftControl))
+                {
+                    
                 }
             }
 
