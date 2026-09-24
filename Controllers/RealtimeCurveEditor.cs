@@ -390,11 +390,11 @@ namespace PaulMapper
                     continue;
                 }
 
+                actions.Add(new BeatmapObjectUpdatedAction(obj, originalCurveObjects[curveObjects.IndexOf(obj)]));
+
                 if (obj.CustomData != null && obj.CustomData["_isAnchor"]) obj.CustomData.Remove("_isAnchor");
 
                 obj.WriteCustom();
-
-                actions.Add(new BeatmapObjectModifiedAction(obj, obj, originalCurveObjects[curveObjects.IndexOf(obj)]));
 
                 if (dotStart || (obj is BaseNote note && curveObjects.IndexOf(obj) > 0 && note.CutDirection == 8 && PaulMapperData.INSTANCE.Arcs))
                 {

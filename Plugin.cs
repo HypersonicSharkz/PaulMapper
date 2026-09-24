@@ -55,8 +55,7 @@ namespace PaulMapper
         {
             if (arg0.buildIndex == 3) //Mapper scene 
             {
-                PaulMapper pm = GameObject.FindFirstObjectByType<PaulMapper>();
-                if (pm == null)
+                if (paulMapper == null || !paulMapper.isActiveAndEnabled)
                 {
                     paulMapper = new GameObject("PaulMapper").AddComponent<PaulMapper>();
                 }
