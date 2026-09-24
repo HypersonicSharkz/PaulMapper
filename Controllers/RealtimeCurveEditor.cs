@@ -55,6 +55,11 @@ namespace PaulMapper
 
         private void OnDisable()
         {
+            Debug.Log("Curve Object Destroyed");
+
+            if (Plugin.addAnchor != null)
+                Plugin.addAnchor.performed -= AddAnchorPoint;
+
             FinishCurveEditor();
         }
 
@@ -269,6 +274,8 @@ namespace PaulMapper
 
         private void AddAnchorPoint(UnityEngine.InputSystem.InputAction.CallbackContext obj)
         {
+            Debug.Log("Adding Anchor Point");
+
             float time = curveObjects.First(o => o.SongBpmTime >= PaulMapper.ats.CurrentSongBpmTime).SongBpmTime;
             if (!curveParameters.Any(c => Math.Abs(c.time - time) < minTimeDif))
             {
@@ -295,6 +302,19 @@ namespace PaulMapper
         protected virtual void SpawnObjects()
         {
             UpdateAnchorPoints();
+
+            foreach (CurveParameter param in curveParameters)
+            {
+                BaseObject noteForAnc = curveObjects.OrderBy(p => p.SongBpmTime).OrderBy(p => Math.Abs(param.time - p.SongBpmTime)).First();
+
+                if (noteForAnc.CustomData == null)
+                {
+                    noteForAnc.CustomData = new JSONObject();
+                }
+                noteForAnc.CustomData["_isAnchor"] = true;
+
+                noteForAnc.WriteCustom();
+            }
         }
 
         private List<CurveParameter> ObjectsToParameters(List<BaseGrid> beatmapObjects)
@@ -364,6 +384,12 @@ namespace PaulMapper
             Debug.Log("Finish");
             foreach (BaseGrid obj in curveObjects)
             {
+                if (!BeatmapObjectContainerCollection.GetCollectionForType(obj.ObjectType).ContainsObject(obj))
+                {
+                    Debug.Log("Note not found in collection? Possible undo");
+                    continue;
+                }
+
                 if (obj.CustomData != null && obj.CustomData["_isAnchor"]) obj.CustomData.Remove("_isAnchor");
 
                 obj.WriteCustom();
@@ -405,7 +431,8 @@ namespace PaulMapper
                 Destroy(param.anchorPoint.gameObject);
             }
 
-            BeatmapActionContainer.AddAction(new ActionCollectionAction(actions, true, true));
+            if (actions.Count > 0)
+                BeatmapActionContainer.AddAction(new ActionCollectionAction(actions, true, true));
             
             Destroy(gameObject);
         }

@@ -16,7 +16,7 @@ namespace PaulMapper
         public static BeatmapObjectContainerCollection obstacleContainer;
         public static BeatmapObjectContainerCollection bpmChangesContainer;
 
-        internal static UIHandler uiHandler;
+        internal static UIHandler uiHandler = new UIHandler();
 
         public void Awake()
         {
@@ -31,7 +31,7 @@ namespace PaulMapper
             if (Plugin.openMenu != null)
                 Plugin.openMenu.performed += OpenMenu;
 
-            uiHandler = new UIHandler();
+            uiHandler.Init();
         }
 
         public void Update()

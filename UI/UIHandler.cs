@@ -45,6 +45,11 @@ namespace PaulMapper
 
         public UIHandler()
         {
+            
+        }
+
+        public void Init()
+        {
             var mapEditorUI = UnityEngine.Object.FindObjectOfType<MapEditorUI>();
             TryLoadPaulMapperWindow(mapEditorUI);
             TryLoadQuickMenu(mapEditorUI);
