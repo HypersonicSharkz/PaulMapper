@@ -267,7 +267,7 @@ namespace PaulMapper
 
         private void GenerateQuickPoodle(string type)
         {
-            /*if (SelectionController.SelectedObjects.Count == 2 && SelectionController.SelectedObjects.All(s => s.ObjectType == Beatmap.Enums.ObjectType.Note))
+            if (SelectionController.SelectedObjects.Count == 2 && SelectionController.SelectedObjects.All(s => s.ObjectType == Beatmap.Enums.ObjectType.Note))
             {
                 BaseNote beatmapObject1 = SelectionController.SelectedObjects.First() as BaseNote;
                 BaseNote beatmapObject2 = SelectionController.SelectedObjects.Last() as BaseNote;
@@ -275,7 +275,7 @@ namespace PaulMapper
                 {
                     BaseObject[] beatmapObjects = SelectionController.SelectedObjects.OrderBy(o => o.SongBpmTime).ToArray();
 
-                    PaulMaker.GeneratePoodle(beatmapObjects[0], beatmapObjects[1], type, PaulMapperData.INSTANCE.Precision);
+                    PoodleGenerator.GenerateQuickPoodle((BaseGrid)beatmapObjects[0], (BaseGrid)beatmapObjects[1], type, PaulMapperData.INSTANCE.Precision);
                 }
             }
             else if (SelectionController.SelectedObjects.All(s => s.ObjectType == Beatmap.Enums.ObjectType.Obstacle))
@@ -285,9 +285,9 @@ namespace PaulMapper
                 if (beatmapObject1.SongBpmTime != beatmapObject2.SongBpmTime)
                 {
                     BaseObject[] beatmapObjects = SelectionController.SelectedObjects.OrderBy(o => o.SongBpmTime).ToArray();
-                    PaulMaker.GeneratePoodle(beatmapObjects[0], beatmapObjects[1], type, PaulMapperData.INSTANCE.Precision);
+                    PoodleGenerator.GenerateQuickPoodle((BaseGrid)beatmapObjects[0], (BaseGrid)beatmapObjects[1], type, PaulMapperData.INSTANCE.Precision);
                 }
-            }*/
+            }
         }
 
         public bool TryLoadPaulMapperWindow(MapEditorUI mapEditorUI)

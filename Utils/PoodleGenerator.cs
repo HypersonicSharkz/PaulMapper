@@ -128,6 +128,200 @@ namespace PaulMapper
             return spawnedBeatobjects;
         }
 
+        public static void GenerateQuickPoodle(BaseGrid note1, BaseGrid note2, string easing = null, int precision = 32)
+        {
+            Dictionary<float, Color> DistColorDict = new Dictionary<float, Color>();
+
+            Color color1 = note1.GetColor();
+            Color color2 = note2.GetColor();
+
+            if (color1 != Color.clear && color2 != Color.clear)
+            {
+                DistColorDict.Add(0, color1);
+                DistColorDict.Add(note2.JsonTime - note1.JsonTime, color2);
+            }
+
+            BeatmapObjectContainerCollection collection = BeatmapObjectContainerCollection.GetCollectionForType(note1.ObjectType);
+
+            Vector2 n1 = note1.GetPosition();
+            Vector2 n2 = note2.GetPosition();
+
+            float ang = Mathf.Atan2(n2.y - n1.y, n2.x - n1.x) * 180 / Mathf.PI;
+            ang += 90;
+            float noteRotation = ang;
+
+            float startTime = note1.JsonTime;
+            float endTime = note2.JsonTime;
+
+
+            float distanceInBeats = endTime - startTime;
+            float originalDistance = distanceInBeats;
+
+            Vector2 note1pos = note1.GetRealPosition();
+            Vector2 note2pos = note2.GetRealPosition();
+
+            Vector3 note1Scale = note1.GetScale();
+            Vector3 note2Scale = note2.GetScale();
+
+            Vector3 note1Rotation = note1.GetRotation();
+            Vector3 note2Rotation = note2.GetRotation();
+
+            BaseGrid oldNote = null;
+            int noteIndex = 1;
+
+            List<BaseObject> spawnedBeatobjects = new List<BaseObject>();
+
+            while (distanceInBeats > 0 - 1 / (float)precision)
+            {
+                BaseGrid note1Note = note1 as BaseGrid;
+                BaseGrid copy = (BaseGrid)note1.Clone();
+
+                if (copy is BaseNote copyNote)
+                    copyNote.CutDirection = 0;
+
+                copy.JsonTime = endTime - distanceInBeats;
+                if (copy.JsonTime > endTime)
+                    break;
+
+
+                if (note1pos != note2pos)
+                {
+                    float line = (originalDistance - distanceInBeats) / originalDistance;
+
+                    if (easing != null)
+                    {
+                        switch (easing)
+                        {
+                            case "CubicIn":
+                                line = Easing.Cubic.In(line);
+                                break;
+                            case "CubicOut":
+                                line = Easing.Cubic.Out(line);
+                                break;
+                            case "CubicInOut":
+                                line = Easing.Cubic.InOut(line);
+                                break;
+
+                            case "ExpIn":
+                                line = Easing.Exponential.In(line);
+                                break;
+                            case "ExpOut":
+                                line = Easing.Exponential.Out(line);
+                                break;
+                            case "ExpInOut":
+                                line = Easing.Exponential.InOut(line);
+                                break;
+
+
+                            case "easeInBack":
+                                line = Easing.Back.In(line);
+                                break;
+                            case "easeOutBack":
+                                line = Easing.Back.Out(line);
+                                break;
+                            case "easeInOutBack":
+                                line = Easing.Back.InOut(line);
+                                break;
+
+
+                            case "easeInBounce":
+                                line = Easing.Bounce.In(line);
+                                break;
+                            case "easeOutBounce":
+                                line = Easing.Bounce.Out(line);
+                                break;
+                            case "easeInOutBounce":
+                                line = Easing.Bounce.InOut(line);
+                                break;
+
+
+                            case "easeInSine":
+                                line = Easing.Sinusoidal.In(line);
+                                break;
+                            case "easeOutSine":
+                                line = Easing.Sinusoidal.Out(line);
+                                break;
+                            case "easeInOutSine":
+                                line = Easing.Sinusoidal.InOut(line);
+                                break;
+
+
+
+                            case "easeInQuad":
+                                line = Easing.Quadratic.In(line);
+                                break;
+                            case "easeOutQuad":
+                                line = Easing.Quadratic.Out(line);
+                                break;
+                            case "easeInOutQuad":
+                                line = Easing.Quadratic.InOut(line);
+                                break;
+                        }
+                    }
+
+                    JSONNode customData = copy.CustomData;
+
+                    copy.CustomCoordinate = Vector2.Lerp(note1pos, note2pos, line);
+
+                    if (DistColorDict != null && DistColorDict.Count > 0)
+                    {
+                        copy.CustomColor = ColorHelper.LerpColorFromDict(DistColorDict, copy.JsonTime - startTime);
+                    }
+
+                    if (copy is BaseObstacle wall)
+                    {
+                        wall.SetScale(Vector3.Lerp(note1Scale, note2Scale, line));
+
+                        float rotX = Mathf.Lerp(note1Rotation.x, note2Rotation.x, line);
+                        float rotY = Mathf.Lerp(note1Rotation.y, note2Rotation.y, line);
+                        float rotZ = Mathf.Lerp(note1Rotation.z, note2Rotation.z, line);
+
+                        wall.CustomLocalRotation = new Vector3(rotX, rotY, rotZ);
+                    }
+
+                    if (copy is BaseNote)
+                    {
+                        if (PaulMapperData.INSTANCE.RotateNotes)
+                        {
+                            (copy as BaseNote).SetRotation(noteRotation);
+                        }
+                        else if (PaulMapperData.INSTANCE.Vibro)
+                        {
+                            (copy as BaseNote).CutDirection = (noteIndex % 2);
+                        }
+                    }
+                }
+
+                copy.WriteCustom();
+                collection.SpawnObject(copy, false, false);
+
+
+                BaseObject beatmapObject = copy;
+                spawnedBeatobjects.Add(beatmapObject);
+
+
+                oldNote = copy;
+                distanceInBeats -= 1 / (float)precision;
+                noteIndex += 1;
+            }
+
+            if (note1 is BaseNote && (spawnedBeatobjects[spawnedBeatobjects.Count - 2] as BaseNote).CustomDirection.HasValue)
+                (spawnedBeatobjects[spawnedBeatobjects.Count - 1] as BaseNote).SetRotation((spawnedBeatobjects[spawnedBeatobjects.Count - 2] as BaseNote).CustomDirection.Value);
+
+            foreach (BaseObject beatmapObject in new List<BaseObject>() { note1, note2 })
+            {
+                collection.DeleteObject(beatmapObject, false);
+            }
+
+            BeatmapActionContainer.AddAction(new SelectionPastedAction(spawnedBeatobjects, new List<BaseObject>() { note1, note2 }));
+
+            foreach (BaseObject note in spawnedBeatobjects)
+            {
+                SelectionController.Select(note, true, true, false);
+            }
+            //beatmapObjectContainerCollection.DeleteObject(note2);
+        }
+
         private static BaseNote GetClosestGridSnap(BaseNote note)
         {
             BaseNote newNote = (BaseNote)note.Clone();
