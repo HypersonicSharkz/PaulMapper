@@ -1,7 +1,6 @@
 ﻿using Beatmap.Base;
 using Beatmap.Containers;
 using Extreme.Mathematics.Curves;
-using PaulMapper.PaulHelper;
 using SimpleJSON;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,68 +13,7 @@ namespace PaulMapper
 
         protected override void SpawnObjects()
         {
-            BeatmapObjectContainerCollection collection = BeatmapObjectContainerCollection.GetCollectionForType(Beatmap.Enums.ObjectType.Obstacle);
-
-            float startTime = object1.JsonTime;
-            float endTime = object2.JsonTime;
-
-            float distanceInBeats = endTime - startTime;
-            float originalDistance = distanceInBeats;
-
-            float npsStart = PaulMapperData.Instance.precision;
-            float npsEnd = PaulMapperData.Instance.useEndPrecision ? PaulMapperData.Instance.endPrecision : PaulMapperData.Instance.precision;
-
-            float precision = npsStart;
-
-            List<BaseObject> spawnedBeatobjects = new List<BaseObject>();
-
-            while (distanceInBeats > 0 - 1 / precision)
-            {
-                BaseObstacle copy = null;
-                copy = (BaseObstacle)object1.Clone();
-
-                copy.JsonTime = (endTime - distanceInBeats);
-                if (copy.JsonTime > endTime)
-                    break;
-
-                float line = (originalDistance - distanceInBeats);
-
-                var x = xCurve.ValueAt(line);
-                var y = yCurve.ValueAt(line);
-
-                copy.CustomData = new JSONObject();
-                JSONNode customData = copy.CustomData;
-
-                if (PaulMapperData.Instance.fakeWalls)
-                {
-                    if (PaulMapperData.IsV3())
-                    {
-                        customData["uninteractable"] = true;
-                    } 
-                    else
-                    {
-                        customData["_fake"] = true;
-                        customData["_interactable"] = false;
-                    }
-                }
-
-                if (copy.CustomWorldRotation != null)
-                {
-                    Vector3 rot = copy.CustomWorldRotation.ReadVector3(new Vector3(0, 0, 0));
-                    copy.CustomWorldRotation = new Vector3(rot.x, rot.y, 0);
-                }
-
-                copy.WriteCustom();
-                collection.SpawnObjectFix(copy, false, true);
-
-                BaseObject beatmapObject = copy;
-                spawnedBeatobjects.Add(beatmapObject);
-
-                precision = Mathf.Lerp(npsEnd, npsStart, distanceInBeats / (endTime - startTime));
-                distanceInBeats -= 1 / precision;
-            }
-
-            curveObjects = spawnedBeatobjects;
+            curveObjects = PoodleGenerator.SpawnBasePoodle(object1, object2);
             base.SpawnObjects();
         }
 
@@ -124,10 +62,10 @@ namespace PaulMapper
                 var y = yCurve.ValueAt(time);
 
                 JSONNode customData = wall.CustomData;
-                wall.SetPosition(new Vector2((float)x, (float)y));
-                wall.SetScale(new Vector3((float)widthCurve.ValueAt(time), (float)heightCurve.ValueAt(time), (float)depthCurve.ValueAt(time)));
+                wall.CustomCoordinate = new Vector2((float)x, (float)y);
+                wall.CustomSize = new Vector3((float)widthCurve.ValueAt(time), (float)heightCurve.ValueAt(time), (float)depthCurve.ValueAt(time));
 
-                float? rotAtTime = Helper.GetRotationValueAtTime(wall.SongBpmTime, curveObjects);
+                float? rotAtTime = WorldRotationHelper.GetRotationValueAtTime(wall.SongBpmTime, curveObjects);
                 if (rotAtTime.HasValue)
                     wall.CustomWorldRotation = new Vector3(0, rotAtTime.Value, 0);
 
@@ -150,8 +88,8 @@ namespace PaulMapper
                 //Color handling 
                 if (colorDist != null && colorDist.Count > 0)
                 {
-                    color = PaulMaker.LerpColorFromDict(colorDist, time);
-                    wall.SetColor(color);
+                    color = ColorHelper.LerpColorFromDict(colorDist, time);
+                    wall.CustomColor = color;
                 }
 
                 wall.WriteCustom();

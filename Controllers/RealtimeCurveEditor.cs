@@ -1,13 +1,11 @@
 ﻿using Beatmap.Base;
 using Beatmap.Containers;
 using Extreme.Mathematics.Curves;
-using PaulMapper.PaulHelper;
 using SimpleJSON;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 namespace PaulMapper
 {
@@ -24,14 +22,14 @@ namespace PaulMapper
 
         public Dictionary<float, Color> colorDist = new Dictionary<float, Color>();
 
-        public List<BaseObject> initialObjects = new List<BaseObject>();
+        public List<BaseGrid> initialObjects = new List<BaseGrid>();
 
         public List<CurveParameter> curveParameters = new List<CurveParameter>();
 
-        public BaseObject object1;
-        public BaseObject object2;
+        public BaseGrid object1;
+        public BaseGrid object2;
 
-        public List<BaseObject> curveObjects = new List<BaseObject>();
+        public List<BaseGrid> curveObjects = new List<BaseGrid>();
 
         protected BeatmapObjectContainerCollection beatmapObjectContainerCollection;
         protected EventGridContainer eventsContainer;
@@ -44,12 +42,20 @@ namespace PaulMapper
         public Material mainMat;
         public Material selectionMat;
 
-        List<BaseObject> originalCurveObjects = new List<BaseObject>();
+        List<BaseGrid> originalCurveObjects = new List<BaseGrid>();
 
         private void Start()
         {
-            RealtimeCurve.Editing = false;
-                StartCurvePointEditor();
+            RealtimeCurve.Editing = true;
+            StartCurvePointEditor();
+
+            if (Plugin.addAnchor != null)
+                Plugin.addAnchor.performed += AddAnchorPoint;
+        }
+
+        private void OnDisable()
+        {
+            FinishCurveEditor();
         }
 
         private void StartCurvePointEditor()
@@ -57,13 +63,13 @@ namespace PaulMapper
             CurvePointEditor.ParameterChanged += CurvePointEditor_ParameterChanged;
         }
 
-        public virtual void InstantiateCurve(List<BaseObject> parameters)
+        public virtual void InstantiateCurve(List<BaseGrid> parameters)
         {
             beatmapObjectContainerCollection = BeatmapObjectContainerCollection.GetCollectionForType(parameters[0].ObjectType);
             eventsContainer = BeatmapObjectContainerCollection.GetCollectionForType(Beatmap.Enums.ObjectType.Event) as EventGridContainer;
 
             TracksManager = FindObjectOfType<TracksManager>();
-            BaseObject[] beatmapObjects = parameters.OrderBy(o => o.SongBpmTime).ToArray();
+            BaseGrid[] beatmapObjects = parameters.OrderBy(o => o.SongBpmTime).ToArray();
 
 
             //Materials are weird I think
@@ -74,7 +80,7 @@ namespace PaulMapper
 
             if (beatmapObjects.Count() != beatmapObjects.Select(p => p.SongBpmTime).Distinct().Count())
             {
-                Plugin.momenter.SetNotice("2 notes can't be on the same beat!", noticeType.Error);
+                Plugin.paulMapper?.SetNotice("2 notes can't be on the same beat!", noticeType.Error);
                 Destroy(this);
                 return;
             }
@@ -82,8 +88,8 @@ namespace PaulMapper
 
             curveTrack = TracksManager.CreateTrack(0);
 
-            object1 = (BaseObject)beatmapObjects.First().Clone();
-            object2 = (BaseObject)beatmapObjects.Last().Clone();
+            object1 = (BaseGrid)beatmapObjects.First().Clone();
+            object2 = (BaseGrid)beatmapObjects.Last().Clone();
             this.initialObjects = parameters;
 
             curveParameters = ObjectsToParameters(beatmapObjects.ToList());
@@ -93,11 +99,11 @@ namespace PaulMapper
             //then delete notes
             foreach (BaseObject beatmapObject in initialObjects)
             {
-                beatmapObjectContainerCollection.DeleteObjectFix(beatmapObject, false);
+                beatmapObjectContainerCollection.DeleteObject(beatmapObject, false);
             }
 
             SpawnObjects();
-            originalCurveObjects = curveObjects.Select(c => (BaseObject)c.Clone()).ToList();
+            originalCurveObjects = curveObjects.Select(c => (BaseGrid)c.Clone()).ToList();
             BeatmapActionContainer.AddAction(new SelectionPastedAction(curveObjects, initialObjects));
 
             SpawnAnchorPoints();
@@ -119,14 +125,6 @@ namespace PaulMapper
                 actionMapsDisabled = false;
             }
 
-            if (Input.GetKeyDown(KeyCode.C))
-            {
-                if (!Input.GetKey(KeyCode.LeftControl) && !Input.GetKey(KeyCode.LeftShift))
-                {
-                    AddAnchorPoint();
-                }    
-            }
-
             if (xCurve != null && yCurve != null)
             {
                 if (!SelectionController.HasSelectedObjects())
@@ -141,7 +139,7 @@ namespace PaulMapper
                 {
                     if (Input.GetKey(KeyCode.LeftAlt))
                     {
-                        selectedCurvePoint.rotation += new Vector3(0, 0, PaulMapperData.Instance.wallRotationAmount);
+                        selectedCurvePoint.rotation += new Vector3(0, 0, PaulMapperData.INSTANCE.WallRotationAmount);
                         UpdateAnchorPoints();
                     }
                 }
@@ -150,7 +148,7 @@ namespace PaulMapper
                 {
                     if (Input.GetKey(KeyCode.LeftAlt))
                     {
-                        selectedCurvePoint.rotation += new Vector3(0, 0, -PaulMapperData.Instance.wallRotationAmount);
+                        selectedCurvePoint.rotation += new Vector3(0, 0, -PaulMapperData.INSTANCE.WallRotationAmount);
                         UpdateAnchorPoints();
                     }
                 }
@@ -159,7 +157,7 @@ namespace PaulMapper
                 {
                     if (Input.GetKey(KeyCode.LeftAlt))
                     {
-                        selectedCurvePoint.rotation += new Vector3(PaulMapperData.Instance.wallRotationAmount, 0, 0);
+                        selectedCurvePoint.rotation += new Vector3(PaulMapperData.INSTANCE.WallRotationAmount, 0, 0);
                         UpdateAnchorPoints();
                     }
                 }
@@ -168,7 +166,7 @@ namespace PaulMapper
                 {
                     if (Input.GetKey(KeyCode.LeftAlt))
                     {
-                        selectedCurvePoint.rotation += new Vector3(-PaulMapperData.Instance.wallRotationAmount, 0, 0);
+                        selectedCurvePoint.rotation += new Vector3(-PaulMapperData.INSTANCE.WallRotationAmount, 0, 0);
                         UpdateAnchorPoints();
                     }
                 }
@@ -211,9 +209,9 @@ namespace PaulMapper
             float zPos = (curveParameter.time - PaulMapper.ats.CurrentSongBpmTime) * EditorScaleController.EditorScale;
 
             sphere.transform.parent = curveTrack.ObjectParentTransform;
-            sphere.transform.position = new Vector3(curveParameter.xPos, curveParameter.yPos, zPos) + point.parameterOffset;
+            sphere.transform.position = (new Vector3(curveParameter.xPos, curveParameter.yPos, zPos) + point.parameterOffset) * 0.6f + new Vector3(0,0,1);
 
-            sphere.transform.localScale = new Vector3(0.8f, 0.8f, 0.8f);
+            sphere.transform.localScale = new Vector3(0.4f, 0.4f, 0.4f);
 
 
             curveParameter.anchorPoint = point;
@@ -269,7 +267,7 @@ namespace PaulMapper
             CurvePointEditor.UpdatePoint(p);
         }
 
-        private void AddAnchorPoint()
+        private void AddAnchorPoint(UnityEngine.InputSystem.InputAction.CallbackContext obj)
         {
             float time = curveObjects.First(o => o.SongBpmTime >= PaulMapper.ats.CurrentSongBpmTime).SongBpmTime;
             if (!curveParameters.Any(c => Math.Abs(c.time - time) < minTimeDif))
@@ -299,7 +297,7 @@ namespace PaulMapper
             UpdateAnchorPoints();
         }
 
-        private List<CurveParameter> ObjectsToParameters(List<BaseObject> beatmapObjects)
+        private List<CurveParameter> ObjectsToParameters(List<BaseGrid> beatmapObjects)
         {
             BaseObject[] beatmapNotesAnchor = null;
             if (beatmapObjects.Where(o => o.CustomData != null && o.CustomData.HasKey("_isAnchor")).Count() > 1)
@@ -364,7 +362,7 @@ namespace PaulMapper
             List<BeatmapAction> actions = new List<BeatmapAction>();
             bool dotStart = false;
             Debug.Log("Finish");
-            foreach (BaseObject obj in curveObjects)
+            foreach (BaseGrid obj in curveObjects)
             {
                 if (obj.CustomData != null && obj.CustomData["_isAnchor"]) obj.CustomData.Remove("_isAnchor");
 
@@ -372,11 +370,11 @@ namespace PaulMapper
 
                 actions.Add(new BeatmapObjectModifiedAction(obj, obj, originalCurveObjects[curveObjects.IndexOf(obj)]));
 
-                if (dotStart || (obj is BaseNote note && curveObjects.IndexOf(obj) > 0 && note.CutDirection == 8 && PaulMapperData.Instance.arcs))
+                if (dotStart || (obj is BaseNote note && curveObjects.IndexOf(obj) > 0 && note.CutDirection == 8 && PaulMapperData.INSTANCE.Arcs))
                 {
                     dotStart = true;
 
-                    BaseArc arc = PaulMaker.GenerateArc(curveObjects[curveObjects.IndexOf(obj) - 1] as BaseNote, obj as BaseNote, 8);
+                    BaseArc arc = PoodleGenerator.GenerateArc(curveObjects[curveObjects.IndexOf(obj) - 1] as BaseNote, obj as BaseNote, 8);
                     actions.Add(new BeatmapObjectPlacementAction(arc, new List<BaseObject>(), "Arcs"));
                 }
             }
@@ -408,15 +406,13 @@ namespace PaulMapper
             }
 
             BeatmapActionContainer.AddAction(new ActionCollectionAction(actions, true, true));
-            RealtimeCurve.Editing = false;
-
-            FinishCurveEditor();
-
+            
             Destroy(gameObject);
         }
 
         private void FinishCurveEditor()
         {
+            RealtimeCurve.Editing = false;
             CurvePointEditor.UpdatePoint(null);
             CurvePointEditor.ParameterChanged -= CurvePointEditor_ParameterChanged;
         }
@@ -463,11 +459,10 @@ namespace PaulMapper
             this.xPos = notePos.x;
             this.yPos = notePos.y;
 
-            Color col = Color.clear;
-            Helper.TryGetColorFromObject(note, out col);
+            Color col = note.GetColor();
             this.color = col;
 
-            scale = Helper.GetObjectScale(note);
+            scale = note.GetObjectScale();
 
             type = note.ObjectType;
 
@@ -475,7 +470,7 @@ namespace PaulMapper
             {
                 cutDirection = (note as BaseNote).GetNoteDirection();
                 this.dotPoint = (note as BaseNote).CutDirection == 8;
-                this.dotTime = PaulMapperData.Instance.transitionTime;
+                this.dotTime = PaulMapperData.INSTANCE.TransitionTime;
             }
 
             rotation = note.GetRotation();
@@ -505,7 +500,7 @@ namespace PaulMapper
         private Vector3 screenPoint;
         private Vector3 offset;
 
-        public Vector3 parameterOffset = new Vector3(0.5f, 2, 0);
+        public Vector3 parameterOffset = new Vector3(0.5f, 3, 0);
 
         public bool isHovering;
 
@@ -601,7 +596,7 @@ namespace PaulMapper
 
         public Vector2 GetAsParameter()
         {
-            return transform.position - parameterOffset;
+            return (transform.position) / 0.6f - parameterOffset;
         }
 
 

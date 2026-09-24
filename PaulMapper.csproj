@@ -1,0 +1,88 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <ChroMapperDir>D:\chromapper</ChroMapperDir>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <Optimize>False</Optimize>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Resources\Icon.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\Icon.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="ChroMapper-PropEdit">
+      <HintPath>$(ChroMapperDir)\Plugins\ChroMapper-PropEdit.dll</HintPath>
+    </Reference>
+    <Reference Include="Extreme.Numerics">
+      <HintPath>$(ChroMapperDir)\Plugins\PaulMapper\Extreme.Numerics.dll</HintPath>
+    </Reference>
+    <Reference Include="Main">
+      <HintPath>$(ChroMapperDir)\ChroMapper_Data\Managed\Main.dll</HintPath>
+    </Reference>
+    <Reference Include="Input">
+      <HintPath>$(ChroMapperDir)\ChroMapper_Data\Managed\Input.dll</HintPath>
+    </Reference>
+    <Reference Include="LiteNetLib">
+      <HintPath>$(ChroMapperDir)\ChroMapper_Data\Managed\LiteNetLib.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>$(ChroMapperDir)\ChroMapper_Data\Managed\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="Plugins">
+      <HintPath>$(ChroMapperDir)\ChroMapper_Data\Managed\Plugins.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>$(ChroMapperDir)\ChroMapper_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.IMGUIModule">
+      <HintPath>$(ChroMapperDir)\ChroMapper_Data\Managed\UnityEngine.IMGUIModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.InputLegacyModule">
+      <HintPath>$(ChroMapperDir)\ChroMapper_Data\Managed\UnityEngine.InputLegacyModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UI">
+      <HintPath>$(ChroMapperDir)\ChroMapper_Data\Managed\UnityEngine.UI.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UIModule">
+      <HintPath>$(ChroMapperDir)\ChroMapper_Data\Managed\UnityEngine.UIModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UnityWebRequestModule">
+      <HintPath>$(ChroMapperDir)\ChroMapper_Data\Managed\UnityEngine.UnityWebRequestModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.InputSystem">
+      <HintPath>$(ChroMapperDir)\ChroMapper_Data\Managed\Unity.InputSystem.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.TextMeshPro">
+      <HintPath>$(ChroMapperDir)\ChroMapper_Data\Managed\Unity.TextMeshPro.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.ImageConversionModule">
+      <HintPath>$(ChroMapperDir)\ChroMapper_Data\Managed\UnityEngine.ImageConversionModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.TextRenderingModule">
+      <HintPath>$(ChroMapperDir)\ChroMapper_Data\Managed\UnityEngine.TextRenderingModule.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="copy /Y &quot;$(TargetDir)$(TargetName).dll&quot; &quot;$(ChroMapperDir)\Plugins\PaulMapper&quot;" />
+  </Target>
+</Project>

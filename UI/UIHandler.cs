@@ -1,7 +1,6 @@
 ﻿using Beatmap.Base;
 using ChroMapper_PropEdit.Components;
 using ChroMapper_PropEdit.UserInterface;
-using PaulMapper.PaulHelper;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -33,25 +32,38 @@ namespace PaulMapper
         private UIButton selectAll;
         private TextMeshProUGUI paulNavNumber;
 
+        public class ValueEventArgs : EventArgs
+        {
+            public int Value { get; }
+            public ValueEventArgs(int value)
+            {
+                Value = value;
+            }
+        }
+
+        public event EventHandler<ValueEventArgs> StartPrecisionChanged;
+
         public UIHandler()
         {
-            
+            var mapEditorUI = UnityEngine.Object.FindObjectOfType<MapEditorUI>();
+            TryLoadPaulMapperWindow(mapEditorUI);
+            TryLoadQuickMenu(mapEditorUI);
         }
 
         public void UpdateNPS()
         {
             float bpm = BeatSaberSongContainer.Instance.Map.BpmAtJsonTime(PaulMapper.ats.CurrentJsonTime) ?? 100;
-            float nps = (bpm / 60) / (1 / (float)PaulMapperData.Instance.precision);
-            float npsEnd = PaulMapperData.Instance.useEndPrecision ? (bpm / 60) / (1 / (float)PaulMapperData.Instance.endPrecision) : nps;
+            float nps = (bpm / 60) / (1 / (float)PaulMapperData.INSTANCE.Precision);
+            float npsEnd = PaulMapperData.INSTANCE.UseEndPrecision ? (bpm / 60) / (1 / (float)PaulMapperData.INSTANCE.EndPrecision) : nps;
 
             var tmp = npsLabel.GetComponent<TextMeshProUGUI>();
-            tmp.text = "NPS " + nps.ToString("0.00") + (PaulMapperData.Instance.useEndPrecision ? (" -> " + npsEnd.ToString("0.00")) : "");
+            tmp.text = "NPS " + nps.ToString("0.00") + (PaulMapperData.INSTANCE.UseEndPrecision ? (" -> " + npsEnd.ToString("0.00")) : "");
             tmp.color = LerpErrorColor(40f, 80f, Math.Max(nps, npsEnd));
         }
 
         public void UpdateQuickMenu()
         {
-            if (!PaulMapperData.Instance.enableQuickMenu)
+            if (!PaulMapperData.INSTANCE.EnableQuickMenu)
             {
                 if (quickWindow.gameObject.activeSelf)
                     quickWindow.Toggle();
@@ -65,7 +77,7 @@ namespace PaulMapper
                 {
                     BaseNote beatmapObject1 = SelectionController.SelectedObjects.First() as BaseNote;
                     BaseNote beatmapObject2 = SelectionController.SelectedObjects.Last() as BaseNote;
-                    if ((beatmapObject1.CutDirection == beatmapObject2.CutDirection || PaulMapperData.Instance.rotateNotes) && beatmapObject1.SongBpmTime != beatmapObject2.SongBpmTime)
+                    if ((beatmapObject1.CutDirection == beatmapObject2.CutDirection || PaulMapperData.INSTANCE.RotateNotes) && beatmapObject1.SongBpmTime != beatmapObject2.SongBpmTime)
                     {
                         if (!quickWindow.gameObject.activeSelf)
                             quickWindow.Toggle();
@@ -195,7 +207,6 @@ namespace PaulMapper
             }
             return 0;
         }
-
         public bool TryLoadQuickMenu(MapEditorUI mapEditorUI)
         {
             try
@@ -251,15 +262,15 @@ namespace PaulMapper
 
         private void GenerateQuickPoodle(string type)
         {
-            if (SelectionController.SelectedObjects.Count == 2 && SelectionController.SelectedObjects.All(s => s.ObjectType == Beatmap.Enums.ObjectType.Note))
+            /*if (SelectionController.SelectedObjects.Count == 2 && SelectionController.SelectedObjects.All(s => s.ObjectType == Beatmap.Enums.ObjectType.Note))
             {
                 BaseNote beatmapObject1 = SelectionController.SelectedObjects.First() as BaseNote;
                 BaseNote beatmapObject2 = SelectionController.SelectedObjects.Last() as BaseNote;
-                if ((beatmapObject1.CutDirection == beatmapObject2.CutDirection || PaulMapperData.Instance.rotateNotes) && beatmapObject1.SongBpmTime != beatmapObject2.SongBpmTime)
+                if ((beatmapObject1.CutDirection == beatmapObject2.CutDirection || PaulMapperData.INSTANCE.RotateNotes) && beatmapObject1.SongBpmTime != beatmapObject2.SongBpmTime)
                 {
                     BaseObject[] beatmapObjects = SelectionController.SelectedObjects.OrderBy(o => o.SongBpmTime).ToArray();
 
-                    PaulMaker.GeneratePoodle(beatmapObjects[0], beatmapObjects[1], type, PaulMapperData.Instance.precision);
+                    PaulMaker.GeneratePoodle(beatmapObjects[0], beatmapObjects[1], type, PaulMapperData.INSTANCE.Precision);
                 }
             }
             else if (SelectionController.SelectedObjects.All(s => s.ObjectType == Beatmap.Enums.ObjectType.Obstacle))
@@ -269,9 +280,9 @@ namespace PaulMapper
                 if (beatmapObject1.SongBpmTime != beatmapObject2.SongBpmTime)
                 {
                     BaseObject[] beatmapObjects = SelectionController.SelectedObjects.OrderBy(o => o.SongBpmTime).ToArray();
-                    PaulMaker.GeneratePoodle(beatmapObjects[0], beatmapObjects[1], type, PaulMapperData.Instance.precision);
+                    PaulMaker.GeneratePoodle(beatmapObjects[0], beatmapObjects[1], type, PaulMapperData.INSTANCE.Precision);
                 }
-            }
+            }*/
         }
 
         public bool TryLoadPaulMapperWindow(MapEditorUI mapEditorUI)
@@ -314,22 +325,22 @@ namespace PaulMapper
                 var precisionCon = UI.AddField(panel, "Precision");
                 var parsed = UI.AddParsed<int>(precisionCon, null, (val =>
                 {
-                    PaulMapperData.Instance.precision = val.GetValueOrDefault(16);
+                    PaulMapperData.INSTANCE.Precision = val.GetValueOrDefault(16);
                     UpdateNPS();
                 }));
-                parsed.InputField.text = PaulMapperData.Instance.precision.ToString();
+                parsed.InputField.text = PaulMapperData.INSTANCE.Precision.ToString();
 
                 GameObject gameObject6 = UI.AddField(panel, " ", null);
                 parsed = UI.AddParsed<int>(gameObject6, null, (val =>
                 {
-                    PaulMapperData.Instance.endPrecision = val.GetValueOrDefault(16);
+                    PaulMapperData.INSTANCE.EndPrecision = val.GetValueOrDefault(16);
                     UpdateNPS();
                 }));
-                parsed.InputField.text = PaulMapperData.Instance.endPrecision.ToString();
+                parsed.InputField.text = PaulMapperData.INSTANCE.EndPrecision.ToString();
 
-                UI.AddCheckbox(gameObject6, PaulMapperData.Instance.useEndPrecision, delegate (bool val)
+                UI.AddCheckbox(gameObject6, PaulMapperData.INSTANCE.UseEndPrecision, delegate (bool val)
                 {
-                    PaulMapperData.Instance.useEndPrecision = val;
+                    PaulMapperData.INSTANCE.UseEndPrecision = val;
                     UpdateNPS();
                 });
 
@@ -338,9 +349,9 @@ namespace PaulMapper
                 UpdateNPS();
 
                 var rotateCon = UI.AddField(panel, "Rotate");
-                UI.AddCheckbox(rotateCon, PaulMapperData.Instance.rotateNotes, (val =>
+                UI.AddCheckbox(rotateCon, PaulMapperData.INSTANCE.RotateNotes, (val =>
                 {
-                    PaulMapperData.Instance.rotateNotes = val;
+                    PaulMapperData.INSTANCE.RotateNotes = val;
                 }));
 
                 #region Note Settings
@@ -348,37 +359,38 @@ namespace PaulMapper
                 var noteCollapsible = Collapsible.Create(panel, "Note Settings", "Note Settings", true);
 
                 var vibroCon = UI.AddField(noteCollapsible.panel, "Vibro");
-                UI.AddCheckbox(vibroCon, PaulMapperData.Instance.vibro, (val =>
+                UI.AddCheckbox(vibroCon, PaulMapperData.INSTANCE.Vibro, (val =>
                 {
-                    PaulMapperData.Instance.vibro = val;
+                    PaulMapperData.INSTANCE.Vibro = val;
                 }));
 
                 var forceCon = UI.AddField(noteCollapsible.panel, "Use Note Rotations");
-                UI.AddCheckbox(forceCon, PaulMapperData.Instance.usePointRotations, (val =>
+                UI.AddCheckbox(forceCon, PaulMapperData.INSTANCE.UsePointRotations, (val =>
                 {
-                    PaulMapperData.Instance.usePointRotations = val;
+                    PaulMapperData.INSTANCE.UsePointRotations = val;
                 }));
 
                 var scaleCon = UI.AddField(noteCollapsible.panel, "Scale Notes");
-                UI.AddCheckbox(scaleCon, PaulMapperData.Instance.usePointRotations, (val =>
+                UI.AddCheckbox(scaleCon, PaulMapperData.INSTANCE.UsePointRotations, (val =>
                 {
-                    PaulMapperData.Instance.useScale = val;
+                    PaulMapperData.INSTANCE.UseScale = val;
                 }));
 
                 if (PaulMapperData.IsV3())
                 {
                     var u = UI.AddButton(noteCollapsible.panel, "Create Arc", () =>
                     {
-                        Helper.SpawnPrecisionArc();
+                        bool straight = Event.current.modifiers == EventModifiers.Shift;
+                        PoodleGenerator.SpawnPrecisionArc(straight);
                     });
 
                     UI.AttachTransform(u.gameObject, new Vector2(-20, 30), Vector2.zero);
                 }
 
                 var worldRotCon = UI.AddField(noteCollapsible.panel, "Adjust To World Rotation");
-                UI.AddCheckbox(worldRotCon, PaulMapperData.Instance.adjustToWorldRotation, val =>
+                UI.AddCheckbox(worldRotCon, PaulMapperData.INSTANCE.AdjustToWorldRotation, val =>
                 {
-                    PaulMapperData.Instance.adjustToWorldRotation = val;
+                    PaulMapperData.INSTANCE.AdjustToWorldRotation = val;
                 });
 
                 #endregion
@@ -390,22 +402,22 @@ namespace PaulMapper
                 var transitionCon = UI.AddField(transitionCollapsible.panel, "Transition Time");
                 parsed = UI.AddParsed<float>(transitionCon, null, (val =>
                 {
-                    PaulMapperData.Instance.transitionTime = val.GetValueOrDefault(0.3f);
+                    PaulMapperData.INSTANCE.TransitionTime = val.GetValueOrDefault(0.3f);
                 }));
-                parsed.InputField.text = PaulMapperData.Instance.transitionTime.ToString();
+                parsed.InputField.text = PaulMapperData.INSTANCE.TransitionTime.ToString();
 
                 var keepRotationCon = UI.AddField(transitionCollapsible.panel, "Keep Rotation");
-                UI.AddCheckbox(keepRotationCon, PaulMapperData.Instance.transitionRotation, (val =>
+                UI.AddCheckbox(keepRotationCon, PaulMapperData.INSTANCE.TransitionRotation, (val =>
                 {
-                    PaulMapperData.Instance.transitionRotation = val;
+                    PaulMapperData.INSTANCE.TransitionRotation = val;
                 }));
 
                 if (PaulMapperData.IsV3())
                 {
                     var arcCon = UI.AddField(transitionCollapsible.panel, "Transition Arcs");
-                    UI.AddCheckbox(arcCon, PaulMapperData.Instance.arcs, (val =>
+                    UI.AddCheckbox(arcCon, PaulMapperData.INSTANCE.Arcs, (val =>
                     {
-                        PaulMapperData.Instance.arcs = val;
+                        PaulMapperData.INSTANCE.Arcs = val;
                     }));
                 }
 
@@ -416,17 +428,17 @@ namespace PaulMapper
                 var wallCollapsible = Collapsible.Create(panel, "Wall Settings", "Wall Settings", false);
 
                 var fakeCon = UI.AddField(wallCollapsible.panel, "Fake Walls");
-                UI.AddCheckbox(fakeCon, PaulMapperData.Instance.fakeWalls, (val =>
+                UI.AddCheckbox(fakeCon, PaulMapperData.INSTANCE.FakeWalls, (val =>
                 {
-                    PaulMapperData.Instance.fakeWalls = val;
+                    PaulMapperData.INSTANCE.FakeWalls = val;
                 }));
 
                 var wallrotaionCon = UI.AddField(wallCollapsible.panel, "Wall Rotation");
                 parsed = UI.AddParsed<int>(wallrotaionCon, null, (val =>
                 {
-                    PaulMapperData.Instance.wallRotationAmount = val.GetValueOrDefault(5);
+                    PaulMapperData.INSTANCE.WallRotationAmount = val.GetValueOrDefault(5);
                 }));
-                parsed.InputField.text = PaulMapperData.Instance.wallRotationAmount.ToString();
+                parsed.InputField.text = PaulMapperData.INSTANCE.WallRotationAmount.ToString();
 
                 #endregion
 
@@ -435,25 +447,26 @@ namespace PaulMapper
                 var collapsible = Collapsible.Create(panel, "Disable Badcuts", "Disable Badcuts", false);
 
                 var directionCon = UI.AddField(collapsible.panel, "Direction");
-                UI.AddCheckbox(directionCon, PaulMapperData.Instance.disableBadCutDirection, (val =>
+                UI.AddCheckbox(directionCon, PaulMapperData.INSTANCE.DisableBadCutDirection, (val =>
                 {
-                    PaulMapperData.Instance.disableBadCutDirection = val;
+                    PaulMapperData.INSTANCE.DisableBadCutDirection = val;
                 }));
 
                 var saberCon = UI.AddField(collapsible.panel, "Saber Type");
-                UI.AddCheckbox(saberCon, PaulMapperData.Instance.disableBadCutSaberType, (val =>
+                UI.AddCheckbox(saberCon, PaulMapperData.INSTANCE.DisableBadCutSaberType, (val =>
                 {
-                    PaulMapperData.Instance.disableBadCutSaberType = val;
+                    PaulMapperData.INSTANCE.DisableBadCutSaberType = val;
                 }));
 
                 var speedCon = UI.AddField(collapsible.panel, "Speed");
-                UI.AddCheckbox(speedCon, PaulMapperData.Instance.disableBadCutSpeed, (val =>
+                UI.AddCheckbox(speedCon, PaulMapperData.INSTANCE.DisableBadCutSpeed, (val =>
                 {
-                    PaulMapperData.Instance.disableBadCutSpeed = val;
+                    PaulMapperData.INSTANCE.DisableBadCutSpeed = val;
                 }));
 
                 #endregion
 
+                /*
                 #region Navigation
 
                 Collapsible NavigationCollapsible = Collapsible.Create(this.panel, "Navigation", "Navigation", false);
@@ -545,9 +558,10 @@ namespace PaulMapper
                 this.gotoPaul.gameObject.SetActive(false);
                 this.selectAll.gameObject.SetActive(false);
 
-                #endregion
+                #endregion*/
 
-                UIButton uibutton6 = UI.AddButton(this.panel, "Refresh World Rotations", delegate ()
+
+                /*UIButton uibutton6 = UI.AddButton(this.panel, "Refresh World Rotations", delegate ()
                 {
                     List<BaseGrid> allNotes = (from BaseGrid it in PaulMapper.notesContainer.LoadedObjects
                                                 orderby it.SongBpmTime
@@ -566,7 +580,7 @@ namespace PaulMapper
                                 if (rotationValueAtTime.HasValue)
                                     baseNote.CustomWorldRotation = new Vector3(0f, rotationValueAtTime.Value, 0f);
 
-                                if (!PaulMapperData.Instance.adjustToWorldRotation)
+                                if (!PaulMapperData.INSTANCE.adjustToWorldRotation)
                                     continue;
 
                                 float xPos = baseNote.GetPosition().x;
@@ -591,24 +605,24 @@ namespace PaulMapper
                         }
                     }
                 });
-                UI.AttachTransform(uibutton6.gameObject, new Vector2(-20f, 30f), Vector2.zero, null, null, null);
+                UI.AttachTransform(uibutton6.gameObject, new Vector2(-20f, 30f), Vector2.zero, null, null, null);*/
                 
 
 
 
                 var quickCon = UI.AddField(panel, "Enable Quick Menu");
-                UI.AddCheckbox(quickCon, PaulMapperData.Instance.enableQuickMenu, (val =>
+                UI.AddCheckbox(quickCon, PaulMapperData.INSTANCE.EnableQuickMenu, (val =>
                 {
-                    PaulMapperData.Instance.enableQuickMenu = val;
+                    PaulMapperData.INSTANCE.EnableQuickMenu = val;
                     UpdateQuickMenu();
                 }));
 
                 #region Events
 
-                SelectionController.SelectionChangedEvent = (Action)Delegate.Combine(SelectionController.SelectionChangedEvent, new Action(UpdateSelectionUI));
-                SelectionController.SelectionChangedEvent = (Action)Delegate.Combine(SelectionController.SelectionChangedEvent, new Action(UpdateQuickMenu));
+                SelectionController.OnSelectionChanged = (Action)Delegate.Combine(SelectionController.OnSelectionChanged, new Action(UpdateSelectionUI));
+                SelectionController.OnSelectionChanged = (Action)Delegate.Combine(SelectionController.OnSelectionChanged, new Action(UpdateQuickMenu));
                 float lastBpm = 0;
-                PaulMapper.ats.TimeChanged = (Action)Delegate.Combine(PaulMapper.ats.TimeChanged, new Action(() => 
+                PaulMapper.ats.OnTimeChanged += () => 
                 {
                     float bpm = BeatSaberSongContainer.Instance.Map.BpmAtJsonTime(PaulMapper.ats.CurrentJsonTime) ?? 100;
                     
@@ -618,7 +632,7 @@ namespace PaulMapper
                     lastBpm = bpm;
 
                     UpdateNPS();
-                }));
+                };
 
                 #endregion
 
@@ -646,10 +660,10 @@ namespace PaulMapper
             }
         }
 
-        private void UpdatePaulNumber()
+       /*private void UpdatePaulNumber()
         {
             this.paulNavNumber.text = string.Format("{0}/{1}", PaulFinder.currentPaul + 1, PaulFinder.pauls.Count);
-        }
+        }*/
 
         public void ToggleWindow()
         {

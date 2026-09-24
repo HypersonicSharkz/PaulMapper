@@ -1,6 +1,5 @@
 ﻿using Beatmap.Base;
 using Beatmap.Containers;
-using PaulMapper.PaulHelper;
 using SimpleJSON;
 using System;
 using System.Linq;
@@ -14,18 +13,14 @@ namespace PaulMapper
 
         protected override void SpawnObjects()
         {
-            /*curveObjects = PaulMaker.GeneratePoodle(
-                    object1, object2,
-                    xCurve, yCurve,
-                    PaulmapperData.Instance.precision,
-                    initialObjects.All(p => (p as BeatmapNote).CutDirection == 8),
-                    colorDist, new List<float>()
-                ).ToList();*/
-            curveObjects = PaulMaker.GeneratePoodle(object1,
+            /*curveObjects = PaulMaker.GeneratePoodle(object1,
                                                     object2,
-                                                    PaulMapperData.Instance.precision,
-                                                    PaulMapperData.Instance.useEndPrecision ? PaulMapperData.Instance.endPrecision : PaulMapperData.Instance.precision,
+                                                    PaulMapperData.INSTANCE.precision,
+                                                    PaulMapperData.INSTANCE.useEndPrecision ? PaulMapperData.INSTANCE.endPrecision : PaulMapperData.INSTANCE.precision,
                                                     initialObjects.All(p => (p as BaseNote).CutDirection == 8));
+            */
+
+            curveObjects = PoodleGenerator.SpawnBasePoodle(object1, object2);
 
             base.SpawnObjects();
         }
@@ -54,7 +49,7 @@ namespace PaulMapper
                     break;
             }
 
-            if (PaulMapperData.Instance.usePointRotations && curveParameter.cutDirection.HasValue && (scrollType == ScrollType.Rotation))
+            if (PaulMapperData.INSTANCE.UsePointRotations && curveParameter.cutDirection.HasValue && (scrollType == ScrollType.Rotation))
             {
                 curveParameter.cutDirection += 1 * (int)scrollType * dir;
             }
@@ -76,13 +71,13 @@ namespace PaulMapper
                 var y = yCurve.ValueAt(time);
 
                 JSONNode customData = note.CustomData;
-                note.SetPosition(new Vector2((float)x, (float)y));
-                if (PaulMapperData.Instance.useScale)
+                note.CustomCoordinate = new Vector2((float)x, (float)y);
+                if (PaulMapperData.INSTANCE.UseScale)
                 {
                     note.SetScale(new Vector3((float)widthCurve.ValueAt(time), (float)heightCurve.ValueAt(time), (float)depthCurve.ValueAt(time)));
                 }
 
-                float? rotAtTime = Helper.GetRotationValueAtTime(note.SongBpmTime, curveObjects);
+                float? rotAtTime = WorldRotationHelper.GetRotationValueAtTime(note.SongBpmTime, curveObjects);
                 if (rotAtTime.HasValue)
                     note.CustomWorldRotation = new Vector3(0, rotAtTime.Value, 0);
 
@@ -90,19 +85,19 @@ namespace PaulMapper
                 //Color handling 
                 if (colorDist != null && colorDist.Count > 0)
                 {
-                    color = PaulMaker.LerpColorFromDict(colorDist, time);
-                    note.SetColor(color);
+                    color = ColorHelper.LerpColorFromDict(colorDist, time);
+                    note.CustomColor = color;
                 }
 
                 //Now update direction
                 JSONNode customData_old = null;
-                if (PaulMapperData.Instance.rotateNotes)
+                if (PaulMapperData.INSTANCE.RotateNotes)
                 {
                     //Fix rotation
                     if (oldNote != null)
                     {
 
-                        if (PaulMapperData.Instance.usePointRotations)
+                        if (PaulMapperData.INSTANCE.UsePointRotations)
                         {
                             //Directions are being forced
 
@@ -118,7 +113,7 @@ namespace PaulMapper
                             customData_old = oldNote.CustomData;
                             oldNote.CutDirection = 0;
 
-                            if (PaulMapperData.Instance.vibro)
+                            if (PaulMapperData.INSTANCE.Vibro)
                             {
                                 ang += 180 * (noteIndex % 2);
                             }
@@ -137,9 +132,9 @@ namespace PaulMapper
                             float yPos = cp.y;
 
 
-                            if (PaulMapperData.Instance.adjustToWorldRotation && rotAtTime.HasValue)
+                            if (PaulMapperData.INSTANCE.AdjustToWorldRotation && rotAtTime.HasValue)
                             {
-                                float oldWorldRot = Helper.GetRotationValueAtTime(oldNote.SongBpmTime, curveObjects) ?? 0;
+                                float oldWorldRot = WorldRotationHelper.GetRotationValueAtTime(oldNote.SongBpmTime, curveObjects) ?? 0;
                                 float rotDif = (rotAtTime.Value - oldWorldRot) * (Mathf.PI / 180f);
 
                                 xPos += Mathf.Cos(Mathf.PI / 2 - rotDif);// * (note.SongBpmTime - oldNote.SongBpmTime);
@@ -152,7 +147,7 @@ namespace PaulMapper
                             //Set rotation
                             customData_old = oldNote.CustomData;
 
-                            if (PaulMapperData.Instance.vibro)
+                            if (PaulMapperData.INSTANCE.Vibro)
                             {
                                 ang = Mathf.Atan2(Math.Abs(cp.y - op.y), Math.Abs(cp.x - op.x)) * 180 / Mathf.PI;
                                 ang += 90;
@@ -166,7 +161,7 @@ namespace PaulMapper
                         if (curveParameters.Any(c => c.dotPoint && Math.Abs(oldNote.SongBpmTime - c.time) < c.dotTime))
                         {
                             oldNote.CutDirection = 8;
-                            if (!PaulMapperData.Instance.transitionRotation)
+                            if (!PaulMapperData.INSTANCE.TransitionRotation)
                                 oldNote.SetRotation(0);
                         }
                     }
@@ -175,7 +170,7 @@ namespace PaulMapper
                     if (note == curveObjects.Last())
                     {
                         note.CutDirection = oldNote.CutDirection;
-                        if (PaulMapperData.Instance.vibro)
+                        if (PaulMapperData.INSTANCE.Vibro)
                             note.SetRotation(oldNote.GetNoteDirection() + 180f);
                         else
                         {
@@ -183,22 +178,22 @@ namespace PaulMapper
                         }
                     }
                 }
-                else if (PaulMapperData.Instance.vibro)
+                else if (PaulMapperData.INSTANCE.Vibro)
                 {
                     note.SetRotation(180 * (noteIndex % 2));
                 }
 
                 if (PaulMapperData.IsV3())
                 {
-                    if (PaulMapperData.Instance.disableBadCutDirection)
+                    if (PaulMapperData.INSTANCE.DisableBadCutDirection)
                     {
                         customData["disableBadCutDirection"] = true;
                     }
-                    if (PaulMapperData.Instance.disableBadCutSpeed)
+                    if (PaulMapperData.INSTANCE.DisableBadCutSpeed)
                     {
                         customData["disableBadCutSpeed"] = true;
                     }
-                    if (PaulMapperData.Instance.disableBadCutSaberType)
+                    if (PaulMapperData.INSTANCE.DisableBadCutSaberType)
                     {
                         customData["disableBadCutSaber"] = true;
                     }
@@ -226,11 +221,11 @@ namespace PaulMapper
                 if (colorDist != null && colorDist.Count > 0)
                     (con as NoteContainer).SetColor(color);
 
-                SetNoteCut(con as NoteContainer);
+                //SetNoteCut(con as NoteContainer);
             }
         }
 
-        public void SetNoteCut(NoteContainer note)
+        /*public void SetNoteCut(NoteContainer note)
         {
             bool flag = note.NoteData.Type != 3;
             if (flag)
@@ -252,6 +247,6 @@ namespace PaulMapper
                 note.SetArrowVisible(false);
                 note.SetDotVisible(false);
             }
-        }
+        }*/
     }
 }
