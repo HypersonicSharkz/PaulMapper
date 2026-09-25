@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <ChroMapperDir>D:\chromapper</ChroMapperDir>
+	  <VersionPrefix>0.3.0.0</VersionPrefix>
   </PropertyGroup>
 
   <PropertyGroup>
