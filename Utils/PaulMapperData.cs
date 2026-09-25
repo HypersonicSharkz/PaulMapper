@@ -120,7 +120,7 @@ namespace PaulMapper
             set => SetField(ref wallRotationAmount, value);
         }
 
-        private bool enableQuickMenu = true;
+        private bool enableQuickMenu = false;
         public bool EnableQuickMenu
         {
             get => enableQuickMenu;

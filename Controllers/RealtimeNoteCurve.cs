@@ -221,11 +221,11 @@ namespace PaulMapper
                 if (colorDist != null && colorDist.Count > 0)
                     (con as NoteContainer).SetColor(color);
 
-                //SetNoteCut(con as NoteContainer);
+                SetNoteCut(con as NoteContainer);
             }
         }
 
-        /*public void SetNoteCut(NoteContainer note)
+        public void SetNoteCut(NoteContainer note)
         {
             bool flag = note.NoteData.Type != 3;
             if (flag)
@@ -233,20 +233,13 @@ namespace PaulMapper
                 bool flag2 = note.NoteData.CutDirection != 8;
                 if (flag2)
                 {
-                    note.SetArrowVisible(true);
-                    note.SetDotVisible(false);
+                    note.SetArrow();
                 }
                 else
                 {
-                    note.SetArrowVisible(false);
-                    note.SetDotVisible(true);
+                    note.SetDot();
                 }
             }
-            else
-            {
-                note.SetArrowVisible(false);
-                note.SetDotVisible(false);
-            }
-        }*/
+        }
     }
 }

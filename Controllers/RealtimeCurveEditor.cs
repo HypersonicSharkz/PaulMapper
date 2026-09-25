@@ -66,6 +66,23 @@ namespace PaulMapper
         private void StartCurvePointEditor()
         {
             CurvePointEditor.ParameterChanged += CurvePointEditor_ParameterChanged;
+
+            PaulMapperData.INSTANCE.PropertyChanged += INSTANCE_PropertyChanged;
+        }
+
+        private void INSTANCE_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            foreach (BaseGrid obj in curveObjects)
+            {
+                BeatmapObjectContainerCollection.GetCollectionForType(obj.ObjectType).DeleteObject(obj, false, true, "Refresh Poodle", false, false, true);
+            }
+
+            SpawnObjects();
+
+            for (int i = 0; i < curveObjects.Count; i++)
+            {
+                SelectionController.Select(curveObjects[i], i > 0, true, false);
+            }
         }
 
         public virtual void InstantiateCurve(List<BaseGrid> parameters)
@@ -442,6 +459,7 @@ namespace PaulMapper
             RealtimeCurve.Editing = false;
             CurvePointEditor.UpdatePoint(null);
             CurvePointEditor.ParameterChanged -= CurvePointEditor_ParameterChanged;
+            PaulMapperData.INSTANCE.PropertyChanged -= INSTANCE_PropertyChanged;
         }
 
         private void CurvePointEditor_ParameterChanged()
