@@ -15,6 +15,10 @@ namespace PaulMapper
         public static InputAction? openMenu;
         public static InputAction? createPoodle;
         public static InputAction? addAnchor;
+        public static InputAction? wallLeft;
+        public static InputAction? wallRight;
+        public static InputAction? wallForward;
+        public static InputAction? wallBack;
 
         public static bool UpToDate = true;
 
@@ -47,6 +51,26 @@ namespace PaulMapper
 
             addAnchor = actionMap.AddAction("Add Anchor Point", type: InputActionType.Button);
             addAnchor.AddBinding("<Keyboard>/c");
+
+            wallLeft = actionMap.AddAction("Rotate Wall Left", type: InputActionType.Button);
+            wallLeft.AddCompositeBinding("OneModifier")
+                .With("Modifier", "<keyboard>/alt")
+                .With("Binding", "<Keyboard>/leftArrow");
+
+            wallRight = actionMap.AddAction("Rotate Wall Right", type: InputActionType.Button);
+            wallRight.AddCompositeBinding("OneModifier")
+                .With("Modifier", "<keyboard>/alt")
+                .With("Binding", "<Keyboard>/rightArrow");
+
+            wallForward = actionMap.AddAction("Rotate Wall Forwards", type: InputActionType.Button);
+            wallForward.AddCompositeBinding("OneModifier")
+                .With("Modifier", "<keyboard>/alt")
+                .With("Binding", "<Keyboard>/upArrow");
+
+            wallBack = actionMap.AddAction("Rotate Wall Backwards", type: InputActionType.Button);
+            wallBack.AddCompositeBinding("OneModifier")
+                .With("Modifier", "<keyboard>/alt")
+                .With("Binding", "<Keyboard>/downArrow");
 
             CMInputCallbackInstaller.InputInstance.Enable();
         }

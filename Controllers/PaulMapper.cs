@@ -31,45 +31,39 @@ namespace PaulMapper
             if (Plugin.openMenu != null)
                 Plugin.openMenu.performed += OpenMenu;
 
+            if (Plugin.wallRight != null)
+                Plugin.wallRight.performed += WallRight_performed;
+
+            if (Plugin.wallLeft != null)
+                Plugin.wallLeft.performed += WallLeft_performed;
+
+            if (Plugin.wallForward != null)
+                Plugin.wallForward.performed += WallForward_performed;
+
+            if (Plugin.wallBack != null)
+                Plugin.wallBack.performed += WallBack_performed;
+
             uiHandler.Init();
         }
 
-        public void Update()
+        private void WallBack_performed(UnityEngine.InputSystem.InputAction.CallbackContext obj)
         {
-            if (!RealtimeCurve.Editing)
-            {
-                if (Input.GetKeyDown(KeyCode.LeftArrow))
-                {
-                    if (Input.GetKey(KeyCode.LeftAlt))
-                    {
-                        NoteHelper.RotateWalls(false, true);
-                    }
-                }
+            NoteHelper.RotateWalls(true, false);
+        }
 
-                if (Input.GetKeyDown(KeyCode.RightArrow))
-                {
-                    if (Input.GetKey(KeyCode.LeftAlt))
-                    {
-                        NoteHelper.RotateWalls(true, true);
-                    }
-                }
+        private void WallForward_performed(UnityEngine.InputSystem.InputAction.CallbackContext obj)
+        {
+            NoteHelper.RotateWalls(false, false);
+        }
 
-                if (Input.GetKeyDown(KeyCode.UpArrow))
-                {
-                    if (Input.GetKey(KeyCode.LeftAlt))
-                    {
-                        NoteHelper.RotateWalls(false, false);
-                    }
-                }
+        private void WallLeft_performed(UnityEngine.InputSystem.InputAction.CallbackContext obj)
+        {
+            NoteHelper.RotateWalls(false, true);
+        }
 
-                if (Input.GetKeyDown(KeyCode.DownArrow))
-                {
-                    if (Input.GetKey(KeyCode.LeftAlt))
-                    {
-                        NoteHelper.RotateWalls(true, false);
-                    }
-                }
-            }
+        private void WallRight_performed(UnityEngine.InputSystem.InputAction.CallbackContext obj)
+        {
+            NoteHelper.RotateWalls(true, true);
         }
 
         private void OpenMenu(UnityEngine.InputSystem.InputAction.CallbackContext obj)
@@ -86,6 +80,18 @@ namespace PaulMapper
 
             if (Plugin.openMenu != null)
                 Plugin.openMenu.performed -= OpenMenu;
+
+            if (Plugin.wallRight != null)
+                Plugin.wallRight.performed -= WallRight_performed;
+
+            if (Plugin.wallLeft != null)
+                Plugin.wallLeft.performed -= WallLeft_performed;
+
+            if (Plugin.wallForward != null)
+                Plugin.wallForward.performed -= WallForward_performed;
+
+            if (Plugin.wallBack != null)
+                Plugin.wallBack.performed -= WallBack_performed;
         }
 
         public void ToggleUI()
