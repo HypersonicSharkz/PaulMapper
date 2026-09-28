@@ -42,7 +42,9 @@ namespace PaulMapper
         public Material mainMat;
         public Material selectionMat;
 
-        List<BaseGrid> originalCurveObjects = new List<BaseGrid>();
+        private SelectionPastedAction poodleStartAction;
+
+        //List<BaseGrid> originalCurveObjects = new List<BaseGrid>();
 
         private void Start()
         {
@@ -135,6 +137,8 @@ namespace PaulMapper
 
         private void INSTANCE_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
+            Debug.Log("Paul Mapper Settings Update Detected");
+
             foreach (BaseGrid obj in curveObjects)
             {
                 BeatmapObjectContainerCollection.GetCollectionForType(obj.ObjectType).DeleteObject(obj, false, true, "Refresh Poodle", false, false, true);
@@ -154,7 +158,7 @@ namespace PaulMapper
             eventsContainer = BeatmapObjectContainerCollection.GetCollectionForType(Beatmap.Enums.ObjectType.Event) as EventGridContainer;
 
             TracksManager = FindObjectOfType<TracksManager>();
-            BaseGrid[] beatmapObjects = parameters.OrderBy(o => o.SongBpmTime).ToArray();
+            BaseGrid[] beatmapObjects = parameters.Where(o => o.ObjectType == Beatmap.Enums.ObjectType.Note).OrderBy(o => o.SongBpmTime).ToArray();
 
 
             //Materials are weird I think
@@ -184,12 +188,12 @@ namespace PaulMapper
             //then delete notes
             foreach (BaseObject beatmapObject in initialObjects)
             {
-                beatmapObjectContainerCollection.DeleteObject(beatmapObject, false);
+                BeatmapObjectContainerCollection.GetCollectionForType(beatmapObject.ObjectType).DeleteObject(beatmapObject, false);
             }
 
             SpawnObjects();
-            originalCurveObjects = curveObjects.Select(c => (BaseGrid)c.Clone()).ToList();
-            BeatmapActionContainer.AddAction(new SelectionPastedAction(curveObjects, initialObjects));
+            poodleStartAction = new SelectionPastedAction(curveObjects, initialObjects);
+            BeatmapActionContainer.AddAction(poodleStartAction);
 
             SpawnAnchorPoints();
 
@@ -422,16 +426,17 @@ namespace PaulMapper
         {
             List<BeatmapAction> actions = new List<BeatmapAction>();
             bool dotStart = false;
+            bool success = true;
+
             Debug.Log("Finish");
             foreach (BaseGrid obj in curveObjects)
             {
                 if (!BeatmapObjectContainerCollection.GetCollectionForType(obj.ObjectType).ContainsObject(obj))
                 {
-                    Debug.Log("Note not found in collection? Possible undo");
+                    Debug.Log("Note not found in collection?");
+                    success = false;
                     continue;
                 }
-
-                actions.Add(new BeatmapObjectUpdatedAction(obj, originalCurveObjects[curveObjects.IndexOf(obj)]));
 
                 if (obj.CustomData != null && obj.CustomData["_isAnchor"]) obj.CustomData.Remove("_isAnchor");
 
@@ -445,8 +450,6 @@ namespace PaulMapper
                     actions.Add(new BeatmapObjectPlacementAction(arc, new List<BaseObject>(), "Arcs"));
                 }
             }
-
-
 
             foreach (CurveParameter param in curveParameters)
             {
@@ -472,8 +475,16 @@ namespace PaulMapper
                 Destroy(param.anchorPoint.gameObject);
             }
 
+            if (success)
+            {
+                poodleStartAction.Data = curveObjects;
+                poodleStartAction.Removed = initialObjects;
+            }
+
             if (actions.Count > 0)
+            {
                 BeatmapActionContainer.AddAction(new ActionCollectionAction(actions, true, true));
+            }
             
             Destroy(gameObject);
         }

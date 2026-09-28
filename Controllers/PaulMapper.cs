@@ -117,7 +117,7 @@ namespace PaulMapper
                 }
             }
 
-            if (beatmapObjects.All(b => b.ObjectType == Beatmap.Enums.ObjectType.Note))
+            if (beatmapObjects.All(b => b.ObjectType == Beatmap.Enums.ObjectType.Note || b.ObjectType == Beatmap.Enums.ObjectType.Arc))
             {
                 GameObject gameObject = new GameObject("Curve");
                 RealtimeCurve curve = gameObject.AddComponent<RealtimeNoteCurve>();
