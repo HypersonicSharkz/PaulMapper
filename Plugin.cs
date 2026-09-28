@@ -50,22 +50,22 @@ namespace PaulMapper
             addAnchor = actionMap.AddAction("Add Anchor Point", type: InputActionType.Button);
             addAnchor.AddBinding("<Keyboard>/c");
 
-            wallLeft = actionMap.AddAction("Rotate Wall Left", type: InputActionType.Button);
+            wallLeft = actionMap.AddAction("Rotate Left", type: InputActionType.Button);
             wallLeft.AddCompositeBinding("OneModifier")
                 .With("Modifier", "<keyboard>/alt")
                 .With("Binding", "<Keyboard>/leftArrow");
 
-            wallRight = actionMap.AddAction("Rotate Wall Right", type: InputActionType.Button);
+            wallRight = actionMap.AddAction("Rotate Right", type: InputActionType.Button);
             wallRight.AddCompositeBinding("OneModifier")
                 .With("Modifier", "<keyboard>/alt")
                 .With("Binding", "<Keyboard>/rightArrow");
 
-            wallForward = actionMap.AddAction("Rotate Wall Forwards", type: InputActionType.Button);
+            wallForward = actionMap.AddAction("Rotate Forwards", type: InputActionType.Button);
             wallForward.AddCompositeBinding("OneModifier")
                 .With("Modifier", "<keyboard>/alt")
                 .With("Binding", "<Keyboard>/upArrow");
 
-            wallBack = actionMap.AddAction("Rotate Wall Backwards", type: InputActionType.Button);
+            wallBack = actionMap.AddAction("Rotate Backwards", type: InputActionType.Button);
             wallBack.AddCompositeBinding("OneModifier")
                 .With("Modifier", "<keyboard>/alt")
                 .With("Binding", "<Keyboard>/downArrow");

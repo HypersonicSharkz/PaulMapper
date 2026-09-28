@@ -51,6 +51,54 @@ namespace PaulMapper
 
             if (Plugin.addAnchor != null)
                 Plugin.addAnchor.performed += AddAnchorPoint;
+
+            if (Plugin.wallLeft != null)
+                Plugin.wallLeft.performed += RotatePointLeft;
+
+            if (Plugin.wallRight != null)
+                Plugin.wallRight.performed += RotatePointRight;
+
+            if (Plugin.wallForward != null)
+                Plugin.wallForward.performed += RotatePointForward;
+
+            if (Plugin.wallBack != null)
+                Plugin.wallBack.performed += RotatePointBackwards;
+        }
+
+        private void RotatePointBackwards(UnityEngine.InputSystem.InputAction.CallbackContext obj)
+        {
+            if (selectedCurvePoint != null)
+            {
+                selectedCurvePoint.rotation += new Vector3(-PaulMapperData.INSTANCE.WallRotationAmount, 0, 0);
+                UpdateAnchorPoints();
+            }
+        }
+
+        private void RotatePointForward(UnityEngine.InputSystem.InputAction.CallbackContext obj)
+        {
+            if (selectedCurvePoint != null)
+            {
+                selectedCurvePoint.rotation += new Vector3(PaulMapperData.INSTANCE.WallRotationAmount, 0, 0);
+                UpdateAnchorPoints();
+            }
+        }
+
+        private void RotatePointRight(UnityEngine.InputSystem.InputAction.CallbackContext obj)
+        {
+            if (selectedCurvePoint != null)
+            {
+                selectedCurvePoint.rotation += new Vector3(0, 0, -PaulMapperData.INSTANCE.WallRotationAmount);
+                UpdateAnchorPoints();
+            }
+        }
+
+        private void RotatePointLeft(UnityEngine.InputSystem.InputAction.CallbackContext obj)
+        {
+            if (selectedCurvePoint != null)
+            {
+                selectedCurvePoint.rotation += new Vector3(0, 0, PaulMapperData.INSTANCE.WallRotationAmount);
+                UpdateAnchorPoints();
+            }
         }
 
         private void OnDisable()
@@ -59,6 +107,21 @@ namespace PaulMapper
 
             if (Plugin.addAnchor != null)
                 Plugin.addAnchor.performed -= AddAnchorPoint;
+
+            if (Plugin.addAnchor != null)
+                Plugin.addAnchor.performed -= AddAnchorPoint;
+
+            if (Plugin.wallLeft != null)
+                Plugin.wallLeft.performed -= RotatePointLeft;
+
+            if (Plugin.wallRight != null)
+                Plugin.wallRight.performed -= RotatePointRight;
+
+            if (Plugin.wallForward != null)
+                Plugin.wallForward.performed -= RotatePointForward;
+
+            if (Plugin.wallBack != null)
+                Plugin.wallBack.performed -= RotatePointBackwards;
 
             FinishCurveEditor();
         }
@@ -152,45 +215,6 @@ namespace PaulMapper
                 if (!SelectionController.HasSelectedObjects())
                 {
                     FinishCurve();
-                }
-            }
-
-            if (selectedCurvePoint != null)
-            {
-                if (Input.GetKeyDown(KeyCode.LeftArrow))
-                {
-                    if (Input.GetKey(KeyCode.LeftAlt))
-                    {
-                        selectedCurvePoint.rotation += new Vector3(0, 0, PaulMapperData.INSTANCE.WallRotationAmount);
-                        UpdateAnchorPoints();
-                    }
-                }
-
-                if (Input.GetKeyDown(KeyCode.RightArrow))
-                {
-                    if (Input.GetKey(KeyCode.LeftAlt))
-                    {
-                        selectedCurvePoint.rotation += new Vector3(0, 0, -PaulMapperData.INSTANCE.WallRotationAmount);
-                        UpdateAnchorPoints();
-                    }
-                }
-
-                if (Input.GetKeyDown(KeyCode.UpArrow))
-                {
-                    if (Input.GetKey(KeyCode.LeftAlt))
-                    {
-                        selectedCurvePoint.rotation += new Vector3(PaulMapperData.INSTANCE.WallRotationAmount, 0, 0);
-                        UpdateAnchorPoints();
-                    }
-                }
-
-                if (Input.GetKeyDown(KeyCode.DownArrow))
-                {
-                    if (Input.GetKey(KeyCode.LeftAlt))
-                    {
-                        selectedCurvePoint.rotation += new Vector3(-PaulMapperData.INSTANCE.WallRotationAmount, 0, 0);
-                        UpdateAnchorPoints();
-                    }
                 }
             }
         }
