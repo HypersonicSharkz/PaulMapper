@@ -1,10 +1,8 @@
 ﻿using System.IO;
-using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
-using UnityEngine.UI;
 
 namespace PaulMapper
 {
@@ -71,6 +69,8 @@ namespace PaulMapper
             wallBack.AddCompositeBinding("OneModifier")
                 .With("Modifier", "<keyboard>/alt")
                 .With("Binding", "<Keyboard>/downArrow");
+
+            GameObject.FindFirstObjectByType<LoadKeybindsController>().InputObjectCreated(null);
 
             CMInputCallbackInstaller.InputInstance.Enable();
         }
