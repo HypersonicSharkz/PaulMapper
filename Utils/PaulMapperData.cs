@@ -92,27 +92,6 @@ namespace PaulMapper
             set => SetField(ref useScale, value);
         }
 
-        private bool disableBadCutDirection = false;
-        public bool DisableBadCutDirection
-        {
-            get => disableBadCutDirection;
-            set => SetField(ref disableBadCutDirection, value);
-        }
-
-        private bool disableBadCutSpeed = false;
-        public bool DisableBadCutSpeed
-        {
-            get => disableBadCutSpeed;
-            set => SetField(ref disableBadCutSpeed, value);
-        }
-
-        private bool disableBadCutSaberType = false;
-        public bool DisableBadCutSaberType
-        {
-            get => disableBadCutSaberType;
-            set => SetField(ref disableBadCutSaberType, value);
-        }
-
         private int wallRotationAmount = 5;
         public int WallRotationAmount
         {

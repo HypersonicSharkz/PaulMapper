@@ -447,30 +447,6 @@ namespace PaulMapper
 
                 #endregion
 
-                #region Bad Cuts
-
-                var collapsible = Collapsible.Create(panel, "Disable Badcuts", "Disable Badcuts", false);
-
-                var directionCon = UI.AddField(collapsible.panel, "Direction");
-                UI.AddCheckbox(directionCon, PaulMapperData.INSTANCE.DisableBadCutDirection, (val =>
-                {
-                    PaulMapperData.INSTANCE.DisableBadCutDirection = val;
-                }));
-
-                var saberCon = UI.AddField(collapsible.panel, "Saber Type");
-                UI.AddCheckbox(saberCon, PaulMapperData.INSTANCE.DisableBadCutSaberType, (val =>
-                {
-                    PaulMapperData.INSTANCE.DisableBadCutSaberType = val;
-                }));
-
-                var speedCon = UI.AddField(collapsible.panel, "Speed");
-                UI.AddCheckbox(speedCon, PaulMapperData.INSTANCE.DisableBadCutSpeed, (val =>
-                {
-                    PaulMapperData.INSTANCE.DisableBadCutSpeed = val;
-                }));
-
-                #endregion
-
                 /*
                 #region Navigation
 

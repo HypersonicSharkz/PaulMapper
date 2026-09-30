@@ -183,22 +183,6 @@ namespace PaulMapper
                     note.SetRotation(180 * (noteIndex % 2));
                 }
 
-                if (PaulMapperData.IsV3())
-                {
-                    if (PaulMapperData.INSTANCE.DisableBadCutDirection)
-                    {
-                        customData["disableBadCutDirection"] = true;
-                    }
-                    if (PaulMapperData.INSTANCE.DisableBadCutSpeed)
-                    {
-                        customData["disableBadCutSpeed"] = true;
-                    }
-                    if (PaulMapperData.INSTANCE.DisableBadCutSaberType)
-                    {
-                        customData["disableBadCutSaber"] = true;
-                    }
-                }
-
                 note.WriteCustom();
 
                 oldNote = note;
