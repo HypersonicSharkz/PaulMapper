@@ -124,18 +124,18 @@ namespace PaulMapper
                 panel = scrollbox.content;
 
                 var xpos = UI.AddField(panel, "X Position");
-                xpostmp = UI.AddParsed<float>(xpos, 0, (val =>
+                xpostmp = UI.AddParsed<float>(xpos, null, (val =>
                 {
                     float x = val.GetValueOrDefault(0);
-                    editing.anchorPoint.transform.position = new Vector3(x + editing.anchorPoint.parameterOffset.x, editing.anchorPoint.transform.position.y, editing.anchorPoint.transform.position.z);
+                    editing.anchorPoint.transform.position = new Vector3((x + editing.anchorPoint.parameterOffset.x) * 0.6f, editing.anchorPoint.transform.position.y, editing.anchorPoint.transform.position.z);
                     OnParameterChanged();
                 })).GetComponent<TMP_InputField>();
 
                 var ypos = UI.AddField(panel, "Y Position");
-                ypostmp = UI.AddParsed<float>(ypos, 0, (val =>
+                ypostmp = UI.AddParsed<float>(ypos, null, (val =>
                 {
                     float y = val.GetValueOrDefault(0);
-                    editing.anchorPoint.transform.position = new Vector3(editing.anchorPoint.transform.position.x, y + editing.anchorPoint.parameterOffset.y, editing.anchorPoint.transform.position.z);
+                    editing.anchorPoint.transform.position = new Vector3(editing.anchorPoint.transform.position.x, (y + editing.anchorPoint.parameterOffset.y) * 0.6f, editing.anchorPoint.transform.position.z);
                     OnParameterChanged();
                 })).GetComponent<TMP_InputField>();
 
