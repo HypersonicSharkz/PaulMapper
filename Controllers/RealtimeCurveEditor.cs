@@ -150,6 +150,9 @@ namespace PaulMapper
             {
                 SelectionController.Select(curveObjects[i], i > 0, true, false);
             }
+
+            poodleStartAction.Data = curveObjects;
+            poodleStartAction.Removed = initialObjects;
         }
 
         public virtual void InstantiateCurve(List<BaseGrid> parameters)
