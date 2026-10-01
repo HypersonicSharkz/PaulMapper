@@ -1,4 +1,6 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
+using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -20,9 +22,40 @@ namespace PaulMapper
 
         public static bool UpToDate = true;
 
+
         [Init]
         private void Init()
         {
+            var cm_ver = new System.Version(Application.version);
+
+            if (cm_ver.Minor != 14)
+            {
+                var dialog = PersistentUI.Instance.CreateNewDialogBox().WithNoTitle();
+                dialog.AddComponent<TextComponent>().WithInitialValue($"This build of PaulMapper is made for ChroMapper v0.14.x! Please update ChroMapper to the Dev branch");
+                dialog.AddFooterButton(() => { }, "Okay");
+                dialog.Open();
+                return;
+            }
+
+            Assembly propEditAssembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(assembly => assembly.GetName().Name == "ChroMapper-PropEdit");
+            if (propEditAssembly == null)
+            {
+                var dialog = PersistentUI.Instance.CreateNewDialogBox().WithNoTitle();
+                dialog.AddComponent<TextComponent>().WithInitialValue($"PaulMapper requires PropEdit v0.14.0.0 or above. Please download it here 'https://github.com/FallenCharlotte/ChroMapper-PropEdit/releases'");
+                dialog.AddFooterButton(() => { }, "Okay");
+                dialog.Open();
+                return;
+            }
+
+            if (propEditAssembly.GetName().Version < new Version("0.14.0.0"))
+            {
+                var dialog = PersistentUI.Instance.CreateNewDialogBox().WithNoTitle();
+                dialog.AddComponent<TextComponent>().WithInitialValue($"PaulMapper requires PropEdit v0.14.0.0 or above. Please update it! 'https://github.com/FallenCharlotte/ChroMapper-PropEdit/releases'");
+                dialog.AddFooterButton(() => { }, "Okay");
+                dialog.Open();
+                return;
+            }
+
             SceneManager.sceneLoaded += SceneLoaded;
 
             ExtensionButtons.AddButton(LoadSprite("PaulMapper.Resources.Icon.png"), "Paul Mapper", () => { paulMapper?.ToggleUI(); });
