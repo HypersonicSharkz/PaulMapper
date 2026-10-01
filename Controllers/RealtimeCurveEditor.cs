@@ -161,7 +161,7 @@ namespace PaulMapper
             eventsContainer = BeatmapObjectContainerCollection.GetCollectionForType(Beatmap.Enums.ObjectType.Event) as EventGridContainer;
 
             TracksManager = FindObjectOfType<TracksManager>();
-            BaseGrid[] beatmapObjects = parameters.Where(o => o.ObjectType == Beatmap.Enums.ObjectType.Note).OrderBy(o => o.SongBpmTime).ToArray();
+            BaseGrid[] beatmapObjects = parameters.Where(o => o.ObjectType != Beatmap.Enums.ObjectType.Arc).OrderBy(o => o.SongBpmTime).ToArray();
 
 
             //Materials are weird I think
