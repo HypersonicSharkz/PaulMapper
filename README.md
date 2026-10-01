@@ -14,7 +14,7 @@ This works for both Notes, Bombs, and Walls.
 
 Selected Notes | After pressing *Create Poodle*
 :-------------------------:|:-------------------------:
-![alt text](image-12.png) | ![alt text](image-11.png)
+![alt text](https://raw.githubusercontent.com/wiki/HypersonicSharkz/PaulMapper/image-12.png) | ![alt text](https://raw.githubusercontent.com/wiki/HypersonicSharkz/PaulMapper/image-11.png)
 
 You can now modify the shape of the poodle by dragging around the spheres (Curve Points). Each note in the original selection will be converted into a curve point. 
 More points can be added between the first and last by pressing the *Add Anchor Point* button ***(H by default)***.
@@ -26,7 +26,7 @@ To finish editing the poodle, unselect everything by pressing ***Crtl+A***.
 
 ## Keybinds
 Most keybinds can be changed in the ChroMapper Keybind Settings
-![alt text](image-10.png)
+![alt text](https://raw.githubusercontent.com/wiki/HypersonicSharkz/PaulMapper/image-10.png)
 
 For more information about the individual keybinds, see the [Menu Settings](https://github.com/HypersonicSharkz/PaulMapper/wiki/Menu) and [Curve Point](https://github.com/HypersonicSharkz/PaulMapper/wiki/CurvePoint) guides.
 
