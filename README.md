@@ -1,4 +1,4 @@
-# Paul MApper
+# Paul Mapper
 
 Paul Mapper is a ChroMapper tool for creating poodles, using selected Notes, Bombs, and Walls.
 
