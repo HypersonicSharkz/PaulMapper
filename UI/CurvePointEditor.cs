@@ -127,7 +127,7 @@ namespace PaulMapper
                 xpostmp = UI.AddParsed<float>(xpos, null, (val =>
                 {
                     float x = val.GetValueOrDefault(0);
-                    editing.anchorPoint.transform.position = new Vector3((x + editing.anchorPoint.parameterOffset.x) * 0.6f, editing.anchorPoint.transform.position.y, editing.anchorPoint.transform.position.z);
+                    editing.anchorPoint.transform.position = new Vector3((x + editing.anchorPoint.parameterOffset.x) * Plugin.SCALE_MUL, editing.anchorPoint.transform.position.y, editing.anchorPoint.transform.position.z);
                     OnParameterChanged();
                 })).GetComponent<TMP_InputField>();
 
@@ -135,7 +135,7 @@ namespace PaulMapper
                 ypostmp = UI.AddParsed<float>(ypos, null, (val =>
                 {
                     float y = val.GetValueOrDefault(0);
-                    editing.anchorPoint.transform.position = new Vector3(editing.anchorPoint.transform.position.x, (y + editing.anchorPoint.parameterOffset.y) * 0.6f, editing.anchorPoint.transform.position.z);
+                    editing.anchorPoint.transform.position = new Vector3(editing.anchorPoint.transform.position.x, (y + editing.anchorPoint.parameterOffset.y) * Plugin.SCALE_MUL, editing.anchorPoint.transform.position.z);
                     OnParameterChanged();
                 })).GetComponent<TMP_InputField>();
 

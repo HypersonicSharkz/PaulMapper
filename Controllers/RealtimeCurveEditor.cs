@@ -5,6 +5,7 @@ using SimpleJSON;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using UnityEngine;
 
 namespace PaulMapper
@@ -141,7 +142,7 @@ namespace PaulMapper
 
             foreach (BaseGrid obj in curveObjects)
             {
-                BeatmapObjectContainerCollection.GetCollectionForType(obj.ObjectType).DeleteObject(obj, false, true, "Refresh Poodle", false, false, true);
+                BeatmapObjectContainerCollection.GetCollectionForType(obj.ObjectType).DeleteObject(obj, false, true, "Refresh Poodle", false, false);
             }
 
             SpawnObjects();
@@ -152,7 +153,13 @@ namespace PaulMapper
             }
 
             poodleStartAction.Data = curveObjects;
+#if CM13
+            typeof(SelectionPastedAction)
+                .GetProperty("removed", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+                ?.SetValue(poodleStartAction, initialObjects);
+#else
             poodleStartAction.Removed = initialObjects;
+#endif
         }
 
         public virtual void InstantiateCurve(List<BaseGrid> parameters)
@@ -262,9 +269,13 @@ namespace PaulMapper
             float zPos = (curveParameter.time - PaulMapper.ats.CurrentSongBpmTime) * EditorScaleController.EditorScale;
 
             sphere.transform.parent = curveTrack.ObjectParentTransform;
-            sphere.transform.position = (new Vector3(curveParameter.xPos, curveParameter.yPos, zPos) + point.parameterOffset) * 0.6f + new Vector3(0,0,1);
+            sphere.transform.position = (new Vector3(curveParameter.xPos, curveParameter.yPos, zPos) + point.parameterOffset) * Plugin.SCALE_MUL;
 
-            sphere.transform.localScale = new Vector3(0.4f, 0.4f, 0.4f);
+#if !CM13
+            sphere.transform.position += new Vector3(0,0,1);
+#endif
+
+            sphere.transform.localScale = new Vector3(0.8f, 0.8f, 0.8f) * Plugin.SCALE_MUL;
 
 
             curveParameter.anchorPoint = point;
@@ -481,7 +492,13 @@ namespace PaulMapper
             if (success)
             {
                 poodleStartAction.Data = curveObjects;
+#if CM13
+                typeof(SelectionPastedAction)
+                    .GetProperty("removed", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+                    ?.SetValue(poodleStartAction, initialObjects);
+#else
                 poodleStartAction.Removed = initialObjects;
+#endif
             }
 
             if (actions.Count > 0)
@@ -583,7 +600,7 @@ namespace PaulMapper
         private Vector3 screenPoint;
         private Vector3 offset;
 
-        public Vector3 parameterOffset = new Vector3(0.5f, 3, 0);
+        public Vector3 parameterOffset = new Vector3(0.5f, 2 / Plugin.SCALE_MUL, 0);
 
         public bool isHovering;
 
@@ -679,7 +696,7 @@ namespace PaulMapper
 
         public Vector2 GetAsParameter()
         {
-            return (transform.position) / 0.6f - parameterOffset;
+            return (transform.position) / Plugin.SCALE_MUL - parameterOffset;
         }
 
 

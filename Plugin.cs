@@ -23,15 +23,23 @@ namespace PaulMapper
         public static bool UpToDate = true;
 
 
+#if CM13
+        public const float SCALE_MUL = 1f;
+        public const int CM_VERSION = 13;
+#else
+        public const float SCALE_MUL = 0.6f;
+        public const int CM_VERSION = 14;
+#endif
+
         [Init]
         private void Init()
         {
             var cm_ver = new System.Version(Application.version);
 
-            if (cm_ver.Minor != 14)
+            if (cm_ver.Minor != CM_VERSION)
             {
                 var dialog = PersistentUI.Instance.CreateNewDialogBox().WithNoTitle();
-                dialog.AddComponent<TextComponent>().WithInitialValue($"This build of PaulMapper is made for ChroMapper v0.14.x! Please update ChroMapper to the Dev branch");
+                dialog.AddComponent<TextComponent>().WithInitialValue($"This build of PaulMapper is made for ChroMapper v0.{CM_VERSION}.x and will not work correctly!");
                 dialog.AddFooterButton(() => { }, "Okay");
                 dialog.Open();
                 return;

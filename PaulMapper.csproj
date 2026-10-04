@@ -3,6 +3,7 @@
   <PropertyGroup>
     <ChroMapperDir>D:\chromapper</ChroMapperDir>
 	  <VersionPrefix>0.3.0.0</VersionPrefix>
+	  <Configurations>Debug;Release;CM13</Configurations>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -12,6 +13,11 @@
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <Optimize>False</Optimize>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='CM13|AnyCPU'">
+    <Optimize>False</Optimize>
+	<ChroMapperDir>D:\CM13\chromapper</ChroMapperDir>
   </PropertyGroup>
 
   <ItemGroup>

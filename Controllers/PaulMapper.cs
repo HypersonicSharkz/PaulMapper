@@ -1,6 +1,5 @@
 ﻿using Beatmap.Base;
 using Beatmap.Enums;
-using ChroMapper_PropEdit.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,7 +19,11 @@ namespace PaulMapper
 
         public void Awake()
         {
+#if CM13
+            ats = BeatmapObjectContainerCollection.GetCollectionForType(Beatmap.Enums.ObjectType.Note).AudioTimeSyncController;
+#else
             ats = BeatmapObjectContainerCollection.GetCollectionForType(Beatmap.Enums.ObjectType.Note).BeatmapContext.Atsc;
+#endif
             notesContainer = BeatmapObjectContainerCollection.GetCollectionForType(Beatmap.Enums.ObjectType.Note);
             bpmChangesContainer = BeatmapObjectContainerCollection.GetCollectionForType(Beatmap.Enums.ObjectType.BpmChange);
             obstacleContainer = BeatmapObjectContainerCollection.GetCollectionForType(Beatmap.Enums.ObjectType.Obstacle);

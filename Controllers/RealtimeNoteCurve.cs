@@ -209,6 +209,31 @@ namespace PaulMapper
             }
         }
 
+#if CM13
+        public void SetNoteCut(NoteContainer note)
+        {
+            bool flag = note.NoteData.Type != 3;
+            if (flag)
+            {
+                bool flag2 = note.NoteData.CutDirection != 8;
+                if (flag2)
+                {
+                    note.SetArrowVisible(true);
+                    note.SetDotVisible(false);
+                }
+                else
+                {
+                    note.SetArrowVisible(false);
+                    note.SetDotVisible(true);
+                }
+            }
+            else
+            {
+                note.SetArrowVisible(false);
+                note.SetDotVisible(false);
+            }
+        }
+#else
         public void SetNoteCut(NoteContainer note)
         {
             bool flag = note.NoteData.Type != 3;
@@ -225,5 +250,6 @@ namespace PaulMapper
                 }
             }
         }
+#endif
     }
 }

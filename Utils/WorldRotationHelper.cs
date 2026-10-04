@@ -11,11 +11,18 @@ namespace PaulMapper
     {
         public static float? GetRotationValueAtTime(float time, List<BaseGrid> beatmapObjects)
         {
+#if CM13
+            EventGridContainer rotationsContainer = BeatmapObjectContainerCollection.GetCollectionForType(Beatmap.Enums.ObjectType.Event) as EventGridContainer;
+            IEnumerable<BaseEvent> rotations = rotationsContainer.AllRotationEvents.Where(x => MathUtil.CompareRound(x.SongBpmTime, beatmapObjects.First().SongBpmTime, 0.0001f) != -1 && MathUtil.CompareRound(x.SongBpmTime, beatmapObjects.Last().SongBpmTime, 0.0001f) != 1).OrderBy(x => x.SongBpmTime);
+
+            BaseEvent rotEvent = rotations.LastOrDefault(x => x.SongBpmTime <= time);
+#else
             //Get all relevant rotations
             RotationEventGridContainer rotationsContainer = BeatmapObjectContainerCollection.GetCollectionForType(Beatmap.Enums.ObjectType.RotationEvent) as RotationEventGridContainer;
             IEnumerable<BaseRotationEvent> rotations = rotationsContainer.MapObjects.Where(x => MathUtil.CompareRound(x.SongBpmTime, beatmapObjects.First().SongBpmTime, 0.0001f) != -1 && MathUtil.CompareRound(x.SongBpmTime, beatmapObjects.Last().SongBpmTime, 0.0001f) != 1).OrderBy(x => x.SongBpmTime);
 
             BaseRotationEvent rotEvent = rotations.LastOrDefault(x => x.SongBpmTime <= time);
+#endif
             if (rotEvent == null)
             {
                 if (rotations.Count() == 1)
@@ -35,7 +42,8 @@ namespace PaulMapper
 
             //Get time of last rotation, or last note if it is further away
             float t2 = 0;
-            BaseRotationEvent rotEventEnd = rotations.FirstOrDefault(x => x.SongBpmTime >= time);
+            
+            var rotEventEnd = rotations.FirstOrDefault(x => x.SongBpmTime >= time);
 
             if (rotEventEnd == null || rotEventEnd.SongBpmTime > beatmapObjects.Last().SongBpmTime)
                 t2 = beatmapObjects.Last().SongBpmTime;

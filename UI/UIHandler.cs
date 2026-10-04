@@ -600,6 +600,22 @@ namespace PaulMapper
 
                 #region Events
 
+#if CM13
+                SelectionController.SelectionChangedEvent = (Action)Delegate.Combine(SelectionController.SelectionChangedEvent, new Action(UpdateSelectionUI));
+                SelectionController.SelectionChangedEvent = (Action)Delegate.Combine(SelectionController.SelectionChangedEvent, new Action(UpdateQuickMenu));
+                float lastBpm = 0;
+                PaulMapper.ats.TimeChanged += () =>
+                {
+                    float bpm = BeatSaberSongContainer.Instance.Map.BpmAtJsonTime(PaulMapper.ats.CurrentJsonTime) ?? 100;
+
+                    if (bpm == lastBpm)
+                        return;
+
+                    lastBpm = bpm;
+
+                    UpdateNPS();
+                };
+#else
                 SelectionController.OnSelectionChanged = (Action)Delegate.Combine(SelectionController.OnSelectionChanged, new Action(UpdateSelectionUI));
                 SelectionController.OnSelectionChanged = (Action)Delegate.Combine(SelectionController.OnSelectionChanged, new Action(UpdateQuickMenu));
                 float lastBpm = 0;
@@ -614,6 +630,7 @@ namespace PaulMapper
 
                     UpdateNPS();
                 };
+#endif
 
                 #endregion
 
