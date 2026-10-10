@@ -248,7 +248,11 @@ namespace PaulMapper
             {
                 SelectionController.Select(note, true, true, false);
             }
+#if CM13
+            SelectionController.SelectionChangedEvent.Invoke();
+#else
             SelectionController.OnSelectionChanged.Invoke();
+#endif
 
             UpdateQuickMenu();
         }
