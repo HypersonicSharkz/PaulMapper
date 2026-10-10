@@ -93,7 +93,7 @@ namespace PaulMapper
 
                 float line = (originalDistance - distanceInBeats);
 
-                copy.CustomData = new JSONObject();
+                //copy.CustomData = new JSONObject();
                 JSONNode customData = copy.CustomData;
 
                 if (PaulMapperData.INSTANCE.FakeWalls)

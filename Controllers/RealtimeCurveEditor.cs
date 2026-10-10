@@ -184,7 +184,6 @@ namespace PaulMapper
                 return;
             }
 
-
             curveTrack = TracksManager.CreateTrack(0);
 
             object1 = (BaseGrid)beatmapObjects.First().Clone();
@@ -249,6 +248,7 @@ namespace PaulMapper
             {
                 SelectionController.Select(note, true, true, false);
             }
+            SelectionController.OnSelectionChanged.Invoke();
 
             UpdateQuickMenu();
         }
