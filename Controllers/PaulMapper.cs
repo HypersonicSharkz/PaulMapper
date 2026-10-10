@@ -111,13 +111,10 @@ namespace PaulMapper
                 SetNotice("Select at least 2 points", noticeType.Error);
                 return;
             }
-            if (beatmapObjects.Length == 2)
+            if ((beatmapObjects.Last().SongBpmTime - beatmapObjects.First().SongBpmTime) < 1f / PaulMapperData.INSTANCE.Precision)
             {
-                if (beatmapObjects[1].SongBpmTime - beatmapObjects[0].SongBpmTime < 1 / PaulMapperData.INSTANCE.Precision)
-                {
-                    SetNotice("Points are closer than precision", noticeType.Error);
-                    return;
-                }
+                SetNotice("Points are closer than precision", noticeType.Error);
+                return;
             }
 
             if (beatmapObjects.All(b => b.ObjectType == Beatmap.Enums.ObjectType.Note || b.ObjectType == Beatmap.Enums.ObjectType.Arc))
